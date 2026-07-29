@@ -1,0 +1,11 @@
+node_modules
+.pnpm-store
+.next
+.turbo
+dist
+coverage
+apps/backend/bin
+apps/backend/.gocache
+apps/*/public/assets
+pnpm-lock.yaml
+*.min.js

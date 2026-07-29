@@ -1,0 +1,27 @@
+@import 'tailwindcss';
+
+:root {
+  --color-primary: #101673;
+  --color-primary-hover: #2124c0;
+  --color-background: #fcfbf8;
+  --color-surface: #ffffff;
+  --color-border: #e8e4dd;
+  --color-text: #1f2937;
+  --color-text-secondary: #6b7280;
+  --font-heading: 'Instrument Serif', Georgia, serif;
+  --font-body: 'Manrope', system-ui, sans-serif;
+}
+
+body {
+  min-height: 100vh;
+  background: var(--color-background);
+  color: var(--color-text);
+  font-family: var(--font-body);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-heading);
+  font-weight: 400;
+}

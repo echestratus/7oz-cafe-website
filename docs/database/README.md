@@ -31,6 +31,8 @@ Default seed admin (development only):
 - Email: `admin@7oz.local`
 - Password: `ChangeMeNow!123`
 
+The seed is idempotent: if the admin already exists, it still ensures the `super_admin` role is assigned.
+
 Override with `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, `SEED_ADMIN_NAME`.
 
 ## Tables

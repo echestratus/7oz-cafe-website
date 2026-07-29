@@ -80,3 +80,29 @@ SET last_login_at = NOW(),
     updated_at = NOW()
 WHERE id = $1
   AND deleted_at IS NULL;
+
+-- name: MarkUserEmailVerified :one
+UPDATE users
+SET status = 'active',
+    email_verified_at = NOW(),
+    updated_at = NOW()
+WHERE id = $1
+  AND deleted_at IS NULL
+RETURNING
+    id,
+    email,
+    password_hash,
+    full_name,
+    status,
+    email_verified_at,
+    last_login_at,
+    created_at,
+    updated_at,
+    deleted_at;
+
+-- name: UpdateUserPassword :exec
+UPDATE users
+SET password_hash = $2,
+    updated_at = NOW()
+WHERE id = $1
+  AND deleted_at IS NULL;

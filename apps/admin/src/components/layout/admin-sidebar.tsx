@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   CalendarDays,
   FileImage,
+  Gift,
   LayoutDashboard,
   LogOut,
   Newspaper,
@@ -19,6 +20,7 @@ const links = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/reservations', label: 'Reservations', icon: CalendarDays, permission: 'reservation.manage' },
   { href: '/membership', label: 'Membership', icon: Sparkles, permission: 'membership.manage' },
+  { href: '/loyalty', label: 'Loyalty', icon: Gift, permission: 'loyalty.manage' },
   { href: '/cms', label: 'CMS', icon: Newspaper, permission: 'cms.manage' },
   { href: '/media', label: 'Media', icon: FileImage, permission: 'cms.manage' },
 ] as const;

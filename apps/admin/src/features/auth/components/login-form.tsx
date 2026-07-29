@@ -27,7 +27,8 @@ export function LoginForm() {
         session.user.roles.includes('super_admin') ||
         session.user.permissions.includes('cms.manage') ||
         session.user.permissions.includes('reservation.manage') ||
-        session.user.permissions.includes('membership.manage');
+        session.user.permissions.includes('membership.manage') ||
+        session.user.permissions.includes('loyalty.manage');
 
       if (!canAccessAdmin) {
         setError('This account does not have admin access.');

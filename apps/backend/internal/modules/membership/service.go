@@ -20,12 +20,18 @@ import (
 )
 
 type Service struct {
-	db *database.Postgres
+	db                     *database.Postgres
+	lifetimePointsProvider func(ctx context.Context, userID uuid.UUID) (int64, error)
+}
+
+func (s *Service) SetLifetimePointsProvider(fn func(ctx context.Context, userID uuid.UUID) (int64, error)) {
+	s.lifetimePointsProvider = fn
 }
 
 type QualificationRules struct {
-	MinCompletedReservations int64 `json:"minCompletedReservations"`
-	MinLifetimeLoyaltyPoints  int64 `json:"minLifetimeLoyaltyPoints"`
+	MinCompletedReservations int64   `json:"minCompletedReservations"`
+	MinLifetimeLoyaltyPoints  int64   `json:"minLifetimeLoyaltyPoints"`
+	LoyaltyPointMultiplier   float64 `json:"loyaltyPointMultiplier"`
 }
 
 type LevelDTO struct {
@@ -247,8 +253,15 @@ func (s *Service) EvaluateForUser(
 		return nil, apperr.Wrap(apperr.Internal("Failed to load qualification metrics."), err)
 	}
 
-	// Loyalty points arrive in a later phase; keep the metric wired at zero for now.
+	// Loyalty points arrive from the loyalty module when wired.
 	lifetimePoints := int64(0)
+	if s.lifetimePointsProvider != nil {
+		points, pointsErr := s.lifetimePointsProvider(ctx, userID)
+		if pointsErr != nil {
+			return nil, pointsErr
+		}
+		lifetimePoints = points
+	}
 
 	var target *sqlcdb.MembershipLevel
 	for i := range levels {
@@ -612,6 +625,11 @@ func (s *Service) buildMembershipDTO(ctx context.Context, userID uuid.UUID) (*Me
 		CompletedReservations: completed,
 		LifetimeLoyaltyPoints:  0,
 	}
+	if s.lifetimePointsProvider != nil {
+		if points, pointsErr := s.lifetimePointsProvider(ctx, userID); pointsErr == nil {
+			progress.LifetimeLoyaltyPoints = points
+		}
+	}
 
 	levels, err := s.db.Queries.ListActiveMembershipLevels(ctx)
 	if err == nil {
@@ -732,10 +750,14 @@ func mapBenefits(items []sqlcdb.MembershipBenefit) ([]BenefitDTO, error) {
 func decodeRules(raw []byte) (QualificationRules, error) {
 	var rules QualificationRules
 	if len(raw) == 0 {
+		rules.LoyaltyPointMultiplier = 1
 		return rules, nil
 	}
 	if err := json.Unmarshal(raw, &rules); err != nil {
 		return QualificationRules{}, err
+	}
+	if rules.LoyaltyPointMultiplier <= 0 {
+		rules.LoyaltyPointMultiplier = 1
 	}
 	return rules, nil
 }

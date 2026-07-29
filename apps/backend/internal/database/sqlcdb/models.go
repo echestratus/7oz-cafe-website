@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type AuditLog struct {
@@ -86,6 +87,84 @@ type CmsVersion struct {
 	PublishedBy   *uuid.UUID `json:"published_by"`
 	PublishedAt   time.Time  `json:"published_at"`
 	CreatedAt     time.Time  `json:"created_at"`
+}
+
+type LoyaltyAccount struct {
+	ID               uuid.UUID  `json:"id"`
+	UserID           uuid.UUID  `json:"user_id"`
+	Balance          int32      `json:"balance"`
+	LifetimeEarned   int32      `json:"lifetime_earned"`
+	LifetimeRedeemed int32      `json:"lifetime_redeemed"`
+	CreatedAt        time.Time  `json:"created_at"`
+	UpdatedAt        time.Time  `json:"updated_at"`
+	DeletedAt        *time.Time `json:"deleted_at"`
+}
+
+type LoyaltyCampaign struct {
+	ID                 uuid.UUID  `json:"id"`
+	Code               string     `json:"code"`
+	Name               string     `json:"name"`
+	Description        string     `json:"description"`
+	StartsAt           time.Time  `json:"starts_at"`
+	EndsAt             time.Time  `json:"ends_at"`
+	PointMultiplier    string     `json:"point_multiplier"`
+	BonusPoints        int32      `json:"bonus_points"`
+	EligibleLevelCodes []byte     `json:"eligible_level_codes"`
+	IsActive           bool       `json:"is_active"`
+	CreatedAt          time.Time  `json:"created_at"`
+	UpdatedAt          time.Time  `json:"updated_at"`
+	DeletedAt          *time.Time `json:"deleted_at"`
+}
+
+type LoyaltyRedemption struct {
+	ID            uuid.UUID `json:"id"`
+	UserID        uuid.UUID `json:"user_id"`
+	AccountID     uuid.UUID `json:"account_id"`
+	RewardID      uuid.UUID `json:"reward_id"`
+	TransactionID uuid.UUID `json:"transaction_id"`
+	PointsSpent   int32     `json:"points_spent"`
+	Status        string    `json:"status"`
+	CreatedAt     time.Time `json:"created_at"`
+}
+
+type LoyaltyReward struct {
+	ID          uuid.UUID   `json:"id"`
+	Code        string      `json:"code"`
+	Title       string      `json:"title"`
+	Description string      `json:"description"`
+	PointsCost  int32       `json:"points_cost"`
+	Stock       pgtype.Int4 `json:"stock"`
+	IsActive    bool        `json:"is_active"`
+	SortOrder   int32       `json:"sort_order"`
+	Data        []byte      `json:"data"`
+	CreatedAt   time.Time   `json:"created_at"`
+	UpdatedAt   time.Time   `json:"updated_at"`
+	DeletedAt   *time.Time  `json:"deleted_at"`
+}
+
+type LoyaltySetting struct {
+	ID                            uuid.UUID `json:"id"`
+	PointsPerCompletedReservation int32     `json:"points_per_completed_reservation"`
+	ExpirationStrategy            string    `json:"expiration_strategy"`
+	ExpirationMonths              int32     `json:"expiration_months"`
+	CreatedAt                     time.Time `json:"created_at"`
+	UpdatedAt                     time.Time `json:"updated_at"`
+}
+
+type LoyaltyTransaction struct {
+	ID                uuid.UUID  `json:"id"`
+	AccountID         uuid.UUID  `json:"account_id"`
+	UserID            uuid.UUID  `json:"user_id"`
+	Type              string     `json:"type"`
+	Points            int32      `json:"points"`
+	BalanceAfter      int32      `json:"balance_after"`
+	Source            string     `json:"source"`
+	Description       string     `json:"description"`
+	RelatedEntityType *string    `json:"related_entity_type"`
+	RelatedEntityID   *uuid.UUID `json:"related_entity_id"`
+	CampaignID        *uuid.UUID `json:"campaign_id"`
+	ActorUserID       *uuid.UUID `json:"actor_user_id"`
+	CreatedAt         time.Time  `json:"created_at"`
 }
 
 type MediaAsset struct {

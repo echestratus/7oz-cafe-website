@@ -16,8 +16,10 @@ import (
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/cms"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/health"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/media"
+	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/membership"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/reservation"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/server"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
@@ -76,6 +78,10 @@ func main() {
 	cmsService := cms.NewService(postgres)
 	mediaService := media.NewService(cfg, postgres)
 	reservationService := reservation.NewService(postgres)
+	membershipService := membership.NewService(postgres)
+	reservationService.SetOnCompleted(func(ctx context.Context, userID uuid.UUID) {
+		_, _ = membershipService.EvaluateForUser(ctx, userID, "reservation_completed", nil, "Completed reservation qualification check")
+	})
 	app := server.New(server.Dependencies{
 		Config:             cfg,
 		Logger:             log,
@@ -85,6 +91,7 @@ func main() {
 		CMSService:         cmsService,
 		MediaService:       mediaService,
 		ReservationService: reservationService,
+		MembershipService:  membershipService,
 	})
 
 	addr := fmt.Sprintf(":%d", cfg.Port)

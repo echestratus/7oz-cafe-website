@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   LogOut,
   Newspaper,
+  Sparkles,
 } from 'lucide-react';
 
 import { logout } from '@/services/auth';
@@ -17,6 +18,7 @@ import { useAuthStore } from '@/stores/auth-store';
 const links = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/reservations', label: 'Reservations', icon: CalendarDays, permission: 'reservation.manage' },
+  { href: '/membership', label: 'Membership', icon: Sparkles, permission: 'membership.manage' },
   { href: '/cms', label: 'CMS', icon: Newspaper, permission: 'cms.manage' },
   { href: '/media', label: 'Media', icon: FileImage, permission: 'cms.manage' },
 ] as const;

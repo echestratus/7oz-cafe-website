@@ -111,6 +111,61 @@ type MediaFolder struct {
 	DeletedAt *time.Time `json:"deleted_at"`
 }
 
+type Membership struct {
+	ID               uuid.UUID  `json:"id"`
+	UserID           uuid.UUID  `json:"user_id"`
+	MembershipNumber string     `json:"membership_number"`
+	LevelID          uuid.UUID  `json:"level_id"`
+	Status           string     `json:"status"`
+	QrToken          string     `json:"qr_token"`
+	JoinedAt         time.Time  `json:"joined_at"`
+	ExpiresAt        *time.Time `json:"expires_at"`
+	CreatedAt        time.Time  `json:"created_at"`
+	UpdatedAt        time.Time  `json:"updated_at"`
+	DeletedAt        *time.Time `json:"deleted_at"`
+}
+
+type MembershipBenefit struct {
+	ID          uuid.UUID  `json:"id"`
+	LevelID     *uuid.UUID `json:"level_id"`
+	Code        string     `json:"code"`
+	Title       string     `json:"title"`
+	Description string     `json:"description"`
+	Data        []byte     `json:"data"`
+	IsActive    bool       `json:"is_active"`
+	SortOrder   int32      `json:"sort_order"`
+	CreatedAt   time.Time  `json:"created_at"`
+	UpdatedAt   time.Time  `json:"updated_at"`
+	DeletedAt   *time.Time `json:"deleted_at"`
+}
+
+type MembershipHistory struct {
+	ID            uuid.UUID  `json:"id"`
+	MembershipID  uuid.UUID  `json:"membership_id"`
+	FromLevelID   *uuid.UUID `json:"from_level_id"`
+	ToLevelID     uuid.UUID  `json:"to_level_id"`
+	FromStatus    *string    `json:"from_status"`
+	ToStatus      *string    `json:"to_status"`
+	Reason        string     `json:"reason"`
+	TriggerSource string     `json:"trigger_source"`
+	ActorUserID   *uuid.UUID `json:"actor_user_id"`
+	CreatedAt     time.Time  `json:"created_at"`
+}
+
+type MembershipLevel struct {
+	ID                 uuid.UUID  `json:"id"`
+	Code               string     `json:"code"`
+	Name               string     `json:"name"`
+	Description        string     `json:"description"`
+	Rank               int32      `json:"rank"`
+	QualificationRules []byte     `json:"qualification_rules"`
+	IsActive           bool       `json:"is_active"`
+	SortOrder          int32      `json:"sort_order"`
+	CreatedAt          time.Time  `json:"created_at"`
+	UpdatedAt          time.Time  `json:"updated_at"`
+	DeletedAt          *time.Time `json:"deleted_at"`
+}
+
 type Permission struct {
 	ID          uuid.UUID `json:"id"`
 	Code        string    `json:"code"`

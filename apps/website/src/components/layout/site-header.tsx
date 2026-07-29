@@ -7,6 +7,7 @@ const navItems = [
   { href: '/menu', label: 'Menu' },
   { href: '/gallery', label: 'Gallery' },
   { href: '/about', label: 'About' },
+  { href: '/membership', label: 'Membership' },
   { href: '/reservations', label: 'Reserve' },
   { href: '/contact', label: 'Contact' },
 ] as const;

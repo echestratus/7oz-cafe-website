@@ -25,7 +25,12 @@ var (
 )
 
 type Service struct {
-	db *database.Postgres
+	db          *database.Postgres
+	onCompleted func(ctx context.Context, userID uuid.UUID)
+}
+
+func (s *Service) SetOnCompleted(fn func(ctx context.Context, userID uuid.UUID)) {
+	s.onCompleted = fn
 }
 
 type CreateInput struct {
@@ -523,6 +528,9 @@ func (s *Service) transition(
 	})
 
 	dto := toDTO(updated)
+	if next == "completed" && updated.CustomerUserID != nil && s.onCompleted != nil {
+		s.onCompleted(ctx, *updated.CustomerUserID)
+	}
 	return &dto, nil
 }
 

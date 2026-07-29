@@ -8,6 +8,7 @@ import (
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/cms"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/health"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/media"
+	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/membership"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/reservation"
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/compress"
@@ -21,10 +22,11 @@ type Dependencies struct {
 	Logger        *zap.Logger
 	Postgres      *database.Postgres
 	HealthService *health.Service
-	AuthService         *authentication.Service
-	CMSService          *cms.Service
-	MediaService        *media.Service
-	ReservationService  *reservation.Service
+	AuthService        *authentication.Service
+	CMSService         *cms.Service
+	MediaService       *media.Service
+	ReservationService *reservation.Service
+	MembershipService  *membership.Service
 }
 
 func New(deps Dependencies) *fiber.App {
@@ -57,6 +59,7 @@ func New(deps Dependencies) *fiber.App {
 	cmsHandler := cms.NewHandler(deps.CMSService)
 	mediaHandler := media.NewHandler(deps.MediaService)
 	reservationHandler := reservation.NewHandler(deps.ReservationService)
+	membershipHandler := membership.NewHandler(deps.MembershipService)
 	authenticate := middleware.Authenticate(deps.AuthService)
 	optionalAuth := middleware.OptionalAuthenticate(deps.AuthService)
 
@@ -74,6 +77,9 @@ func New(deps Dependencies) *fiber.App {
 	reservation.RegisterPublicRoutes(api, reservationHandler, optionalAuth)
 	reservation.RegisterCustomerRoutes(api, reservationHandler, authenticate)
 	reservation.RegisterAdminRoutes(api, reservationHandler, authenticate)
+	membership.RegisterPublicRoutes(api, membershipHandler)
+	membership.RegisterCustomerRoutes(api, membershipHandler, authenticate)
+	membership.RegisterAdminRoutes(api, membershipHandler, authenticate)
 	api.Get("/openapi.yaml", serveOpenAPI)
 
 	deps.Logger.Info("routes registered", zap.String("service", deps.Config.Name))

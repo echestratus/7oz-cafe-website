@@ -714,6 +714,228 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessEnvelope"
+  /public/membership/levels:
+    get:
+      summary: List public membership levels
+      operationId: listPublicMembershipLevels
+      tags: [Membership]
+      responses:
+        "200":
+          description: Membership levels
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /public/membership/benefits:
+    get:
+      summary: List public membership benefits
+      operationId: listPublicMembershipBenefits
+      tags: [Membership]
+      responses:
+        "200":
+          description: Membership benefits
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /customer/membership:
+    get:
+      summary: Get authenticated customer membership
+      operationId: getCustomerMembership
+      tags: [Membership]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Membership profile with progress
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /customer/membership/benefits:
+    get:
+      summary: Get benefits for the customer membership level
+      operationId: getCustomerMembershipBenefits
+      tags: [Membership]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Membership benefits
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /customer/membership/history:
+    get:
+      summary: Get customer membership history
+      operationId: getCustomerMembershipHistory
+      tags: [Membership]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Membership history
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/memberships:
+    get:
+      summary: List memberships
+      operationId: listAdminMemberships
+      tags: [Membership]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Paginated memberships
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/memberships/{id}:
+    get:
+      summary: Get membership details
+      operationId: getAdminMembership
+      tags: [Membership]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Membership details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+    patch:
+      summary: Manually change membership level (super admin)
+      operationId: updateAdminMembershipLevel
+      tags: [Membership]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [levelId]
+              properties:
+                levelId:
+                  type: string
+                  format: uuid
+                reason:
+                  type: string
+      responses:
+        "200":
+          description: Membership level updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/memberships/{id}/status:
+    patch:
+      summary: Update membership status
+      operationId: updateAdminMembershipStatus
+      tags: [Membership]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [active, inactive, suspended, expired]
+                reason:
+                  type: string
+      responses:
+        "200":
+          description: Membership status updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/membership-levels:
+    get:
+      summary: List membership levels
+      operationId: listAdminMembershipLevels
+      tags: [Membership]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Membership levels
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/membership-levels/{id}:
+    patch:
+      summary: Update membership level rules
+      operationId: updateAdminMembershipLevelRules
+      tags: [Membership]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [qualificationRules]
+              properties:
+                qualificationRules:
+                  type: object
+                  properties:
+                    minCompletedReservations:
+                      type: integer
+                    minLifetimeLoyaltyPoints:
+                      type: integer
+                description:
+                  type: string
+                isActive:
+                  type: boolean
+      responses:
+        "200":
+          description: Membership level updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
 components:
   securitySchemes:
     bearerAuth:

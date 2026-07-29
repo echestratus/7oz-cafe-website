@@ -1,0 +1,2 @@
+# Keep this directory for Next.js public assets.
+# Runtime media is synced from ./assets via `pnpm sync:assets`.

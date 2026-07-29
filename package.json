@@ -1,0 +1,28 @@
+{
+  "name": "7oz-cafe-website",
+  "private": true,
+  "packageManager": "pnpm@9.15.9",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "sync:assets": "node scripts/sync-assets.mjs",
+    "backend:dev": "pnpm --filter @7oz/backend dev",
+    "website:dev": "pnpm --filter @7oz/website dev",
+    "admin:dev": "pnpm --filter @7oz/admin dev"
+  },
+  "devDependencies": {
+    "@7oz/eslint-config": "workspace:*",
+    "@7oz/prettier-config": "workspace:*",
+    "prettier": "^3.6.2",
+    "turbo": "^2.5.4",
+    "typescript": "^5.8.3"
+  },
+  "prettier": "@7oz/prettier-config"
+}

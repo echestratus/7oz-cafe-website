@@ -13,9 +13,15 @@ Prioritize efficiency over visual effects.
 
 # Users
 
-Supported roles:
+MVP roles that may access admin capabilities:
+
+Admin
 
 Super Admin
+
+Customer accounts use the public website, not the admin app.
+
+Future roles (deferred until POS / multi-branch):
 
 Cafe Manager
 
@@ -25,7 +31,7 @@ Kitchen
 
 Barista
 
-Customer
+Branch Manager
 
 ---
 
@@ -41,7 +47,7 @@ Membership Summary
 
 Loyalty Summary
 
-Revenue Summary
+Revenue Summary (future POS)
 
 Recent Activities
 
@@ -114,6 +120,8 @@ CMS Changes
 Never hide functionality only in frontend.
 
 Backend authorization is mandatory.
+
+Use permission checks, not hardcoded role strings scattered through UI logic.
 
 ---
 

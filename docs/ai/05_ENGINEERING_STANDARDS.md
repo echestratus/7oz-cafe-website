@@ -304,6 +304,16 @@ Always use transactions for multi-step business operations.
 
 # 17. Git Standards
 
+Branch model:
+
+- `main` — production-ready releases
+- `develop` — integration branch
+- Feature work on `feature/*`, `fix/*`, `docs/*`, `chore/*`, etc.
+
+Never use `master` for new work.
+
+Never commit directly to `main` or `develop`.
+
 Follow Conventional Commits.
 
 One logical change per commit.
@@ -315,6 +325,8 @@ Never commit generated secrets.
 Never commit local configuration.
 
 Never commit temporary debugging code.
+
+Canonical workflow details live in `.cursor/rules/git-workflow.mdc`.
 
 ---
 

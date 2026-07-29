@@ -39,11 +39,16 @@ refactor/menu-service
 docs/api-specification
 ```
 
-3. Never work directly on:
+3. Branch model:
+
+- `main` — production-ready releases only
+- `develop` — integration branch
+- Never use `master` for new work
+
+Never work directly on:
 
 - develop
 - main
-- master
 
 4. Make small and meaningful commits.
 

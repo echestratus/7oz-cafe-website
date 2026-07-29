@@ -32,15 +32,19 @@ The long-term vision includes:
 
 Monorepo
 
-Turborepo
+Turborepo + pnpm
 
 Frontend
 
-Next.js 15
+Next.js 15 + TypeScript + Tailwind CSS + shadcn/ui
 
 Backend
 
-Go Fiber
+Go Fiber v3
+
+pgx + sqlc + golang-migrate
+
+Viper + Zap + Argon2id
 
 Database
 
@@ -50,13 +54,21 @@ Cache
 
 Redis
 
+Auth
+
+JWT Bearer access token + HTTP-only Secure cookie refresh token
+
 Storage
 
-Local Assets (Development)
+Local Assets via sync script (Development)
 
 Future:
 
 MinIO / S3
+
+Canonical decisions:
+
+./docs/adr/0001-phase-0-architecture-decisions.md
 
 ---
 
@@ -90,6 +102,10 @@ Aesop
 
 Notion
 
+Typography:
+
+Instrument Serif + Manrope
+
 Minimal.
 
 Elegant.
@@ -97,6 +113,22 @@ Elegant.
 Premium.
 
 Whitespace-driven.
+
+Canonical design system:
+
+./docs/ai/06_DESIGN_SYSTEM.md
+
+---
+
+## MVP Roles
+
+Customer
+
+Admin
+
+Super Admin
+
+Guest reservations allowed without an account.
 
 ---
 
@@ -135,6 +167,16 @@ Maintainability First.
 Never optimize for shortcuts.
 
 Always optimize for long-term sustainability.
+
+---
+
+## Git Branches
+
+main — production-ready
+
+develop — integration
+
+Never use master for new work.
 
 ---
 

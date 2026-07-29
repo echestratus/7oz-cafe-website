@@ -58,13 +58,21 @@ Central business logic and data provider.
 
 # 4. User Roles
 
-Current roles:
+MVP persisted roles:
 
-- Visitor
 - Customer
-- Staff
-- Branch Manager
+- Admin
 - Super Admin
+
+Visitor describes an unauthenticated actor and is not a persisted role.
+
+Deferred roles (POS / multi-branch):
+
+- Cafe Manager
+- Cashier
+- Kitchen
+- Barista
+- Branch Manager
 
 Future roles may be introduced without requiring architectural changes.
 
@@ -127,7 +135,7 @@ Support image optimization.
 
 ## Reservation
 
-Customers shall be able to:
+Customers and guests shall be able to:
 
 - Select reservation date
 - Select reservation time
@@ -136,11 +144,22 @@ Customers shall be able to:
 - Add notes
 - Receive confirmation
 
+Guest reservations are supported in MVP without requiring an account.
+
+Required guest contact fields:
+
+- Full name
+- Email
+- Phone
+
+Authenticated customers may book while linked to their account.
+
 Future:
 
 - Table selection
 - Reservation modification
-- Reservation cancellation
+- Reservation cancellation by customer self-service beyond MVP rules
+- Claim guest reservation history after registration
 
 ---
 

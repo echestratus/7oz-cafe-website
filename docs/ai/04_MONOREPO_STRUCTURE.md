@@ -136,13 +136,22 @@ assets/
 
 Current phase:
 
-Assets are stored locally.
+Assets are stored locally under `./assets`.
 
 Applications must never read assets directly from this directory at runtime.
 
-Application-specific assets should be copied or referenced through the appropriate public/static mechanism of each application.
+Canonical workflow:
+
+1. Place source media in `./assets/<category>/`.
+2. Run the repository asset sync script (under `./scripts`) during development setup and CI/build.
+3. Sync copies required files into each application's public/static directory.
+4. Applications consume only their public/static assets or CMS/media URLs.
+
+Do not rely on manual one-off copies as the primary workflow.
 
 This design allows future migration to object storage without changing business logic.
+
+All storage access in the backend must go through a storage abstraction layer.
 
 ---
 
@@ -150,20 +159,26 @@ This design allows future migration to object storage without changing business 
 
 ```
 docs/
+├── adr/
 ├── ai/
 ├── api/
+├── architecture/
 ├── database/
 ├── deployment/
+├── development/
+├── product/
 └── uiux/
 ```
 
 Purpose:
 
+- Architecture Decision Records
 - AI guidance
 - API specifications
 - Database documentation
 - Deployment guides
 - Design documentation
+- Product and development notes
 
 Documentation is part of the product.
 
@@ -207,9 +222,12 @@ Contains:
 - Development utilities
 - Database scripts
 - Deployment helpers
+- Asset sync helpers
 - Automation scripts
 
 Scripts must be idempotent whenever possible.
+
+The asset sync script must be safe to re-run and must not invent missing media.
 
 ---
 

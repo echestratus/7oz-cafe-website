@@ -23,6 +23,18 @@ This document defines the official technology stack used throughout the 7Oz Espr
 
 All applications, shared packages, tools, libraries, and infrastructure decisions must follow this document unless a newer version explicitly supersedes it.
 
+Accepted architecture decisions that refine this stack are recorded in:
+
+./docs/adr/0001-phase-0-architecture-decisions.md
+
+Rejected alternatives for MVP include:
+
+- Ent ORM
+- Atlas
+- Koanf
+- Zerolog
+- bcrypt as the primary password hasher
+
 ---
 
 # 2. Technology Selection Principles
@@ -131,7 +143,7 @@ Go
 
 Framework
 
-Fiber
+Fiber v3
 
 Architecture
 

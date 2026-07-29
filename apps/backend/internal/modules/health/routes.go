@@ -3,5 +3,6 @@ package health
 import "github.com/gofiber/fiber/v3"
 
 func RegisterRoutes(router fiber.Router, handler *Handler) {
-	router.Get("/health", handler.Check)
+	router.Get("/health", handler.Live)
+	router.Get("/health/ready", handler.Ready)
 }

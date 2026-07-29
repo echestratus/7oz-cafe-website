@@ -1,0 +1,118 @@
+# Deployment
+
+Version: Phase 11 foundation
+
+## Overview
+
+The platform deploys with Docker Compose behind Nginx.
+
+| Environment | Compose file | Env file |
+| --- | --- | --- |
+| Local deps | `docker-compose.dev.yml` | `.env` |
+| Staging | `docker-compose.staging.yml` | `.env.staging` |
+| Production | `docker-compose.prod.yml` | `.env.production` |
+
+Images (versioned, never `:latest` in production):
+
+- `ghcr.io/echestratus/7oz-website`
+- `ghcr.io/echestratus/7oz-admin`
+- `ghcr.io/echestratus/7oz-backend`
+
+## Local dependency stack
+
+```bash
+cp .env.example .env
+docker compose -f docker-compose.dev.yml up -d
+pnpm db:migrate
+```
+
+## Staging (build + run)
+
+```bash
+cp .env.staging.example .env.staging
+# fill secrets
+
+chmod +x scripts/*.sh
+./scripts/deploy.sh staging staging
+```
+
+Gateway defaults to `http://localhost:8088`.
+
+Routes:
+
+- `/` → website
+- `/admin/` → admin
+- `/api/` → backend
+- `/health` and `/health/ready` → API probes
+
+## Production (VPS)
+
+Suggested layout:
+
+```text
+/opt/7oz/
+  compose/          # repository checkout or release bundle
+  env/.env.production
+  backups/
+  uploads/
+  logs/
+  scripts/
+```
+
+Deploy a tagged release:
+
+```bash
+cp .env.production.example .env.production
+# fill secrets and set IMAGE_TAG=<git-sha-or-semver>
+
+./scripts/deploy.sh production <image-tag>
+```
+
+Rollback:
+
+```bash
+./scripts/rollback.sh production <previous-image-tag>
+```
+
+Database backup (retain 30 days by default):
+
+```bash
+./scripts/backup-db.sh production
+```
+
+## HTTPS
+
+Staging compose listens on HTTP for local/VPS bootstrap.
+
+For production public traffic:
+
+1. Terminate TLS at a host Nginx / Caddy / Cloudflare in front of the compose Nginx, or
+2. Extend `docker/nginx/nginx.conf` with Let's Encrypt certificates under `/opt/7oz/certs`.
+
+Always redirect HTTP → HTTPS and enable HSTS on the public edge.
+
+## Health checks
+
+| Path | Meaning |
+| --- | --- |
+| `GET /health` | Liveness |
+| `GET /live` | Liveness alias |
+| `GET /health/ready` | Postgres + Redis readiness |
+| `GET /ready` | Readiness alias |
+
+Containers define `HEALTHCHECK` for backend/website/admin.
+
+## CI
+
+GitHub Actions (`.github/workflows/ci.yml`) runs:
+
+1. Frontend lint / typecheck / build
+2. Backend vet / test / build
+3. Docker image builds (no push) for website, admin, and backend
+
+## Notes
+
+- Secrets stay in untracked `.env.staging` / `.env.production`.
+- Migrations run before app containers start.
+- Uploaded media persist in the `*_uploads` Docker volume.
+- Monitoring (Prometheus/Grafana/Loki) remains future work; structured Zap logs and request IDs are already emitted by the API.

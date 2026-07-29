@@ -67,7 +67,9 @@ func New(deps Dependencies) *fiber.App {
 	optionalAuth := middleware.OptionalAuthenticate(deps.AuthService)
 
 	app.Get("/health", healthHandler.Live)
+	app.Get("/live", healthHandler.Live)
 	app.Get("/health/ready", healthHandler.Ready)
+	app.Get("/ready", healthHandler.Ready)
 	app.Get("/openapi.yaml", serveOpenAPI)
 	media.RegisterPublicRoutes(app, mediaHandler)
 

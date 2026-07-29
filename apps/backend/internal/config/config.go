@@ -111,7 +111,7 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("CORS_ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:3001")
 
 	v.SetDefault("DB_HOST", "localhost")
-	v.SetDefault("DB_PORT", 5432)
+	v.SetDefault("DB_PORT", 5433)
 	v.SetDefault("DB_USER", "sevenoz")
 	v.SetDefault("DB_PASSWORD", "sevenoz_dev_password")
 	v.SetDefault("DB_NAME", "sevenoz")

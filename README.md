@@ -32,6 +32,12 @@ docker compose -f docker-compose.dev.yml up -d
 # Sync local media into app public folders
 pnpm sync:assets
 
+# Apply database migrations (requires Docker Compose Postgres)
+pnpm db:migrate
+
+# Seed development super admin
+pnpm --filter @7oz/backend db:seed
+
 # Run frontend apps
 pnpm website:dev
 pnpm admin:dev
@@ -48,6 +54,8 @@ Health checks:
 - `GET http://localhost:8080/api/v1/health/ready`
 - `GET http://localhost:8080/openapi.yaml` — OpenAPI 3.1 shell
 
+Docker Compose Postgres is published on host port **5433** (avoids conflicts with local PostgreSQL on 5432). Redis remains on **6379**.
+
 In development, the API starts even if Postgres/Redis are down and reports degraded readiness.
 In non-development environments, missing Postgres/Redis fails startup.
 
@@ -60,6 +68,8 @@ In non-development environments, missing Postgres/Redis fails startup.
 | `pnpm lint` | Lint workspace |
 | `pnpm typecheck` | Typecheck TypeScript packages/apps |
 | `pnpm sync:assets` | Copy `./assets` into app public directories |
+| `pnpm db:migrate` | Apply Postgres migrations |
+| `pnpm db:migrate:down` | Roll back one migration |
 
 ## Packages
 

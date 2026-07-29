@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Instrument_Serif, Manrope } from 'next/font/google';
 import type { ReactNode } from 'react';
 
+import { Providers } from '@/components/providers';
 import '@/styles/globals.css';
 
 const instrumentSerif = Instrument_Serif({
@@ -36,7 +37,9 @@ interface RootLayoutProps {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" className={`${instrumentSerif.variable} ${manrope.variable}`}>
-      <body className="antialiased">{children}</body>
+      <body className="font-body antialiased">
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

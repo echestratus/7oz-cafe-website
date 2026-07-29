@@ -44,6 +44,7 @@ Desktop.ini
 apps/backend/bin
 apps/backend/tmp
 apps/backend/.gocache
+apps/backend/storage
 *.exe
 *.test
 *.out

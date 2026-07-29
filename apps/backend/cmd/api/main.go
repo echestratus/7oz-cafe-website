@@ -13,7 +13,9 @@ import (
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/database"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/logger"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/authentication"
+	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/cms"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/health"
+	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/media"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/server"
 	"go.uber.org/zap"
 )
@@ -70,12 +72,16 @@ func main() {
 
 	healthService := health.NewService(cfg.Name, postgres, redisClient)
 	authService := authentication.NewService(cfg, postgres)
+	cmsService := cms.NewService(postgres)
+	mediaService := media.NewService(cfg, postgres)
 	app := server.New(server.Dependencies{
 		Config:        cfg,
 		Logger:        log,
 		Postgres:      postgres,
 		HealthService: healthService,
 		AuthService:   authService,
+		CMSService:    cmsService,
+		MediaService:  mediaService,
 	})
 
 	addr := fmt.Sprintf(":%d", cfg.Port)

@@ -32,6 +32,73 @@ type AuthToken struct {
 	CreatedAt time.Time  `json:"created_at"`
 }
 
+type CmsContent struct {
+	ID        uuid.UUID  `json:"id"`
+	SectionID uuid.UUID  `json:"section_id"`
+	Data      []byte     `json:"data"`
+	UpdatedBy *uuid.UUID `json:"updated_by"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
+}
+
+type CmsPage struct {
+	ID                 uuid.UUID  `json:"id"`
+	Slug               string     `json:"slug"`
+	Title              string     `json:"title"`
+	Status             string     `json:"status"`
+	Seo                []byte     `json:"seo"`
+	PublishedVersionID *uuid.UUID `json:"published_version_id"`
+	CreatedAt          time.Time  `json:"created_at"`
+	UpdatedAt          time.Time  `json:"updated_at"`
+	DeletedAt          *time.Time `json:"deleted_at"`
+}
+
+type CmsSection struct {
+	ID        uuid.UUID  `json:"id"`
+	PageID    uuid.UUID  `json:"page_id"`
+	Code      string     `json:"code"`
+	Label     string     `json:"label"`
+	IsEnabled bool       `json:"is_enabled"`
+	SortOrder int32      `json:"sort_order"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
+	DeletedAt *time.Time `json:"deleted_at"`
+}
+
+type CmsVersion struct {
+	ID            uuid.UUID  `json:"id"`
+	PageID        uuid.UUID  `json:"page_id"`
+	VersionNumber int32      `json:"version_number"`
+	Summary       string     `json:"summary"`
+	Snapshot      []byte     `json:"snapshot"`
+	PublishedBy   *uuid.UUID `json:"published_by"`
+	PublishedAt   time.Time  `json:"published_at"`
+	CreatedAt     time.Time  `json:"created_at"`
+}
+
+type MediaAsset struct {
+	ID         uuid.UUID  `json:"id"`
+	FolderID   *uuid.UUID `json:"folder_id"`
+	FileName   string     `json:"file_name"`
+	StorageKey string     `json:"storage_key"`
+	MimeType   string     `json:"mime_type"`
+	SizeBytes  int64      `json:"size_bytes"`
+	AltText    string     `json:"alt_text"`
+	UploadedBy *uuid.UUID `json:"uploaded_by"`
+	CreatedAt  time.Time  `json:"created_at"`
+	UpdatedAt  time.Time  `json:"updated_at"`
+	DeletedAt  *time.Time `json:"deleted_at"`
+}
+
+type MediaFolder struct {
+	ID        uuid.UUID  `json:"id"`
+	ParentID  *uuid.UUID `json:"parent_id"`
+	Name      string     `json:"name"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
+	DeletedAt *time.Time `json:"deleted_at"`
+}
+
 type Permission struct {
 	ID          uuid.UUID `json:"id"`
 	Code        string    `json:"code"`

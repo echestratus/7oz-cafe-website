@@ -47,6 +47,12 @@ Override with `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, `SEED_ADMIN_NAME`.
 | `sessions` | Refresh-token sessions | No (`revoked_at`) |
 | `auth_tokens` | Email verify / password reset | No (`used_at`) |
 | `audit_logs` | Immutable audit trail | No |
+| `media_folders` | Media library folders | Yes (`deleted_at`) |
+| `media_assets` | Uploaded media metadata | Yes (`deleted_at`) |
+| `cms_pages` | CMS pages (homepage, about, …) | Yes (`deleted_at`) |
+| `cms_sections` | Page sections | Yes (`deleted_at`) |
+| `cms_contents` | Draft section payloads (JSONB) | No |
+| `cms_versions` | Published page snapshots | No |
 
 ## MVP Roles
 

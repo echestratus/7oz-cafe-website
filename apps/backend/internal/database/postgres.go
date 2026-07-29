@@ -6,11 +6,13 @@ import (
 	"time"
 
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/config"
+	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/database/sqlcdb"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Postgres struct {
-	Pool *pgxpool.Pool
+	Pool    *pgxpool.Pool
+	Queries *sqlcdb.Queries
 }
 
 func NewPostgres(ctx context.Context, cfg config.DatabaseConfig, dsn string) (*Postgres, error) {
@@ -37,7 +39,10 @@ func NewPostgres(ctx context.Context, cfg config.DatabaseConfig, dsn string) (*P
 		return nil, fmt.Errorf("ping database (%s:%d/%s): %w", cfg.Host, cfg.Port, cfg.Name, err)
 	}
 
-	return &Postgres{Pool: pool}, nil
+	return &Postgres{
+		Pool:    pool,
+		Queries: sqlcdb.New(pool),
+	}, nil
 }
 
 func (p *Postgres) Close() {

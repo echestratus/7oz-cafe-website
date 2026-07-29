@@ -13,6 +13,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "sync:assets": "node scripts/sync-assets.mjs",
+    "db:migrate": "node scripts/db-migrate.mjs up",
+    "db:migrate:down": "node scripts/db-migrate.mjs down 1",
     "backend:dev": "pnpm --filter @7oz/backend dev",
     "website:dev": "pnpm --filter @7oz/website dev",
     "admin:dev": "pnpm --filter @7oz/admin dev"

@@ -1,16 +1,28 @@
-export default function HomePage() {
+import type { Metadata } from 'next';
+
+import { SiteShell } from '@/components/layout/site-shell';
+import { HomePageView } from '@/features/home/components/home-page-view';
+import { metadataFromSeo } from '@/lib/seo';
+import { getPublishedCmsPage } from '@/services/cms';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const homepage = await getPublishedCmsPage('homepage');
+  return metadataFromSeo(homepage?.page.seo, {
+    title: '7Oz Espresso Cafe',
+    description: 'Premium espresso and cafe experience.',
+    path: '/',
+  });
+}
+
+export default async function HomePage() {
+  const [homepage, footer] = await Promise.all([
+    getPublishedCmsPage('homepage'),
+    getPublishedCmsPage('footer'),
+  ]);
+
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-5xl flex-col justify-center gap-8 px-6 py-24">
-      <p className="text-sm tracking-[0.2em] text-[var(--color-text-secondary)] uppercase">
-        7Oz Espresso Cafe
-      </p>
-      <h1 className="max-w-3xl text-5xl leading-tight text-[var(--color-text)] md:text-7xl">
-        Crafted espresso. Calm spaces. Coming soon.
-      </h1>
-      <p className="max-w-xl text-lg text-[var(--color-text-secondary)]">
-        The public website workspace is ready. Content, reservations, and membership flows will land
-        in upcoming phases.
-      </p>
-    </main>
+    <SiteShell footer={footer} headerTone="overlay">
+      <HomePageView homepage={homepage} />
+    </SiteShell>
   );
 }

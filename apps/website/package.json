@@ -4,14 +4,16 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev --port 3000",
-    "build": "next build",
+    "dev": "node ../../scripts/sync-assets.mjs && next dev --port 3000",
+    "build": "node ../../scripts/sync-assets.mjs && next build",
     "start": "next start --port 3000",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@7oz/shared-types": "workspace:*",
+    "framer-motion": "^12.43.0",
+    "lucide-react": "^1.27.0",
     "next": "^15.4.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"

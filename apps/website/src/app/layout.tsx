@@ -18,6 +18,7 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
   title: {
     default: '7Oz Espresso Cafe',
     template: '%s | 7Oz Espresso Cafe',
@@ -33,7 +34,7 @@ interface RootLayoutProps {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" className={`${instrumentSerif.variable} ${manrope.variable}`}>
-      <body className="antialiased">{children}</body>
+      <body className="font-body antialiased">{children}</body>
     </html>
   );
 }

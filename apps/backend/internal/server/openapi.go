@@ -383,6 +383,337 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessEnvelope"
+  /public/reservations/availability:
+    get:
+      summary: Get reservation availability slots
+      operationId: getReservationAvailability
+      tags: [Reservations]
+      parameters:
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: guestCount
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 2
+      responses:
+        "200":
+          description: Availability slots for the selected date
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /public/reservations:
+    post:
+      summary: Create a guest reservation
+      operationId: createPublicReservation
+      tags: [Reservations]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateReservationRequest"
+      responses:
+        "201":
+          description: Reservation created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+        "409":
+          description: Slot unavailable or duplicate reservation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /customer/reservations:
+    get:
+      summary: List authenticated customer reservations
+      operationId: listCustomerReservations
+      tags: [Reservations]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Customer reservations
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+    post:
+      summary: Create a reservation linked to the authenticated customer
+      operationId: createCustomerReservation
+      tags: [Reservations]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateReservationRequest"
+      responses:
+        "201":
+          description: Reservation created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /customer/reservations/{id}:
+    get:
+      summary: Get a customer reservation
+      operationId: getCustomerReservation
+      tags: [Reservations]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Reservation details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+    delete:
+      summary: Cancel a customer reservation
+      operationId: cancelCustomerReservation
+      tags: [Reservations]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+      responses:
+        "200":
+          description: Reservation cancelled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/reservations:
+    get:
+      summary: List reservations for operations staff
+      operationId: listAdminReservations
+      tags: [Reservations]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Paginated reservations
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/reservations/{id}:
+    get:
+      summary: Get reservation details
+      operationId: getAdminReservation
+      tags: [Reservations]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Reservation details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+    patch:
+      summary: Assign a table to a reservation
+      operationId: assignReservationTable
+      tags: [Reservations]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tableId]
+              properties:
+                tableId:
+                  type: string
+                  format: uuid
+      responses:
+        "200":
+          description: Table assigned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/reservations/{id}/confirm:
+    patch:
+      summary: Confirm a reservation
+      operationId: confirmReservation
+      tags: [Reservations]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Reservation confirmed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/reservations/{id}/check-in:
+    patch:
+      summary: Check in a reservation
+      operationId: checkInReservation
+      tags: [Reservations]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Guest checked in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/reservations/{id}/complete:
+    patch:
+      summary: Complete a reservation
+      operationId: completeReservation
+      tags: [Reservations]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Reservation completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/reservations/{id}/cancel:
+    patch:
+      summary: Cancel a reservation
+      operationId: cancelAdminReservation
+      tags: [Reservations]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+      responses:
+        "200":
+          description: Reservation cancelled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/reservations/{id}/no-show:
+    patch:
+      summary: Mark reservation as no-show
+      operationId: markReservationNoShow
+      tags: [Reservations]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Reservation marked as no-show
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
 components:
   securitySchemes:
     bearerAuth:
@@ -441,5 +772,27 @@ components:
           type: string
           format: email
         password:
+          type: string
+    CreateReservationRequest:
+      type: object
+      required: [fullName, email, phone, date, time, guestCount]
+      properties:
+        fullName:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        date:
+          type: string
+          format: date
+        time:
+          type: string
+          description: HH:MM in cafe timezone
+        guestCount:
+          type: integer
+          minimum: 1
+        notes:
           type: string
 `

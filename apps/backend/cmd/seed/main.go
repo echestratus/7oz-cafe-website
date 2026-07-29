@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"time"
@@ -12,6 +13,7 @@ import (
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/database/sqlcdb"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/logger"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"go.uber.org/zap"
 )
 
@@ -51,33 +53,38 @@ func main() {
 	password := envOrDefault("SEED_ADMIN_PASSWORD", defaultAdminPassword)
 	fullName := envOrDefault("SEED_ADMIN_NAME", defaultAdminName)
 
-	existing, err := postgres.Queries.GetUserByEmail(ctx, email)
-	if err == nil {
-		log.Info("admin user already exists", zap.String("email", existing.Email), zap.String("id", existing.ID.String()))
-		return
-	}
-
 	role, err := postgres.Queries.GetRoleByCode(ctx, superAdminRoleCode)
 	if err != nil {
 		log.Fatal("failed to load super_admin role; run migrations first", zap.Error(err))
 	}
 
-	passwordHash, err := argon2id.CreateHash(password, argon2id.DefaultParams)
+	user, err := postgres.Queries.GetUserByEmail(ctx, email)
 	if err != nil {
-		log.Fatal("failed to hash admin password", zap.Error(err))
-	}
+		if !errors.Is(err, pgx.ErrNoRows) {
+			log.Fatal("failed to lookup admin user", zap.Error(err))
+		}
 
-	now := time.Now().UTC()
-	user, err := postgres.Queries.CreateUser(ctx, sqlcdb.CreateUserParams{
-		ID:              uuid.New(),
-		Email:           email,
-		PasswordHash:    passwordHash,
-		FullName:        fullName,
-		Status:          "active",
-		EmailVerifiedAt: &now,
-	})
-	if err != nil {
-		log.Fatal("failed to create admin user", zap.Error(err))
+		passwordHash, hashErr := argon2id.CreateHash(password, argon2id.DefaultParams)
+		if hashErr != nil {
+			log.Fatal("failed to hash admin password", zap.Error(hashErr))
+		}
+
+		now := time.Now().UTC()
+		user, err = postgres.Queries.CreateUser(ctx, sqlcdb.CreateUserParams{
+			ID:              uuid.New(),
+			Email:           email,
+			PasswordHash:    passwordHash,
+			FullName:        fullName,
+			Status:          "active",
+			EmailVerifiedAt: &now,
+		})
+		if err != nil {
+			log.Fatal("failed to create admin user", zap.Error(err))
+		}
+
+		log.Info("created admin user", zap.String("id", user.ID.String()), zap.String("email", user.Email))
+	} else {
+		log.Info("admin user already exists", zap.String("email", user.Email), zap.String("id", user.ID.String()))
 	}
 
 	if err := postgres.Queries.AssignUserRole(ctx, sqlcdb.AssignUserRoleParams{
@@ -88,7 +95,7 @@ func main() {
 	}
 
 	log.Info(
-		"seeded super admin user",
+		"ensured super admin seed",
 		zap.String("id", user.ID.String()),
 		zap.String("email", user.Email),
 		zap.String("role", superAdminRoleCode),

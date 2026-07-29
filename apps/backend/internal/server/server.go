@@ -2,7 +2,9 @@ package server
 
 import (
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/config"
+	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/database"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/middleware"
+	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/authentication"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/health"
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/compress"
@@ -14,7 +16,9 @@ import (
 type Dependencies struct {
 	Config        *config.Config
 	Logger        *zap.Logger
+	Postgres      *database.Postgres
 	HealthService *health.Service
+	AuthService   *authentication.Service
 }
 
 func New(deps Dependencies) *fiber.App {
@@ -37,10 +41,13 @@ func New(deps Dependencies) *fiber.App {
 			"Authorization",
 			"X-Request-ID",
 		},
-		AllowMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowCredentials: true,
 	}))
 
 	healthHandler := health.NewHandler(deps.HealthService)
+	authHandler := authentication.NewHandler(deps.AuthService, deps.Config)
+	authenticate := middleware.Authenticate(deps.AuthService)
 
 	app.Get("/health", healthHandler.Live)
 	app.Get("/health/ready", healthHandler.Ready)
@@ -48,6 +55,7 @@ func New(deps Dependencies) *fiber.App {
 
 	api := app.Group("/api/v1")
 	health.RegisterRoutes(api, healthHandler)
+	authentication.RegisterRoutes(api, authHandler, authenticate, deps.Config.CORSAllowedOrigins)
 	api.Get("/openapi.yaml", serveOpenAPI)
 
 	deps.Logger.Info("routes registered", zap.String("service", deps.Config.Name))

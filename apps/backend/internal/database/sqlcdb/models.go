@@ -8,19 +8,18 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type AuditLog struct {
-	ID           uuid.UUID   `json:"id"`
-	ActorUserID  pgtype.UUID `json:"actor_user_id"`
-	Action       string      `json:"action"`
-	ResourceType string      `json:"resource_type"`
-	ResourceID   pgtype.Text `json:"resource_id"`
-	IpAddress    string      `json:"ip_address"`
-	UserAgent    string      `json:"user_agent"`
-	Metadata     []byte      `json:"metadata"`
-	CreatedAt    time.Time   `json:"created_at"`
+	ID           uuid.UUID  `json:"id"`
+	ActorUserID  *uuid.UUID `json:"actor_user_id"`
+	Action       string     `json:"action"`
+	ResourceType string     `json:"resource_type"`
+	ResourceID   *string    `json:"resource_id"`
+	IpAddress    string     `json:"ip_address"`
+	UserAgent    string     `json:"user_agent"`
+	Metadata     []byte     `json:"metadata"`
+	CreatedAt    time.Time  `json:"created_at"`
 }
 
 type AuthToken struct {

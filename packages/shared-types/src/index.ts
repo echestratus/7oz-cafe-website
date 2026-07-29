@@ -8,6 +8,7 @@ export type ApiSuccessResponse<T> = {
 export type ApiErrorResponse = {
   success: false;
   message: string;
+  code?: string;
   errors?: Array<{
     field?: string;
     message: string;

@@ -75,7 +75,7 @@ Affected Areas:
 
 Backend:
 - reservation service
-- reservation controller
+- reservation handler
 - database migration
 
 Frontend:
@@ -106,7 +106,7 @@ AI Agent must:
 AI Agent must follow:
 
 ```
-Controller
+Handler
 
 ↓
 
@@ -123,11 +123,11 @@ Database
 
 Rules:
 
-Controllers must be thin.
+Handlers must be thin.
 
 Business rules belong in services.
 
-Database access belongs in repositories.
+Database access belongs in repositories via sqlc.
 
 Validation must exist before processing.
 

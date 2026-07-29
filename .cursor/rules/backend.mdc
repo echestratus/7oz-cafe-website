@@ -11,7 +11,11 @@ Go Fiber v3
 
 PostgreSQL
 
-Ent ORM
+pgx
+
+sqlc
+
+golang-migrate
 
 Redis
 
@@ -19,13 +23,13 @@ JWT
 
 RBAC
 
-Swagger
+OpenAPI / Swagger
 
-Atlas Migration
+Viper
 
-Koanf
+Zap
 
-Zerolog
+Argon2id
 
 ---
 
@@ -33,7 +37,7 @@ Zerolog
 
 Always follow:
 
-Controller
+Handler
 
 ↓
 
@@ -51,9 +55,9 @@ Never bypass layers.
 
 ---
 
-# Controller
+# Handler
 
-Controllers should:
+Handlers should:
 
 Validate input.
 
@@ -87,7 +91,7 @@ Calculations
 
 Responsible only for:
 
-Database access.
+Database access via sqlc-generated queries.
 
 No business logic.
 
@@ -95,7 +99,7 @@ No business logic.
 
 # DTO
 
-Never expose database entities directly.
+Never expose database rows or internal models directly.
 
 Always use DTOs.
 
@@ -123,25 +127,37 @@ Return friendly messages.
 
 # Authentication
 
-JWT Access Token
+JWT Access Token (Authorization Bearer)
 
-Refresh Token Rotation
+Refresh Token Rotation (HTTP-only Secure Cookie)
 
-Password Hashing using bcrypt.
+Password Hashing using Argon2id.
 
 ---
 
 # Authorization
 
-RBAC.
+RBAC with permission checks.
 
-Never check roles inside controllers.
+Never check roles inside handlers.
 
 Use middleware.
+
+MVP roles:
+
+Customer
+
+Admin
+
+Super Admin
+
+Visitor is unauthenticated and is not a persisted role.
 
 ---
 
 # Logging
+
+Use Zap structured JSON logging.
 
 Log:
 
@@ -169,6 +185,8 @@ Use transactions whenever:
 
 Multiple tables are modified.
 
+Transaction boundaries belong in the Service layer.
+
 ---
 
 # API Design
@@ -185,9 +203,23 @@ Future ready for /api/v2
 
 # Database
 
-Use Ent.
+Database-first.
 
-Never execute raw SQL unless necessary.
+Write SQL migrations with golang-migrate.
+
+Generate type-safe queries with sqlc.
+
+Never edit generated sqlc code manually.
+
+Avoid ad-hoc SQL outside repository packages.
+
+---
+
+# Configuration
+
+Load configuration with Viper at startup.
+
+Never read environment variables directly inside handlers or services.
 
 ---
 
@@ -213,7 +245,7 @@ Protect against SQL injection.
 
 Protect against XSS.
 
-Protect against CSRF where applicable.
+Protect CSRF for cookie-based refresh flows.
 
 ---
 

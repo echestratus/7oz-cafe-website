@@ -370,6 +370,8 @@ Admins
 
 Super Admins
 
+Customers (read / support actions)
+
 Status
 
 Roles
@@ -379,6 +381,20 @@ Permissions
 Sessions
 
 Password Reset
+
+MVP persisted roles:
+
+- Customer
+- Admin
+- Super Admin
+
+Deferred roles until POS / multi-branch:
+
+- Cafe Manager
+- Cashier
+- Kitchen
+- Barista
+- Branch Manager
 
 ---
 

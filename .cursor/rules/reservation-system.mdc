@@ -9,7 +9,7 @@ Reservations are one of the core business domains.
 
 Every reservation must be treated as a business transaction.
 
-Never implement reservation logic directly inside controllers or frontend components.
+Never implement reservation logic directly inside handlers or frontend components.
 
 Always keep business rules inside the Service Layer.
 
@@ -45,7 +45,7 @@ Reminder (future)
 
 ↓
 
-Customer Arrival
+Customer Arrival (Checked In)
 
 ↓
 
@@ -57,17 +57,37 @@ Completed
 
 Allowed statuses only:
 
-Pending
+PENDING
 
-Confirmed
+CONFIRMED
 
-Completed
+CHECKED_IN
 
-Cancelled
+COMPLETED
 
-No Show
+CANCELLED
+
+NO_SHOW
 
 Never create custom statuses without updating documentation.
+
+---
+
+# Guest Reservations
+
+Guest reservations are supported in MVP.
+
+An account is not required to book.
+
+Required guest contact fields:
+
+- Full name
+- Email
+- Phone
+
+Authenticated customers may book while linked to their user account.
+
+Rate-limit reservation submission to prevent abuse.
 
 ---
 
@@ -78,8 +98,8 @@ Before creating a reservation always validate:
 - Date
 - Time
 - Number of Guests
-- Branch
-- Table Availability
+- Branch (future-ready; single branch for MVP)
+- Table Availability / Capacity
 - Business Hours
 - Reservation Window
 - Duplicate Reservation
@@ -116,11 +136,14 @@ Holiday schedules must be future-ready.
 
 ---
 
-# Customer
+# Customer Linkage
 
-A reservation always belongs to exactly one customer.
+A reservation belongs to either:
 
-Guest reservations should be supported in the future.
+- An authenticated customer account, or
+- Guest contact details captured at booking time
+
+Do not invent a fake user account for guests.
 
 ---
 
@@ -146,7 +169,11 @@ Cancel
 
 Confirm
 
+Check In
+
 Complete
+
+No Show
 
 ---
 

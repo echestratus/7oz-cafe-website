@@ -128,9 +128,19 @@ Use appropriately.
 
 # Authentication
 
-Bearer Token.
+Access Token
 
-Never use cookies unless explicitly required.
+Authorization: Bearer <jwt>
+
+Refresh Token
+
+HTTP-only Secure Cookie
+
+Rotated on every successful refresh
+
+CSRF protections required for cookie-based refresh endpoints
+
+Do not store tokens in localStorage.
 
 ---
 

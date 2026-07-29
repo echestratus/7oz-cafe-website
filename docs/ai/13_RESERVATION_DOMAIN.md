@@ -109,7 +109,10 @@ Customer never arrived.
 Each reservation contains:
 
 - Reservation Number
-- Customer
+- Customer Account (nullable for guest bookings)
+- Guest Full Name
+- Guest Email
+- Guest Phone
 - Date
 - Time
 - Guest Count
@@ -118,6 +121,28 @@ Each reservation contains:
 - Status
 - Created At
 - Updated At
+
+---
+
+# 5.1 Guest Reservations
+
+Guest reservations are supported in MVP.
+
+An account is not required to create a reservation.
+
+Required contact fields for guest bookings:
+
+- Full name
+- Email
+- Phone
+
+Rules:
+
+- Do not invent a fake user account for guests.
+- Authenticated customers should link the reservation to their user ID.
+- Rate-limit reservation creation.
+- Validate contact formats server-side.
+- Future: guests may claim reservation history after registration.
 
 ---
 
@@ -258,9 +283,13 @@ Automatic optimization.
 
 # 15. Customer Rules
 
-Customer may:
+Guests may:
 
-Create reservation.
+Create reservation with contact details.
+
+Customers may:
+
+Create reservation linked to their account.
 
 View reservation history.
 

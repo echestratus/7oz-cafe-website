@@ -323,9 +323,21 @@ Protected endpoints require:
 
 Authorization: Bearer <access_token>
 
+Refresh flow uses an HTTP-only Secure Cookie for the refresh token.
+
+Do not store access or refresh tokens in localStorage.
+
 Authentication details are defined in:
 
 12_AUTHENTICATION_AUTHORIZATION.md
+
+CSRF and cookie policy details are defined in:
+
+11_SECURITY_STANDARDS.md
+
+ADR:
+
+../adr/0001-phase-0-architecture-decisions.md
 
 ---
 

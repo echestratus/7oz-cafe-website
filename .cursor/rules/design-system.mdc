@@ -25,6 +25,10 @@ Never create a cluttered interface.
 
 Whitespace is a design element.
 
+Canonical reference:
+
+./docs/ai/06_DESIGN_SYSTEM.md
+
 ---
 
 # Brand Colors
@@ -33,7 +37,7 @@ Primary
 
 #101673
 
-Secondary
+Primary Hover / Secondary
 
 #2124C0
 
@@ -41,29 +45,69 @@ Coffee Accent
 
 #6B5139
 
+---
+
+# Neutral Palette
+
 Background
 
-#FAF9F6
+#FCFBF8
 
 Surface
 
 #FFFFFF
 
-Section
+Surface Secondary / Section
 
-#F3F0EA
-
-Text
-
-#202020
-
-Muted Text
-
-#6A6A6A
+#F5F3EF
 
 Border
 
-#E8E6E1
+#E8E4DD
+
+Divider
+
+#D9D3CA
+
+---
+
+# Text Colors
+
+Primary Text
+
+#1F2937
+
+Secondary Text
+
+#6B7280
+
+Muted Text
+
+#9CA3AF
+
+Inverse Text
+
+#FFFFFF
+
+---
+
+# Semantic Colors
+
+Success
+
+#16A34A
+
+Warning
+
+#F59E0B
+
+Danger
+
+#DC2626
+
+Info
+
+#2563EB
 
 ---
 
@@ -71,19 +115,25 @@ Border
 
 Heading
 
-Cormorant Garamond
+Instrument Serif
 
-Body
+Body / UI
 
-Inter
+Manrope
+
+Fallback
+
+system-ui
 
 Never use more than two font families.
+
+Do not use Inter or Cormorant Garamond for this brand.
 
 ---
 
 # Spacing
 
-Use an 8-point spacing system.
+Base unit 4px.
 
 Allowed spacing values:
 
@@ -94,6 +144,8 @@ Allowed spacing values:
 12
 
 16
+
+20
 
 24
 
@@ -109,7 +161,7 @@ Allowed spacing values:
 
 96
 
-Avoid arbitrary spacing.
+Avoid arbitrary spacing outside this scale.
 
 ---
 
@@ -125,11 +177,11 @@ Medium
 
 Large
 
-16px
+20px
 
 Extra Large
 
-24px
+28px
 
 Pill
 

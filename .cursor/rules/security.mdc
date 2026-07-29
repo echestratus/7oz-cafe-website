@@ -15,11 +15,15 @@ Trust nothing.
 
 # Authentication
 
-JWT
+JWT Access Token (Bearer)
 
 Refresh Token Rotation
 
-bcrypt
+Refresh token stored in HTTP-only Secure Cookie
+
+Password hashing
+
+Argon2id
 
 Strong password policy.
 
@@ -32,6 +36,14 @@ RBAC only.
 Never trust frontend roles.
 
 Always validate permissions server-side.
+
+MVP roles:
+
+Customer
+
+Admin
+
+Super Admin
 
 ---
 
@@ -71,7 +83,7 @@ Uploads
 
 # SQL Injection
 
-Use ORM.
+Use parameterized SQL via sqlc / pgx.
 
 Never concatenate SQL strings.
 
@@ -83,11 +95,23 @@ Escape output.
 
 Sanitize rich text.
 
+Never store refresh or access tokens in localStorage.
+
 ---
 
 # CSRF
 
-Protect state-changing endpoints if cookie authentication is introduced.
+Refresh tokens use HTTP-only cookies.
+
+Therefore:
+
+Enable CSRF defenses for cookie-authenticated refresh flows.
+
+Validate Origin / Referer.
+
+Use SameSite cookie attributes.
+
+Access tokens sent via Authorization Bearer do not replace cookie CSRF controls for refresh.
 
 ---
 
@@ -119,7 +143,7 @@ Forgot Password
 
 OTP
 
-Reservation submission
+Reservation submission (including guest bookings)
 
 Contact form
 

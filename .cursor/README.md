@@ -2,6 +2,22 @@
 
 This repository uses Cursor Rules to ensure every AI-generated change follows the project's engineering standards.
 
+## Source of Truth
+
+Resolve conflicts in this order:
+
+1. Accepted ADRs under `docs/adr/`
+2. FINAL documents under `docs/ai/`
+3. Cursor rules under `.cursor/rules/`
+
+Cursor rules must mirror `docs/ai` and accepted ADRs.
+
+Never invent an alternate technology stack, design system, or domain rule in Cursor rules.
+
+Canonical Phase 0 decisions:
+
+`docs/adr/0001-phase-0-architecture-decisions.md`
+
 ## Rule Priority
 
 When multiple rules apply, follow this order:
@@ -49,7 +65,9 @@ Never:
 
 Every significant architectural decision should be reflected in:
 
-docs/
+docs/adr/
+
+docs/ai/
 
 Do not allow implementation and documentation to diverge.
 

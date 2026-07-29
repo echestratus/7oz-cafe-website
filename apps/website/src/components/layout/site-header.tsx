@@ -7,6 +7,7 @@ const navItems = [
   { href: '/menu', label: 'Menu' },
   { href: '/gallery', label: 'Gallery' },
   { href: '/about', label: 'About' },
+  { href: '/reservations', label: 'Reserve' },
   { href: '/contact', label: 'Contact' },
 ] as const;
 
@@ -57,14 +58,14 @@ export function SiteHeader({ tone = 'solid' }: SiteHeaderProps) {
             </Link>
           ))}
           <Link
-            href="/contact"
+            href="/reservations"
             className={`rounded-[12px] border px-4 py-2 text-sm transition-colors duration-200 ${
               isOverlay
                 ? 'border-white/50 text-white hover:bg-white/10'
                 : 'border-border text-text hover:bg-surface-secondary'
             }`}
           >
-            Visit
+            Reserve
           </Link>
         </nav>
 
@@ -76,12 +77,12 @@ export function SiteHeader({ tone = 'solid' }: SiteHeaderProps) {
             Menu
           </Link>
           <Link
-            href="/contact"
+            href="/reservations"
             className={`rounded-[12px] border px-3 py-2 text-sm ${
               isOverlay ? 'border-white/50 text-white' : 'border-border text-text'
             }`}
           >
-            Visit
+            Reserve
           </Link>
         </nav>
       </Container>

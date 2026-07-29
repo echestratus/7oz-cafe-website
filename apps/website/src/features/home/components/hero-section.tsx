@@ -12,7 +12,7 @@ export function HeroSection({ data }: HeroSectionProps) {
     data.subtitle,
     'Crafted espresso. Calm spaces. Timeless ritual.',
   );
-  const primary = asCta(data.ctaPrimary) ?? { label: 'Reserve a Table', href: '/contact' };
+  const primary = asCta(data.ctaPrimary) ?? { label: 'Reserve a Table', href: '/reservations' };
   const secondary = asCta(data.ctaSecondary) ?? { label: 'Explore Menu', href: '/menu' };
 
   return (

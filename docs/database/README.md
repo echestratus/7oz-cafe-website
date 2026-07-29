@@ -53,6 +53,10 @@ Override with `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, `SEED_ADMIN_NAME`.
 | `cms_sections` | Page sections | Yes (`deleted_at`) |
 | `cms_contents` | Draft section payloads (JSONB) | No |
 | `cms_versions` | Published page snapshots | No |
+| `reservation_settings` | Slot/capacity/hours configuration | No |
+| `cafe_tables` | Physical tables and seat capacity | Yes (`deleted_at`) |
+| `reservations` | Guest/customer bookings | Yes (`deleted_at`) |
+| `reservation_histories` | Reservation status audit trail | No |
 
 ## MVP Roles
 

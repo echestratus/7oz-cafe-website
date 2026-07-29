@@ -10,7 +10,7 @@ import { TestimonialsSection } from '@/features/home/components/testimonials-sec
 const fallbackHero = {
   title: 'Espresso Cafe',
   subtitle: 'Crafted espresso. Calm spaces. Timeless ritual.',
-  ctaPrimary: { label: 'Reserve a Table', href: '/contact' },
+  ctaPrimary: { label: 'Reserve a Table', href: '/reservations' },
   ctaSecondary: { label: 'Explore Menu', href: '/menu' },
 };
 

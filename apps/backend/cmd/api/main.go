@@ -16,6 +16,7 @@ import (
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/cms"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/health"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/media"
+	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/reservation"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/server"
 	"go.uber.org/zap"
 )
@@ -74,14 +75,16 @@ func main() {
 	authService := authentication.NewService(cfg, postgres)
 	cmsService := cms.NewService(postgres)
 	mediaService := media.NewService(cfg, postgres)
+	reservationService := reservation.NewService(postgres)
 	app := server.New(server.Dependencies{
-		Config:        cfg,
-		Logger:        log,
-		Postgres:      postgres,
-		HealthService: healthService,
-		AuthService:   authService,
-		CMSService:    cmsService,
-		MediaService:  mediaService,
+		Config:             cfg,
+		Logger:             log,
+		Postgres:           postgres,
+		HealthService:      healthService,
+		AuthService:        authService,
+		CMSService:         cmsService,
+		MediaService:       mediaService,
+		ReservationService: reservationService,
 	})
 
 	addr := fmt.Sprintf(":%d", cfg.Port)

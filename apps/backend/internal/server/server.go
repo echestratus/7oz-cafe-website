@@ -8,6 +8,7 @@ import (
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/cms"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/health"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/media"
+	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/reservation"
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/compress"
 	"github.com/gofiber/fiber/v3/middleware/cors"
@@ -20,9 +21,10 @@ type Dependencies struct {
 	Logger        *zap.Logger
 	Postgres      *database.Postgres
 	HealthService *health.Service
-	AuthService   *authentication.Service
-	CMSService    *cms.Service
-	MediaService  *media.Service
+	AuthService         *authentication.Service
+	CMSService          *cms.Service
+	MediaService        *media.Service
+	ReservationService  *reservation.Service
 }
 
 func New(deps Dependencies) *fiber.App {
@@ -54,7 +56,9 @@ func New(deps Dependencies) *fiber.App {
 	authHandler := authentication.NewHandler(deps.AuthService, deps.Config)
 	cmsHandler := cms.NewHandler(deps.CMSService)
 	mediaHandler := media.NewHandler(deps.MediaService)
+	reservationHandler := reservation.NewHandler(deps.ReservationService)
 	authenticate := middleware.Authenticate(deps.AuthService)
+	optionalAuth := middleware.OptionalAuthenticate(deps.AuthService)
 
 	app.Get("/health", healthHandler.Live)
 	app.Get("/health/ready", healthHandler.Ready)
@@ -67,6 +71,9 @@ func New(deps Dependencies) *fiber.App {
 	cms.RegisterPublicRoutes(api, cmsHandler)
 	cms.RegisterAdminRoutes(api, cmsHandler, authenticate)
 	media.RegisterAdminRoutes(api, mediaHandler, authenticate)
+	reservation.RegisterPublicRoutes(api, reservationHandler, optionalAuth)
+	reservation.RegisterCustomerRoutes(api, reservationHandler, authenticate)
+	reservation.RegisterAdminRoutes(api, reservationHandler, authenticate)
 	api.Get("/openapi.yaml", serveOpenAPI)
 
 	deps.Logger.Info("routes registered", zap.String("service", deps.Config.Name))

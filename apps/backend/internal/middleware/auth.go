@@ -16,37 +16,65 @@ type AccessTokenParser interface {
 
 func Authenticate(parser AccessTokenParser) fiber.Handler {
 	return func(c fiber.Ctx) error {
-		header := c.Get("Authorization")
-		if header == "" || !strings.HasPrefix(header, "Bearer ") {
-			return apperr.Unauthorized("Authentication required.")
+		if err := attachPrincipal(c, parser, true); err != nil {
+			return err
 		}
-
-		raw := strings.TrimSpace(strings.TrimPrefix(header, "Bearer "))
-		claims, err := parser.ParseAccessToken(raw)
-		if err != nil {
-			return apperr.Unauthorized("Invalid or expired access token.")
-		}
-
-		userID, err := uuid.Parse(claims.Subject)
-		if err != nil {
-			return apperr.Unauthorized("Invalid access token subject.")
-		}
-
-		sessionID, err := uuid.Parse(claims.SessionID)
-		if err != nil {
-			return apperr.Unauthorized("Invalid access token session.")
-		}
-
-		authctx.SetPrincipal(c, authctx.Principal{
-			UserID:      userID,
-			Email:       claims.Email,
-			SessionID:   sessionID,
-			Roles:       claims.Roles,
-			Permissions: claims.Permissions,
-		})
-
 		return c.Next()
 	}
+}
+
+// OptionalAuthenticate attaches a principal when a valid Bearer token is present.
+// Missing or invalid tokens are ignored so guest flows can continue.
+func OptionalAuthenticate(parser AccessTokenParser) fiber.Handler {
+	return func(c fiber.Ctx) error {
+		_ = attachPrincipal(c, parser, false)
+		return c.Next()
+	}
+}
+
+func attachPrincipal(c fiber.Ctx, parser AccessTokenParser, required bool) error {
+	header := c.Get("Authorization")
+	if header == "" || !strings.HasPrefix(header, "Bearer ") {
+		if required {
+			return apperr.Unauthorized("Authentication required.")
+		}
+		return nil
+	}
+
+	raw := strings.TrimSpace(strings.TrimPrefix(header, "Bearer "))
+	claims, err := parser.ParseAccessToken(raw)
+	if err != nil {
+		if required {
+			return apperr.Unauthorized("Invalid or expired access token.")
+		}
+		return nil
+	}
+
+	userID, err := uuid.Parse(claims.Subject)
+	if err != nil {
+		if required {
+			return apperr.Unauthorized("Invalid access token subject.")
+		}
+		return nil
+	}
+
+	sessionID, err := uuid.Parse(claims.SessionID)
+	if err != nil {
+		if required {
+			return apperr.Unauthorized("Invalid access token session.")
+		}
+		return nil
+	}
+
+	authctx.SetPrincipal(c, authctx.Principal{
+		UserID:      userID,
+		Email:       claims.Email,
+		SessionID:   sessionID,
+		Roles:       claims.Roles,
+		Permissions: claims.Permissions,
+	})
+
+	return nil
 }
 
 func RequirePermission(permission string) fiber.Handler {

@@ -32,6 +32,18 @@ type AuthToken struct {
 	CreatedAt time.Time  `json:"created_at"`
 }
 
+type CafeTable struct {
+	ID        uuid.UUID  `json:"id"`
+	Code      string     `json:"code"`
+	Name      string     `json:"name"`
+	Capacity  int32      `json:"capacity"`
+	IsActive  bool       `json:"is_active"`
+	SortOrder int32      `json:"sort_order"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
+	DeletedAt *time.Time `json:"deleted_at"`
+}
+
 type CmsContent struct {
 	ID        uuid.UUID  `json:"id"`
 	SectionID uuid.UUID  `json:"section_id"`
@@ -106,6 +118,52 @@ type Permission struct {
 	Description string    `json:"description"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+type Reservation struct {
+	ID                uuid.UUID  `json:"id"`
+	ReservationNumber string     `json:"reservation_number"`
+	CustomerUserID    *uuid.UUID `json:"customer_user_id"`
+	GuestFullName     string     `json:"guest_full_name"`
+	GuestEmail        string     `json:"guest_email"`
+	GuestPhone        string     `json:"guest_phone"`
+	ReservationDate   time.Time  `json:"reservation_date"`
+	ReservationTime   time.Time  `json:"reservation_time"`
+	GuestCount        int32      `json:"guest_count"`
+	Status            string     `json:"status"`
+	Notes             string     `json:"notes"`
+	TableID           *uuid.UUID `json:"table_id"`
+	CancelledAt       *time.Time `json:"cancelled_at"`
+	CancelReason      string     `json:"cancel_reason"`
+	CreatedAt         time.Time  `json:"created_at"`
+	UpdatedAt         time.Time  `json:"updated_at"`
+	DeletedAt         *time.Time `json:"deleted_at"`
+}
+
+type ReservationHistory struct {
+	ID            uuid.UUID  `json:"id"`
+	ReservationID uuid.UUID  `json:"reservation_id"`
+	FromStatus    *string    `json:"from_status"`
+	ToStatus      string     `json:"to_status"`
+	ActorUserID   *uuid.UUID `json:"actor_user_id"`
+	Note          string     `json:"note"`
+	CreatedAt     time.Time  `json:"created_at"`
+}
+
+type ReservationSetting struct {
+	ID                  uuid.UUID `json:"id"`
+	MinGuests           int32     `json:"min_guests"`
+	MaxGuests           int32     `json:"max_guests"`
+	MinAdvanceMinutes   int32     `json:"min_advance_minutes"`
+	MaxAdvanceDays      int32     `json:"max_advance_days"`
+	SlotIntervalMinutes int32     `json:"slot_interval_minutes"`
+	DurationMinutes     int32     `json:"duration_minutes"`
+	BufferMinutes       int32     `json:"buffer_minutes"`
+	CancelCutoffMinutes int32     `json:"cancel_cutoff_minutes"`
+	Timezone            string    `json:"timezone"`
+	WeeklyHours         []byte    `json:"weekly_hours"`
+	CreatedAt           time.Time `json:"created_at"`
+	UpdatedAt           time.Time `json:"updated_at"`
 }
 
 type Role struct {

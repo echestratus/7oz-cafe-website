@@ -31,3 +31,35 @@ export type ReservationStatus =
   | 'completed'
   | 'cancelled'
   | 'no_show';
+
+export type CmsSeo = {
+  metaTitle?: string;
+  metaDescription?: string;
+  canonicalPath?: string;
+  keywords?: string[];
+};
+
+export type CmsCta = {
+  label?: string;
+  href?: string;
+};
+
+export type CmsSection = {
+  id: string;
+  code: string;
+  label: string;
+  isEnabled: boolean;
+  sortOrder: number;
+  data: Record<string, unknown>;
+};
+
+export type CmsPageSnapshot = {
+  page: {
+    id: string;
+    slug: string;
+    title: string;
+    status: string;
+    seo: CmsSeo;
+  };
+  sections: CmsSection[];
+};

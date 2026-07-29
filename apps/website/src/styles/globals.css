@@ -11,8 +11,6 @@
   --color-text: #1f2937;
   --color-text-secondary: #6b7280;
   --color-text-muted: #9ca3af;
-  --font-heading: 'Instrument Serif', Georgia, serif;
-  --font-body: 'Manrope', system-ui, sans-serif;
 }
 
 @theme inline {
@@ -26,8 +24,14 @@
   --color-text: var(--color-text);
   --color-text-secondary: var(--color-text-secondary);
   --color-text-muted: var(--color-text-muted);
-  --font-heading: var(--font-heading);
-  --font-body: var(--font-body);
+  --font-heading: var(--font-heading), Georgia, serif;
+  --font-body: var(--font-body), system-ui, sans-serif;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 html {
@@ -38,14 +42,14 @@ body {
   min-height: 100vh;
   background: var(--color-background);
   color: var(--color-text);
-  font-family: var(--font-body);
+  font-family: var(--font-body), system-ui, sans-serif;
 }
 
 h1,
 h2,
 h3,
 h4 {
-  font-family: var(--font-heading);
+  font-family: var(--font-heading), Georgia, serif;
   font-weight: 400;
   letter-spacing: -0.02em;
 }

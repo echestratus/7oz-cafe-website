@@ -936,6 +936,190 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessEnvelope"
+  /public/loyalty/rewards:
+    get:
+      summary: List public loyalty rewards
+      operationId: listPublicLoyaltyRewards
+      tags: [Loyalty]
+      responses:
+        "200":
+          description: Active rewards catalog
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /customer/loyalty:
+    get:
+      summary: Get customer loyalty balance
+      operationId: getCustomerLoyalty
+      tags: [Loyalty]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Loyalty account
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /customer/loyalty/history:
+    get:
+      summary: Get customer loyalty history
+      operationId: getCustomerLoyaltyHistory
+      tags: [Loyalty]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Loyalty transactions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /customer/loyalty/rewards:
+    get:
+      summary: List redeemable rewards
+      operationId: getCustomerLoyaltyRewards
+      tags: [Loyalty]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Rewards catalog
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /customer/loyalty/redeem:
+    post:
+      summary: Redeem a loyalty reward
+      operationId: redeemLoyaltyReward
+      tags: [Loyalty]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rewardId]
+              properties:
+                rewardId:
+                  type: string
+                  format: uuid
+      responses:
+        "201":
+          description: Reward redeemed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/loyalty:
+    get:
+      summary: List loyalty accounts
+      operationId: listAdminLoyaltyAccounts
+      tags: [Loyalty]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Loyalty accounts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/loyalty/history:
+    get:
+      summary: List loyalty transactions
+      operationId: listAdminLoyaltyHistory
+      tags: [Loyalty]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Loyalty transactions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/loyalty/adjustments:
+    post:
+      summary: Apply a manual loyalty adjustment
+      operationId: createLoyaltyAdjustment
+      tags: [Loyalty]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId, points, reason]
+              properties:
+                userId:
+                  type: string
+                  format: uuid
+                points:
+                  type: integer
+                reason:
+                  type: string
+      responses:
+        "200":
+          description: Adjustment applied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/loyalty/campaigns:
+    get:
+      summary: List loyalty campaigns
+      operationId: listLoyaltyCampaigns
+      tags: [Loyalty]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Campaigns
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+    post:
+      summary: Create a loyalty campaign
+      operationId: createLoyaltyCampaign
+      tags: [Loyalty]
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: Campaign created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/loyalty/campaigns/{id}:
+    patch:
+      summary: Update a loyalty campaign
+      operationId: updateLoyaltyCampaign
+      tags: [Loyalty]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Campaign updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
 components:
   securitySchemes:
     bearerAuth:

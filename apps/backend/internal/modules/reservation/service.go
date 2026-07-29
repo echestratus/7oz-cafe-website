@@ -26,10 +26,10 @@ var (
 
 type Service struct {
 	db          *database.Postgres
-	onCompleted func(ctx context.Context, userID uuid.UUID)
+	onCompleted func(ctx context.Context, userID uuid.UUID, reservationID uuid.UUID)
 }
 
-func (s *Service) SetOnCompleted(fn func(ctx context.Context, userID uuid.UUID)) {
+func (s *Service) SetOnCompleted(fn func(ctx context.Context, userID uuid.UUID, reservationID uuid.UUID)) {
 	s.onCompleted = fn
 }
 
@@ -529,7 +529,7 @@ func (s *Service) transition(
 
 	dto := toDTO(updated)
 	if next == "completed" && updated.CustomerUserID != nil && s.onCompleted != nil {
-		s.onCompleted(ctx, *updated.CustomerUserID)
+		s.onCompleted(ctx, *updated.CustomerUserID, updated.ID)
 	}
 	return &dto, nil
 }

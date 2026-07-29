@@ -15,6 +15,7 @@ import (
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/authentication"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/cms"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/health"
+	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/loyalty"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/media"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/membership"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/reservation"
@@ -79,7 +80,10 @@ func main() {
 	mediaService := media.NewService(cfg, postgres)
 	reservationService := reservation.NewService(postgres)
 	membershipService := membership.NewService(postgres)
-	reservationService.SetOnCompleted(func(ctx context.Context, userID uuid.UUID) {
+	loyaltyService := loyalty.NewService(postgres)
+	membershipService.SetLifetimePointsProvider(loyaltyService.GetLifetimeEarnedPoints)
+	reservationService.SetOnCompleted(func(ctx context.Context, userID uuid.UUID, reservationID uuid.UUID) {
+		_, _ = loyaltyService.EarnForReservationCompleted(ctx, userID, reservationID)
 		_, _ = membershipService.EvaluateForUser(ctx, userID, "reservation_completed", nil, "Completed reservation qualification check")
 	})
 	app := server.New(server.Dependencies{
@@ -92,6 +96,7 @@ func main() {
 		MediaService:       mediaService,
 		ReservationService: reservationService,
 		MembershipService:  membershipService,
+		LoyaltyService:     loyaltyService,
 	})
 
 	addr := fmt.Sprintf(":%d", cfg.Port)

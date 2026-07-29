@@ -61,6 +61,12 @@ Override with `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, `SEED_ADMIN_NAME`.
 | `membership_benefits` | Tier and global benefits | Yes (`deleted_at`) |
 | `memberships` | Customer membership profiles | Yes (`deleted_at`) |
 | `membership_histories` | Membership level/status history | No |
+| `loyalty_settings` | Loyalty earning/expiration configuration | No |
+| `loyalty_accounts` | Customer loyalty balances | Yes (`deleted_at`) |
+| `loyalty_transactions` | Immutable loyalty ledger | No |
+| `loyalty_rewards` | Redeemable rewards catalog | Yes (`deleted_at`) |
+| `loyalty_redemptions` | Reward redemption records | No |
+| `loyalty_campaigns` | Point campaigns and bonuses | Yes (`deleted_at`) |
 
 ## MVP Roles
 

@@ -5,7 +5,9 @@ import (
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/database"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/middleware"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/authentication"
+	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/cms"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/health"
+	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/media"
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/compress"
 	"github.com/gofiber/fiber/v3/middleware/cors"
@@ -19,6 +21,8 @@ type Dependencies struct {
 	Postgres      *database.Postgres
 	HealthService *health.Service
 	AuthService   *authentication.Service
+	CMSService    *cms.Service
+	MediaService  *media.Service
 }
 
 func New(deps Dependencies) *fiber.App {
@@ -26,6 +30,7 @@ func New(deps Dependencies) *fiber.App {
 		AppName:      deps.Config.Name,
 		ServerHeader: "7oz-api",
 		ErrorHandler: middleware.ErrorHandler(deps.Logger),
+		BodyLimit:    12 * 1024 * 1024,
 	})
 
 	app.Use(recover.New())
@@ -47,15 +52,21 @@ func New(deps Dependencies) *fiber.App {
 
 	healthHandler := health.NewHandler(deps.HealthService)
 	authHandler := authentication.NewHandler(deps.AuthService, deps.Config)
+	cmsHandler := cms.NewHandler(deps.CMSService)
+	mediaHandler := media.NewHandler(deps.MediaService)
 	authenticate := middleware.Authenticate(deps.AuthService)
 
 	app.Get("/health", healthHandler.Live)
 	app.Get("/health/ready", healthHandler.Ready)
 	app.Get("/openapi.yaml", serveOpenAPI)
+	media.RegisterPublicRoutes(app, mediaHandler)
 
 	api := app.Group("/api/v1")
 	health.RegisterRoutes(api, healthHandler)
 	authentication.RegisterRoutes(api, authHandler, authenticate, deps.Config.CORSAllowedOrigins)
+	cms.RegisterPublicRoutes(api, cmsHandler)
+	cms.RegisterAdminRoutes(api, cmsHandler, authenticate)
+	media.RegisterAdminRoutes(api, mediaHandler, authenticate)
 	api.Get("/openapi.yaml", serveOpenAPI)
 
 	deps.Logger.Info("routes registered", zap.String("service", deps.Config.Name))

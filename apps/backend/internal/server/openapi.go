@@ -201,6 +201,188 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessEnvelope"
+  /public/cms/homepage:
+    get:
+      summary: Published homepage CMS snapshot
+      operationId: getPublicHomepage
+      tags: [CMS]
+      responses:
+        "200":
+          description: Published homepage content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /public/cms/about:
+    get:
+      summary: Published about CMS snapshot
+      operationId: getPublicAbout
+      tags: [CMS]
+      responses:
+        "200":
+          description: Published about content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /public/cms/footer:
+    get:
+      summary: Published footer CMS snapshot
+      operationId: getPublicFooter
+      tags: [CMS]
+      responses:
+        "200":
+          description: Published footer content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /public/cms/contact:
+    get:
+      summary: Published contact CMS snapshot
+      operationId: getPublicContact
+      tags: [CMS]
+      responses:
+        "200":
+          description: Published contact content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/cms/pages:
+    get:
+      summary: List CMS pages
+      operationId: listCMSPages
+      tags: [CMS]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: CMS pages
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/cms/pages/{slug}:
+    get:
+      summary: Get CMS page draft
+      operationId: getCMSPageDraft
+      tags: [CMS]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Draft page with sections
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/cms/pages/{slug}/publish:
+    post:
+      summary: Publish CMS page draft
+      operationId: publishCMSPage
+      tags: [CMS]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                summary:
+                  type: string
+      responses:
+        "200":
+          description: Published version created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/cms/pages/{slug}/rollback:
+    post:
+      summary: Rollback CMS page to a prior version and republish
+      operationId: rollbackCMSPage
+      tags: [CMS]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [versionNumber]
+              properties:
+                versionNumber:
+                  type: integer
+                summary:
+                  type: string
+      responses:
+        "200":
+          description: Page rolled back and republished
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/media:
+    get:
+      summary: List media assets
+      operationId: listMedia
+      tags: [Media]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Media assets
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+    post:
+      summary: Upload media asset
+      operationId: uploadMedia
+      tags: [Media]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                altText:
+                  type: string
+      responses:
+        "201":
+          description: Media uploaded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
 components:
   securitySchemes:
     bearerAuth:

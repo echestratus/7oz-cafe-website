@@ -1,0 +1,120 @@
+---
+description: Loyalty program rules for the 7Oz Espresso Cafe platform.
+alwaysApply: true
+---
+
+# Loyalty Program
+
+Loyalty points represent customer rewards.
+
+Points are financial-like values.
+
+Protect them accordingly.
+
+---
+
+# Point Calculation
+
+Never calculate loyalty points in frontend.
+
+Always calculate in backend.
+
+---
+
+# Point Source
+
+Examples:
+
+Purchase
+
+Promotion
+
+Manual Adjustment
+
+Birthday Reward
+
+Referral
+
+Campaign
+
+---
+
+# Redemption
+
+Point redemption must validate:
+
+Available Balance
+
+Reward Availability
+
+Expiration Rules
+
+Business Rules
+
+---
+
+# Point History
+
+Every point movement must create a history record.
+
+Earn
+
+Redeem
+
+Adjustment
+
+Expired
+
+Bonus
+
+---
+
+# Negative Balance
+
+Never allow negative point balances.
+
+---
+
+# Expiration
+
+Support configurable expiration rules.
+
+---
+
+# Rewards
+
+Rewards should be configurable.
+
+Examples:
+
+Free Coffee
+
+Free Pastry
+
+Discount Voucher
+
+Merchandise
+
+Special Event Access
+
+---
+
+# Fraud Prevention
+
+Prevent duplicate redemption.
+
+Prevent concurrent redemption race conditions.
+
+Log every transaction.
+
+---
+
+# Future Ready
+
+Partner Rewards
+
+Campaign Multipliers
+
+Seasonal Promotions
+
+Multi-branch Rewards

@@ -1,0 +1,173 @@
+---
+description: Defines code quality standards for the entire 7Oz Espresso Cafe platform.
+alwaysApply: true
+---
+
+# Code Quality
+
+Every piece of code must be written for long-term maintainability.
+
+Optimize for readability first.
+
+Never optimize for fewer lines of code.
+
+---
+
+# Engineering Principles
+
+Always follow:
+
+- SOLID
+- DRY
+- KISS
+- YAGNI
+- Separation of Concerns
+- Composition over Inheritance
+- Feature-based Architecture
+
+---
+
+# Clean Code
+
+Write code that is:
+
+- Readable
+- Predictable
+- Consistent
+- Self-documenting
+
+Avoid clever code.
+
+Prefer obvious code.
+
+---
+
+# Duplication
+
+Never duplicate:
+
+- Components
+- Business Logic
+- API Calls
+- Validation Logic
+- Utility Functions
+- Constants
+- Types
+
+Always reuse existing code.
+
+---
+
+# Functions
+
+Functions should:
+
+Do one thing.
+
+Return one responsibility.
+
+Avoid deep nesting.
+
+Prefer early return.
+
+Target:
+
+Maximum 40 lines when practical.
+
+---
+
+# Files
+
+Keep files focused.
+
+Avoid files exceeding approximately 300 lines unless justified.
+
+Split by responsibility.
+
+---
+
+# Magic Values
+
+Never hardcode:
+
+- Colors
+- URLs
+- API Paths
+- Roles
+- Statuses
+- Timeouts
+- Limits
+
+Use constants or configuration.
+
+---
+
+# Comments
+
+Avoid explaining what the code does.
+
+Explain WHY when necessary.
+
+Good code should explain itself.
+
+---
+
+# Naming
+
+Names should describe intention.
+
+Bad
+
+process()
+
+Good
+
+calculateLoyaltyPoints()
+
+---
+
+# Error Handling
+
+Never ignore errors.
+
+Never swallow exceptions.
+
+Always handle expected failures.
+
+---
+
+# Logging
+
+Log useful information.
+
+Never log sensitive information.
+
+---
+
+# Refactoring
+
+Leave the code cleaner than you found it.
+
+---
+
+# Technical Debt
+
+Never knowingly introduce technical debt.
+
+If unavoidable,
+
+document it.
+
+---
+
+# Definition of Clean Code
+
+Easy to read.
+
+Easy to modify.
+
+Easy to test.
+
+Easy to review.
+
+Easy to remove.

@@ -1,0 +1,102 @@
+---
+description: SEO standards for the public website.
+alwaysApply: true
+---
+
+# SEO
+
+The public website must be optimized for search engines.
+
+---
+
+# Metadata
+
+Every page must have:
+
+Unique Title
+
+Unique Description
+
+Canonical URL
+
+OpenGraph Metadata
+
+Twitter Card Metadata
+
+---
+
+# Structured Data
+
+Use Schema.org where appropriate.
+
+Examples:
+
+LocalBusiness
+
+CafeOrCoffeeShop
+
+Restaurant
+
+BreadcrumbList
+
+Organization
+
+---
+
+# URLs
+
+Use clean URLs.
+
+Good:
+
+/menu
+
+/about
+
+/gallery
+
+Bad:
+
+/page?id=1
+
+---
+
+# Performance
+
+SEO depends on performance.
+
+Meet Core Web Vitals.
+
+---
+
+# Images
+
+Every image must include descriptive alt text.
+
+Optimize image size.
+
+Lazy load when appropriate.
+
+---
+
+# Sitemap
+
+Generate sitemap.xml automatically.
+
+---
+
+# Robots
+
+Provide robots.txt.
+
+---
+
+# Future Ready
+
+Blog SEO
+
+Location Pages
+
+Branch Pages
+
+Multi-language SEO

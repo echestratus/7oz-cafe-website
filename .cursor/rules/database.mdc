@@ -1,0 +1,156 @@
+---
+description: Database design standards for PostgreSQL.
+alwaysApply: true
+---
+
+# Database Standards
+
+Database
+
+PostgreSQL
+
+ORM
+
+Ent
+
+Migration
+
+Atlas
+
+---
+
+# Naming
+
+Tables
+
+snake_case
+
+Plural
+
+Examples
+
+users
+
+reservations
+
+membership_tiers
+
+reward_redemptions
+
+---
+
+# Columns
+
+snake_case
+
+Examples
+
+created_at
+
+updated_at
+
+deleted_at
+
+customer_id
+
+reservation_date
+
+---
+
+# Primary Key
+
+id
+
+UUID
+
+Never integer auto increment.
+
+---
+
+# Foreign Keys
+
+Always explicit.
+
+Never implicit relationships.
+
+---
+
+# Timestamps
+
+Every table:
+
+created_at
+
+updated_at
+
+deleted_at
+
+---
+
+# Audit Fields
+
+When applicable
+
+created_by
+
+updated_by
+
+deleted_by
+
+---
+
+# Soft Delete
+
+Prefer soft delete.
+
+Avoid hard delete.
+
+---
+
+# Indexes
+
+Create indexes only when justified.
+
+Document why.
+
+---
+
+# Constraints
+
+Always define:
+
+Foreign Keys
+
+Unique Constraints
+
+Check Constraints
+
+---
+
+# Transactions
+
+Use transactions when updating multiple entities.
+
+---
+
+# Seed
+
+Provide seed data for:
+
+Roles
+
+Permissions
+
+Membership Tiers
+
+Reward Types
+
+Settings
+
+Admin User
+
+---
+
+# Goal
+
+Data integrity first.

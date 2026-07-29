@@ -1,0 +1,104 @@
+---
+description: Documentation requirements for the 7Oz Espresso Cafe platform.
+alwaysApply: true
+---
+
+# Documentation
+
+Documentation is part of the codebase.
+
+Keep documentation synchronized with implementation.
+
+---
+
+# Update Documentation When
+
+Creating new features.
+
+Changing APIs.
+
+Changing database schema.
+
+Changing architecture.
+
+Changing deployment.
+
+Changing environment variables.
+
+Adding dependencies.
+
+---
+
+# README
+
+Keep README current.
+
+Include:
+
+Installation
+
+Development
+
+Build
+
+Deployment
+
+Environment Variables
+
+Project Structure
+
+---
+
+# API
+
+Every endpoint must be documented.
+
+Use OpenAPI.
+
+---
+
+# Database
+
+Document:
+
+Tables
+
+Relationships
+
+Indexes
+
+Constraints
+
+Migrations
+
+---
+
+# ADR
+
+Significant architectural decisions
+
+must include an Architecture Decision Record.
+
+---
+
+# Changelog
+
+Record notable changes.
+
+Use semantic versioning.
+
+---
+
+# Comments
+
+Comment WHY,
+
+not WHAT.
+
+---
+
+# Goal
+
+A new engineer should understand the project
+
+without asking questions.

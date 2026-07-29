@@ -1,0 +1,39 @@
+---
+description: Never include AI attribution or Cursor co-author trailers in Git commits.
+alwaysApply: true
+---
+
+# No AI Attribution
+
+Git commits must represent the repository owner only.
+
+Never add any AI attribution to commits.
+
+Forbidden trailers include (but are not limited to):
+
+```
+Co-authored-by: Cursor <cursoragent@cursor.com>
+
+Co-authored-by: OpenAI
+
+Generated-by:
+
+AI-assisted:
+
+Created-with-AI:
+```
+
+Rules:
+
+- Never append AI attribution trailers.
+- Never mention Cursor in commit messages.
+- Never mention ChatGPT in commit messages.
+- Never include generated-by metadata.
+- Never modify Git author identity.
+- Never overwrite the user's Git configuration.
+
+If any extension, tool, or hook automatically injects AI attribution:
+
+- Remove it before the commit is finalized.
+- If the commit is still local and unpushed, amend it to remove the trailer.
+- Never push commits containing AI attribution unless explicitly requested by the repository owner.

@@ -1,0 +1,128 @@
+---
+description: Deployment standards for local, staging, and production.
+alwaysApply: true
+---
+
+# Deployment
+
+The project must be deployable at any time.
+
+Never introduce deployment-specific hacks.
+
+---
+
+# Environments
+
+Support:
+
+Local
+
+Development
+
+Staging
+
+Production
+
+---
+
+# Configuration
+
+Never hardcode environment values.
+
+Always use environment variables.
+
+---
+
+# Production
+
+Target Platform:
+
+Ubuntu 24.04 LTS
+
+Nginx
+
+HTTPS
+
+Node.js LTS
+
+Go
+
+PostgreSQL
+
+Redis
+
+---
+
+# Build
+
+Production builds must:
+
+Pass linting.
+
+Pass type checking.
+
+Pass tests.
+
+Complete without warnings where possible.
+
+---
+
+# Secrets
+
+Never commit:
+
+.env
+
+API Keys
+
+JWT Secrets
+
+Database credentials
+
+SMTP credentials
+
+---
+
+# Logging
+
+Separate:
+
+Application logs
+
+Access logs
+
+Error logs
+
+Audit logs
+
+---
+
+# Monitoring
+
+Applications should be ready for:
+
+Health checks
+
+Metrics
+
+Structured logging
+
+Future monitoring integration
+
+---
+
+# Backup
+
+Database backups should be scheduled.
+
+Recovery procedures should be documented.
+
+---
+
+# Goal
+
+Deployment should be repeatable,
+
+predictable,
+
+and reliable.

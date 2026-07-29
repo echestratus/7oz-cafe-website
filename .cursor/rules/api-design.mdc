@@ -1,0 +1,153 @@
+---
+description: REST API conventions for the backend.
+alwaysApply: true
+---
+
+# API Design
+
+Follow REST principles.
+
+Base URL
+
+/api/v1
+
+---
+
+# Naming
+
+Good
+
+/users
+
+/reservations
+
+/memberships
+
+/menu-items
+
+Bad
+
+/getUsers
+
+/createReservation
+
+---
+
+# HTTP Methods
+
+GET
+
+POST
+
+PUT
+
+PATCH
+
+DELETE
+
+Use them correctly.
+
+---
+
+# Responses
+
+Always return consistent JSON.
+
+Example
+
+{
+  "success": true,
+  "message": "",
+  "data": {},
+  "meta": {}
+}
+
+---
+
+# Errors
+
+Example
+
+{
+  "success": false,
+  "message": "Reservation not found",
+  "errors": []
+}
+
+---
+
+# Pagination
+
+Support:
+
+page
+
+limit
+
+sort
+
+order
+
+search
+
+---
+
+# Filtering
+
+Prefer query parameters.
+
+Never create unnecessary endpoints.
+
+---
+
+# Status Codes
+
+200
+
+201
+
+204
+
+400
+
+401
+
+403
+
+404
+
+409
+
+422
+
+500
+
+Use appropriately.
+
+---
+
+# Authentication
+
+Bearer Token.
+
+Never use cookies unless explicitly required.
+
+---
+
+# Versioning
+
+Always support:
+
+/api/v1
+
+Future:
+
+/api/v2
+
+---
+
+# Documentation
+
+Every endpoint must appear in OpenAPI.
+
+No undocumented endpoints.

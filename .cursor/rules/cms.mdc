@@ -1,0 +1,104 @@
+---
+description: Content Management System standards.
+alwaysApply: true
+---
+
+# CMS
+
+The website should be content-driven.
+
+Avoid hardcoded content whenever practical.
+
+---
+
+# Editable Content
+
+Homepage
+
+Hero
+
+About
+
+Gallery
+
+Menu
+
+Testimonials
+
+Promotions
+
+News
+
+Events
+
+Footer
+
+SEO Metadata
+
+Social Links
+
+Contact Information
+
+Opening Hours
+
+---
+
+# Media
+
+Media should support:
+
+Image
+
+Video
+
+PDF
+
+Future file types
+
+---
+
+# Versioning
+
+Future support:
+
+Draft
+
+Published
+
+Archived
+
+---
+
+# SEO
+
+SEO fields should be editable.
+
+Title
+
+Description
+
+OpenGraph
+
+Keywords
+
+Canonical URL
+
+---
+
+# Slugs
+
+Generate SEO-friendly slugs.
+
+Prevent duplicates.
+
+---
+
+# Future Ready
+
+Blog
+
+Landing Pages
+
+Campaign Pages
+
+Multi-language

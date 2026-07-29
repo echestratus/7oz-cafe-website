@@ -1,0 +1,110 @@
+---
+description: Golang engineering standards for the backend.
+alwaysApply: true
+---
+
+# Golang Standards
+
+Language
+
+Go 1.24+
+
+Framework
+
+Fiber v3
+
+---
+
+# Package Design
+
+Organize packages by feature.
+
+Avoid large utility packages.
+
+---
+
+# Naming
+
+Use idiomatic Go naming.
+
+Avoid unnecessary abbreviations.
+
+---
+
+# Interfaces
+
+Define interfaces where they are consumed.
+
+Avoid premature abstraction.
+
+---
+
+# Dependency Injection
+
+Inject dependencies explicitly.
+
+Avoid global state.
+
+---
+
+# Context
+
+Pass context.Context through request lifecycle.
+
+Never ignore cancellation.
+
+---
+
+# Errors
+
+Wrap errors with context.
+
+Return meaningful errors.
+
+Never panic for expected failures.
+
+---
+
+# Logging
+
+Use structured logging.
+
+Never print using fmt.Println in production.
+
+---
+
+# Concurrency
+
+Use goroutines only when beneficial.
+
+Always manage lifecycle.
+
+Avoid leaks.
+
+---
+
+# Transactions
+
+Use database transactions for multi-step writes.
+
+---
+
+# Testing
+
+Write unit tests for:
+
+- Services
+- Repositories
+- Utilities
+
+---
+
+# Goal
+
+Write idiomatic Go.
+
+Readable.
+
+Maintainable.
+
+Efficient.

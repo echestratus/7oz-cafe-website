@@ -1,0 +1,222 @@
+---
+description: Design system rules for maintaining a premium and consistent visual identity.
+alwaysApply: true
+---
+
+# Design Philosophy
+
+The visual identity of 7Oz Espresso Cafe should communicate:
+
+- Premium
+- Modern
+- Elegant
+- Warm
+- Minimal
+- Timeless
+
+Inspired by brands like:
+
+- Blue Bottle Coffee
+- Apple
+- Aesop
+- Notion
+
+Never create a cluttered interface.
+
+Whitespace is a design element.
+
+---
+
+# Brand Colors
+
+Primary
+
+#101673
+
+Secondary
+
+#2124C0
+
+Coffee Accent
+
+#6B5139
+
+Background
+
+#FAF9F6
+
+Surface
+
+#FFFFFF
+
+Section
+
+#F3F0EA
+
+Text
+
+#202020
+
+Muted Text
+
+#6A6A6A
+
+Border
+
+#E8E6E1
+
+---
+
+# Typography
+
+Heading
+
+Cormorant Garamond
+
+Body
+
+Inter
+
+Never use more than two font families.
+
+---
+
+# Spacing
+
+Use an 8-point spacing system.
+
+Allowed spacing values:
+
+4
+
+8
+
+12
+
+16
+
+24
+
+32
+
+40
+
+48
+
+64
+
+80
+
+96
+
+Avoid arbitrary spacing.
+
+---
+
+# Border Radius
+
+Small
+
+8px
+
+Medium
+
+12px
+
+Large
+
+16px
+
+Extra Large
+
+24px
+
+Pill
+
+9999px
+
+---
+
+# Shadows
+
+Use soft shadows only.
+
+Avoid heavy shadows.
+
+---
+
+# Motion
+
+Animations should be subtle.
+
+Duration:
+
+150ms
+
+200ms
+
+300ms
+
+Maximum:
+
+500ms
+
+---
+
+# Buttons
+
+Primary
+
+Brand Blue
+
+Secondary
+
+Outline
+
+Ghost
+
+Danger
+
+Never invent new button styles.
+
+---
+
+# Cards
+
+Consistent padding.
+
+Consistent radius.
+
+Consistent hover.
+
+---
+
+# Icons
+
+Use Lucide only.
+
+Avoid mixing icon libraries.
+
+---
+
+# Images
+
+Photography should be the hero.
+
+Never overuse illustrations.
+
+Food photography should remain natural.
+
+Do not oversaturate colors.
+
+---
+
+# Overall Rule
+
+If a design decision is uncertain,
+
+choose the simpler,
+
+cleaner,
+
+more premium solution.

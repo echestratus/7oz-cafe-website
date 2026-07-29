@@ -1,0 +1,164 @@
+---
+description: Security requirements for the 7Oz Espresso Cafe platform.
+alwaysApply: true
+---
+
+# Security
+
+Assume every request is malicious.
+
+Validate everything.
+
+Trust nothing.
+
+---
+
+# Authentication
+
+JWT
+
+Refresh Token Rotation
+
+bcrypt
+
+Strong password policy.
+
+---
+
+# Authorization
+
+RBAC only.
+
+Never trust frontend roles.
+
+Always validate permissions server-side.
+
+---
+
+# Secrets
+
+Never hardcode:
+
+Passwords
+
+API Keys
+
+JWT Secret
+
+SMTP Credentials
+
+Database URL
+
+Use environment variables.
+
+---
+
+# Validation
+
+Validate:
+
+Body
+
+Params
+
+Query
+
+Headers
+
+Uploads
+
+---
+
+# SQL Injection
+
+Use ORM.
+
+Never concatenate SQL strings.
+
+---
+
+# XSS
+
+Escape output.
+
+Sanitize rich text.
+
+---
+
+# CSRF
+
+Protect state-changing endpoints if cookie authentication is introduced.
+
+---
+
+# File Upload
+
+Validate:
+
+Extension
+
+Mime Type
+
+File Size
+
+Filename
+
+Virus scanning should be future-ready.
+
+---
+
+# Rate Limiting
+
+Apply to:
+
+Login
+
+Register
+
+Forgot Password
+
+OTP
+
+Reservation submission
+
+Contact form
+
+---
+
+# Logging
+
+Never log:
+
+Passwords
+
+Tokens
+
+Secrets
+
+Payment information
+
+---
+
+# HTTPS
+
+Production always requires HTTPS.
+
+Never allow insecure production deployment.
+
+---
+
+# Dependencies
+
+Use maintained libraries.
+
+Remove abandoned packages.
+
+Run dependency audits regularly.
+
+---
+
+# Goal
+
+Security is a default,
+
+not an optional feature.

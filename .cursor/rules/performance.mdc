@@ -1,0 +1,152 @@
+---
+description: Performance optimization standards.
+alwaysApply: true
+---
+
+# Performance Standards
+
+Performance is a feature.
+
+Every implementation should consider:
+
+Speed
+
+Responsiveness
+
+Efficiency
+
+Scalability
+
+---
+
+# Lighthouse Goals
+
+Performance
+
+95+
+
+Accessibility
+
+100
+
+Best Practices
+
+100
+
+SEO
+
+100
+
+---
+
+# Images
+
+Always optimize images.
+
+Prefer:
+
+AVIF
+
+↓
+
+WebP
+
+↓
+
+JPEG
+
+Use responsive images.
+
+Lazy load images below the fold.
+
+Never serve oversized assets.
+
+---
+
+# Video
+
+Compress videos.
+
+Use autoplay only when muted.
+
+Use poster images.
+
+Lazy load when possible.
+
+---
+
+# Fonts
+
+Load only required weights.
+
+Use next/font.
+
+Avoid render blocking.
+
+---
+
+# Components
+
+Prefer Server Components.
+
+Client Components only when necessary.
+
+---
+
+# Rendering
+
+Prefer:
+
+SSR
+
+↓
+
+RSC
+
+↓
+
+CSR
+
+Only use CSR where interaction is required.
+
+---
+
+# Bundle Size
+
+Avoid unnecessary dependencies.
+
+Prefer tree-shakable libraries.
+
+---
+
+# API
+
+Cache appropriate requests.
+
+Paginate large datasets.
+
+Never fetch unnecessary data.
+
+---
+
+# Database
+
+Avoid N+1 queries.
+
+Optimize indexes.
+
+Paginate results.
+
+---
+
+# Animation
+
+Animations must never block interaction.
+
+Respect reduced-motion settings.
+
+---
+
+# Goal
+
+Fast enough that users never notice waiting.

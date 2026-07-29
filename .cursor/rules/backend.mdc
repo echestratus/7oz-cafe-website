@@ -1,0 +1,236 @@
+---
+description: Backend engineering standards for the 7Oz Espresso Cafe API.
+alwaysApply: true
+---
+
+# Backend Standards
+
+Technology
+
+Go Fiber v3
+
+PostgreSQL
+
+Ent ORM
+
+Redis
+
+JWT
+
+RBAC
+
+Swagger
+
+Atlas Migration
+
+Koanf
+
+Zerolog
+
+---
+
+# Architecture
+
+Always follow:
+
+Controller
+
+↓
+
+Service
+
+↓
+
+Repository
+
+↓
+
+Database
+
+Never bypass layers.
+
+---
+
+# Controller
+
+Controllers should:
+
+Validate input.
+
+Call service.
+
+Return response.
+
+Nothing else.
+
+Never place business logic here.
+
+---
+
+# Service
+
+Service contains:
+
+Business Rules
+
+Validation
+
+Authorization
+
+Transactions
+
+Calculations
+
+---
+
+# Repository
+
+Responsible only for:
+
+Database access.
+
+No business logic.
+
+---
+
+# DTO
+
+Never expose database entities directly.
+
+Always use DTOs.
+
+---
+
+# Validation
+
+Validate every request.
+
+Never trust user input.
+
+---
+
+# Error Handling
+
+Return consistent API responses.
+
+Never expose internal errors.
+
+Log internal errors.
+
+Return friendly messages.
+
+---
+
+# Authentication
+
+JWT Access Token
+
+Refresh Token Rotation
+
+Password Hashing using bcrypt.
+
+---
+
+# Authorization
+
+RBAC.
+
+Never check roles inside controllers.
+
+Use middleware.
+
+---
+
+# Logging
+
+Log:
+
+Errors
+
+Warnings
+
+Security events
+
+Authentication events
+
+Never log:
+
+Passwords
+
+Tokens
+
+Secrets
+
+---
+
+# Transactions
+
+Use transactions whenever:
+
+Multiple tables are modified.
+
+---
+
+# API Design
+
+RESTful.
+
+Versioned.
+
+/api/v1
+
+Future ready for /api/v2
+
+---
+
+# Database
+
+Use Ent.
+
+Never execute raw SQL unless necessary.
+
+---
+
+# Performance
+
+Prevent N+1 queries.
+
+Use indexes.
+
+Paginate large datasets.
+
+---
+
+# Security
+
+Sanitize inputs.
+
+Validate uploads.
+
+Rate limit authentication endpoints.
+
+Protect against SQL injection.
+
+Protect against XSS.
+
+Protect against CSRF where applicable.
+
+---
+
+# Quality Checklist
+
+✓ Layer respected
+
+✓ Validation
+
+✓ Authorization
+
+✓ Logging
+
+✓ Transactions
+
+✓ DTO
+
+✓ Tests
+
+✓ Documentation

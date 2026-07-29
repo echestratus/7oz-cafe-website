@@ -1,0 +1,155 @@
+---
+description: Next.js 15 development standards for the 7Oz Espresso Cafe platform.
+alwaysApply: true
+---
+
+# Next.js Standards
+
+Framework
+
+Next.js 15
+
+App Router
+
+React 19
+
+TypeScript
+
+---
+
+# Routing
+
+Always use App Router.
+
+Never use Pages Router.
+
+---
+
+# Server Components
+
+Prefer Server Components by default.
+
+Only use Client Components when:
+
+- State is required
+- Browser APIs are required
+- Event handlers are required
+- Third-party libraries require them
+
+Avoid unnecessary "use client".
+
+---
+
+# Metadata
+
+Every route must define metadata.
+
+Include:
+
+- title
+- description
+- open graph
+- twitter
+- canonical URL
+
+---
+
+# Layout
+
+Use nested layouts appropriately.
+
+Avoid duplicated layouts.
+
+---
+
+# Loading
+
+Every async route should support:
+
+loading.tsx
+
+---
+
+# Error Handling
+
+Every important route should support:
+
+error.tsx
+
+---
+
+# Not Found
+
+Implement:
+
+not-found.tsx
+
+---
+
+# Images
+
+Always use:
+
+next/image
+
+Never use plain img unless absolutely necessary.
+
+---
+
+# Fonts
+
+Always use:
+
+next/font
+
+Never import fonts through CSS.
+
+---
+
+# Navigation
+
+Use:
+
+next/link
+
+Never use anchor tags for internal navigation.
+
+---
+
+# Data Fetching
+
+Prefer Server Components.
+
+Use TanStack Query only when client caching is required.
+
+---
+
+# Environment Variables
+
+Client
+
+NEXT_PUBLIC_
+
+Server
+
+process.env
+
+Never expose secrets to client.
+
+---
+
+# Caching
+
+Understand cache behavior.
+
+Explicitly configure cache when necessary.
+
+Never assume default behavior.
+
+---
+
+# Goal
+
+Use modern Next.js patterns.
+
+Avoid legacy React patterns.

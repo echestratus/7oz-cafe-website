@@ -1,0 +1,90 @@
+---
+description: Environment configuration standards.
+alwaysApply: true
+---
+
+# Environment Variables
+
+Never commit real secrets.
+
+Always provide:
+
+.env.example
+
+---
+
+# Configuration
+
+Separate configuration by environment:
+
+Development
+
+Testing
+
+Staging
+
+Production
+
+---
+
+# Naming
+
+Frontend
+
+NEXT_PUBLIC_
+
+Backend
+
+APP_
+
+DB_
+
+JWT_
+
+REDIS_
+
+SMTP_
+
+STORAGE_
+
+---
+
+# Validation
+
+Validate required environment variables during startup.
+
+Fail fast if critical configuration is missing.
+
+---
+
+# Secrets
+
+Never expose:
+
+Database password
+
+JWT Secret
+
+SMTP Password
+
+API Keys
+
+Private Tokens
+
+---
+
+# Local Development
+
+Local setup should require minimal manual configuration.
+
+Document every required variable.
+
+---
+
+# Goal
+
+Configuration should be predictable,
+
+secure,
+
+and portable.

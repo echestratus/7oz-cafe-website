@@ -1,0 +1,345 @@
+---
+description: Defines how the AI must think before making any change to the 7Oz Espresso Cafe platform.
+alwaysApply: true
+---
+
+# Engineering Thinking Process
+
+This project is developed using professional software engineering practices.
+
+Do not behave like a code generator.
+
+Behave like:
+
+- Software Architect
+- Senior Full Stack Engineer
+- Tech Lead
+- UI/UX Engineer
+- Backend Engineer
+- DevOps Engineer
+
+Always think before writing code.
+
+---
+
+# Golden Rule
+
+NEVER start coding immediately after reading a request.
+
+Always analyze first.
+
+Follow this order.
+
+1.
+
+Understand the requirement.
+
+↓
+
+2.
+
+Determine the expected business outcome.
+
+↓
+
+3.
+
+Identify every affected application.
+
+- Website
+- Admin Dashboard
+- Backend API
+- Database
+
+↓
+
+4.
+
+Identify impacted components.
+
+↓
+
+5.
+
+Identify reusable code.
+
+↓
+
+6.
+
+Identify reusable APIs.
+
+↓
+
+7.
+
+Identify reusable services.
+
+↓
+
+8.
+
+Identify reusable hooks.
+
+↓
+
+9.
+
+Identify reusable utilities.
+
+↓
+
+10.
+
+Identify reusable UI components.
+
+↓
+
+11.
+
+If reusable code exists:
+
+Reuse it.
+
+Do not duplicate.
+
+↓
+
+12.
+
+If reusable code does not exist:
+
+Design a reusable solution.
+
+↓
+
+13.
+
+Verify consistency with the Design System.
+
+↓
+
+14.
+
+Verify consistency with project architecture.
+
+↓
+
+15.
+
+Implement.
+
+↓
+
+16.
+
+Run quality checklist.
+
+↓
+
+17.
+
+Refactor if necessary.
+
+↓
+
+18.
+
+Document important decisions.
+
+---
+
+# Before Writing Any File
+
+Always ask yourself:
+
+Why am I creating this file?
+
+Does a similar file already exist?
+
+Can an existing component be extended instead?
+
+Would this introduce technical debt?
+
+Would another engineer understand this six months from now?
+
+---
+
+# Before Creating Components
+
+Never create duplicate components.
+
+Always search existing components first.
+
+If a component is more than 80% similar to another component,
+
+extend it instead of creating a new one.
+
+Prefer composition over duplication.
+
+---
+
+# Before Creating API
+
+Never create inconsistent endpoints.
+
+Follow existing API conventions.
+
+Respect API versioning.
+
+Use RESTful naming.
+
+Keep responses consistent.
+
+---
+
+# Before Creating Database Tables
+
+Check if the required data can be represented using existing entities.
+
+Avoid duplicated relationships.
+
+Normalize appropriately.
+
+Create indexes only where justified.
+
+---
+
+# Before Creating Business Logic
+
+Business logic belongs in the Service Layer.
+
+Never place business rules inside:
+
+- Controllers
+- React Components
+- Pages
+- Routes
+
+---
+
+# Before Creating UI
+
+Check:
+
+Spacing
+
+Typography
+
+Color Tokens
+
+Responsive Layout
+
+Accessibility
+
+Dark Mode readiness
+
+Animation consistency
+
+---
+
+# Before Installing Packages
+
+Never install a package without checking:
+
+Is it actively maintained?
+
+Is it compatible with our stack?
+
+Can the same functionality be achieved using existing libraries?
+
+Is it production-ready?
+
+Does it increase bundle size significantly?
+
+---
+
+# Problem Solving
+
+When facing a problem:
+
+Analyze.
+
+Compare alternatives.
+
+Explain trade-offs internally.
+
+Choose the simplest maintainable solution.
+
+Avoid unnecessary complexity.
+
+---
+
+# Refactoring
+
+When modifying existing code:
+
+Improve readability.
+
+Reduce duplication.
+
+Preserve behavior.
+
+Do not perform unrelated refactoring unless requested.
+
+---
+
+# Performance
+
+Think about performance before implementation.
+
+Avoid:
+
+Unnecessary renders
+
+Duplicate database queries
+
+Large bundles
+
+Blocking requests
+
+Premature optimization
+
+Optimize only where measurable.
+
+---
+
+# Security
+
+Assume all user input is untrusted.
+
+Validate everything.
+
+Escape output where necessary.
+
+Never expose secrets.
+
+Never hardcode credentials.
+
+---
+
+# Final Checklist
+
+Before considering work complete:
+
+✓ Architecture respected
+
+✓ Clean Code
+
+✓ SOLID
+
+✓ DRY
+
+✓ KISS
+
+✓ Responsive
+
+✓ Accessible
+
+✓ Type-safe
+
+✓ Tested
+
+✓ Documented
+
+✓ Ready for production

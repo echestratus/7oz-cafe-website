@@ -1,0 +1,173 @@
+---
+description: Reservation domain rules for the 7Oz Espresso Cafe platform.
+alwaysApply: true
+---
+
+# Reservation System
+
+Reservations are one of the core business domains.
+
+Every reservation must be treated as a business transaction.
+
+Never implement reservation logic directly inside controllers or frontend components.
+
+Always keep business rules inside the Service Layer.
+
+---
+
+# Reservation Flow
+
+Reservation
+
+↓
+
+Availability Validation
+
+↓
+
+Capacity Validation
+
+↓
+
+Business Hours Validation
+
+↓
+
+Reservation Creation
+
+↓
+
+Confirmation
+
+↓
+
+Reminder (future)
+
+↓
+
+Customer Arrival
+
+↓
+
+Completed
+
+---
+
+# Reservation Status
+
+Allowed statuses only:
+
+Pending
+
+Confirmed
+
+Completed
+
+Cancelled
+
+No Show
+
+Never create custom statuses without updating documentation.
+
+---
+
+# Validation
+
+Before creating a reservation always validate:
+
+- Date
+- Time
+- Number of Guests
+- Branch
+- Table Availability
+- Business Hours
+- Reservation Window
+- Duplicate Reservation
+
+---
+
+# Capacity
+
+Never allow reservations exceeding available capacity.
+
+Prevent overbooking.
+
+Always validate concurrent reservations.
+
+---
+
+# Time Slot
+
+Reservation slots must be configurable.
+
+Never hardcode time intervals.
+
+Support future configuration from CMS/Admin.
+
+---
+
+# Business Hours
+
+Reservation time must respect opening hours.
+
+Closed days must reject reservations.
+
+Holiday schedules must be future-ready.
+
+---
+
+# Customer
+
+A reservation always belongs to exactly one customer.
+
+Guest reservations should be supported in the future.
+
+---
+
+# Cancellation
+
+Reservation cancellation should be configurable.
+
+Support cancellation deadline.
+
+Support cancellation reason.
+
+---
+
+# Audit
+
+Every reservation action must be logged.
+
+Create
+
+Update
+
+Cancel
+
+Confirm
+
+Complete
+
+---
+
+# Future Ready
+
+Design for:
+
+Multiple Branches
+
+Table Assignment
+
+Table Combination
+
+Reservation Queue
+
+SMS Reminder
+
+WhatsApp Reminder
+
+Email Reminder
+
+Google Calendar Integration
+
+POS Integration

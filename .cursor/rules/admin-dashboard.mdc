@@ -1,0 +1,132 @@
+---
+description: Admin Dashboard standards.
+alwaysApply: true
+---
+
+# Admin Dashboard
+
+The dashboard is an internal business application.
+
+Prioritize efficiency over visual effects.
+
+---
+
+# Users
+
+Supported roles:
+
+Super Admin
+
+Cafe Manager
+
+Cashier
+
+Kitchen
+
+Barista
+
+Customer
+
+---
+
+# Dashboard
+
+Dashboard should provide:
+
+Business Overview
+
+Reservation Summary
+
+Membership Summary
+
+Loyalty Summary
+
+Revenue Summary
+
+Recent Activities
+
+Alerts
+
+---
+
+# CRUD
+
+Every CRUD page should include:
+
+Search
+
+Filter
+
+Sorting
+
+Pagination
+
+Bulk Actions (where applicable)
+
+Export (future)
+
+---
+
+# Forms
+
+Every form should support:
+
+Validation
+
+Loading State
+
+Success State
+
+Error State
+
+Cancel Action
+
+---
+
+# Tables
+
+Use TanStack Table.
+
+Avoid custom table implementations.
+
+---
+
+# Audit Log
+
+Important actions must be logged.
+
+Examples:
+
+User Login
+
+Permission Changes
+
+Reservation Updates
+
+Reward Adjustments
+
+CMS Changes
+
+---
+
+# Permissions
+
+Never hide functionality only in frontend.
+
+Backend authorization is mandatory.
+
+---
+
+# Future Ready
+
+Analytics
+
+POS Dashboard
+
+Inventory Dashboard
+
+Staff Attendance
+
+Customer Insights
+
+Multi-branch Administration

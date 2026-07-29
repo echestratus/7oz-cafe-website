@@ -1,0 +1,96 @@
+---
+description: UI component standards.
+alwaysApply: true
+---
+
+# UI Components
+
+Every UI component should be reusable.
+
+---
+
+# Component Categories
+
+UI
+
+Business
+
+Layout
+
+Section
+
+Feature
+
+Never mix responsibilities.
+
+---
+
+# Reusability
+
+Before creating a component,
+
+search existing components.
+
+Never duplicate.
+
+---
+
+# Props
+
+Keep props minimal.
+
+Avoid passing unnecessary data.
+
+---
+
+# Composition
+
+Prefer composition over inheritance.
+
+---
+
+# Variants
+
+Use variants instead of duplicated components.
+
+Example:
+
+Button
+
+Primary
+
+Secondary
+
+Ghost
+
+Outline
+
+Danger
+
+Never create ButtonPrimary, ButtonSecondary, etc.
+
+---
+
+# Styling
+
+Follow design tokens.
+
+Never hardcode values.
+
+---
+
+# Accessibility
+
+Every component should support keyboard interaction.
+
+---
+
+# Documentation
+
+Reusable components should include usage examples.
+
+---
+
+# Goal
+
+Build a scalable component library.

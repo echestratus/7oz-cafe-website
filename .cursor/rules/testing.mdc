@@ -1,0 +1,162 @@
+---
+description: Testing standards for the 7Oz Espresso Cafe platform.
+alwaysApply: true
+---
+
+# Testing Standards
+
+Every completed feature should be testable.
+
+Testing is part of development,
+not an afterthought.
+
+---
+
+# Definition of Done
+
+A feature is NOT considered complete unless:
+
+✓ Code builds successfully
+
+✓ No TypeScript errors
+
+✓ No ESLint errors
+
+✓ Responsive
+
+✓ Accessible
+
+✓ Error handling implemented
+
+✓ Loading state implemented
+
+✓ Empty state implemented
+
+✓ Documentation updated (if applicable)
+
+✓ Ready for production
+
+---
+
+# Unit Tests
+
+Create unit tests for:
+
+- Utility functions
+- Business logic
+- Calculations
+- Validation
+- Services
+
+Avoid testing implementation details.
+
+Test behavior instead.
+
+---
+
+# Integration Tests
+
+Use integration tests for:
+
+- API endpoints
+- Database operations
+- Authentication
+- Authorization
+
+---
+
+# End-to-End Tests
+
+Critical flows should have E2E coverage.
+
+Examples:
+
+Customer Registration
+
+↓
+
+Login
+
+↓
+
+Reservation
+
+↓
+
+Membership
+
+↓
+
+Reward Redemption
+
+↓
+
+Logout
+
+---
+
+# Edge Cases
+
+Always consider:
+
+Empty data
+
+Invalid input
+
+Network failure
+
+Unauthorized access
+
+Expired token
+
+Duplicate submission
+
+---
+
+# Error States
+
+Every feature should gracefully handle:
+
+Loading
+
+Error
+
+Empty
+
+Success
+
+---
+
+# Regression
+
+Never break existing features.
+
+Before changing existing functionality,
+
+analyze potential impact.
+
+---
+
+# Manual QA Checklist
+
+Before marking a task complete:
+
+Desktop
+
+Tablet
+
+Mobile
+
+Dark mode readiness
+
+Keyboard navigation
+
+Cross-browser compatibility
+
+---
+
+# Goal
+
+Deliver software with confidence,
+
+not assumptions.

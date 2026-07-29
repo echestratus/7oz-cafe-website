@@ -1,0 +1,204 @@
+---
+description: Defines the architectural principles for the 7Oz Espresso Cafe platform.
+alwaysApply: true
+---
+
+# Project Architecture
+
+This repository is a Turborepo monorepo.
+
+Applications:
+
+apps/
+
+- website
+- admin
+- backend
+
+Shared packages:
+
+packages/
+
+- shared-types
+- eslint-config
+- prettier-config
+
+Documentation:
+
+docs/
+
+Assets:
+
+assets/
+
+---
+
+# Architectural Principles
+
+Always follow:
+
+- Clean Architecture
+- SOLID
+- DRY
+- KISS
+- Feature-Based Organization
+- Separation of Concerns
+- Dependency Inversion
+- Composition over Inheritance
+
+---
+
+# Never
+
+Never duplicate business logic.
+
+Never duplicate components.
+
+Never create circular dependencies.
+
+Never bypass Service Layer.
+
+Never access database directly from controllers.
+
+Never expose internal implementation details.
+
+---
+
+# Dependency Direction
+
+Frontend
+
+↓
+
+API
+
+↓
+
+Service Layer
+
+↓
+
+Repository
+
+↓
+
+Database
+
+Never invert this dependency.
+
+---
+
+# Folder Responsibility
+
+Website
+
+Responsible only for:
+
+- Public pages
+- Customer experience
+- Marketing
+- Reservation UI
+- Membership UI
+- Loyalty UI
+
+Admin
+
+Responsible only for:
+
+- CMS
+- Dashboard
+- Analytics
+- User Management
+- Reservation Management
+- Loyalty Management
+- Reports
+
+Backend
+
+Responsible only for:
+
+- Business Logic
+- API
+- Authentication
+- Authorization
+- Database
+- File Storage
+- Background Jobs
+
+---
+
+# Shared Code
+
+Only place code in packages if:
+
+It is used by two or more applications.
+
+Otherwise keep it local.
+
+---
+
+# Configuration
+
+Environment variables must never be hardcoded.
+
+Always use configuration files.
+
+---
+
+# API
+
+REST API
+
+/api/v1
+
+Future versions:
+
+/api/v2
+
+---
+
+# Database
+
+Single PostgreSQL database.
+
+Redis for cache.
+
+MinIO for object storage (future).
+
+---
+
+# Scalability
+
+Design every feature assuming:
+
+Multi-branch cafes
+
+Thousands of users
+
+Multiple administrators
+
+Multiple concurrent reservations
+
+Future POS integration
+
+Future mobile applications
+
+Future payment gateway
+
+Future inventory system
+
+---
+
+# Definition of Good Architecture
+
+Easy to read.
+
+Easy to extend.
+
+Easy to test.
+
+Easy to maintain.
+
+Easy to deploy.
+
+Easy to scale.

@@ -1,0 +1,122 @@
+---
+description: Accessibility standards following WCAG 2.2 AA.
+alwaysApply: true
+---
+
+# Accessibility
+
+Accessibility is mandatory.
+
+Never treat accessibility as optional.
+
+---
+
+# Standard
+
+Follow WCAG 2.2 AA.
+
+---
+
+# Semantic HTML
+
+Always use semantic elements.
+
+Examples:
+
+header
+
+main
+
+section
+
+article
+
+nav
+
+footer
+
+button
+
+label
+
+---
+
+# Keyboard Navigation
+
+Every interactive element
+
+must be reachable using Tab.
+
+Visible focus states are required.
+
+---
+
+# Buttons
+
+Buttons must:
+
+Have accessible names.
+
+Be keyboard accessible.
+
+Have sufficient touch targets.
+
+---
+
+# Forms
+
+Every input:
+
+Requires a label.
+
+Use proper validation messages.
+
+Associate errors correctly.
+
+---
+
+# Images
+
+Every informative image
+
+must include meaningful alt text.
+
+Decorative images
+
+should use empty alt attributes.
+
+---
+
+# Color
+
+Never rely solely on color
+
+to communicate meaning.
+
+---
+
+# Contrast
+
+Meet WCAG AA contrast ratios.
+
+---
+
+# Motion
+
+Respect prefers-reduced-motion.
+
+Provide non-animated alternatives where appropriate.
+
+---
+
+# Screen Readers
+
+Use ARIA only when semantic HTML is insufficient.
+
+Avoid unnecessary ARIA attributes.
+
+---
+
+# Goal
+
+Every user should be able to use the application independently.

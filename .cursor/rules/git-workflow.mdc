@@ -1,0 +1,105 @@
+---
+description: Git workflow for the 7Oz Espresso Cafe monorepo — branching, commits, reviews, and release safety.
+alwaysApply: true
+---
+
+# Git Workflow
+
+This project follows a professional Git workflow.
+
+Before making any code changes:
+
+1. Always synchronize the latest `develop` branch.
+
+```bash
+git checkout develop
+git pull origin develop
+```
+
+2. Create a new branch from `develop`.
+
+Branch naming convention:
+
+- feature/<feature-name>
+- fix/<bug-name>
+- hotfix/<critical-fix>
+- refactor/<module-name>
+- chore/<task-name>
+- docs/<documentation-name>
+
+Examples:
+
+```
+feature/reservation-system
+feature/customer-membership
+feature/landing-page
+feature/admin-dashboard
+fix/login-validation
+refactor/menu-service
+docs/api-specification
+```
+
+3. Never work directly on:
+
+- develop
+- main
+- master
+
+4. Make small and meaningful commits.
+
+One completed feature or logical change should equal one commit.
+
+Avoid giant commits containing unrelated changes.
+
+5. Follow Conventional Commits.
+
+Examples:
+
+```
+feat: add reservation booking flow
+
+feat: implement loyalty point calculation
+
+fix: resolve navbar responsive issue
+
+refactor: simplify reservation service
+
+docs: update API documentation
+
+style: improve menu card spacing
+
+test: add reservation unit tests
+
+chore: update dependencies
+```
+
+6. Before every commit ensure:
+
+- Project builds successfully.
+- ESLint passes.
+- TypeScript has zero errors.
+- Tests pass (if applicable).
+- No unused imports.
+- No console.log left behind.
+- No TODO comments unless intentionally documented.
+
+7. Never push directly to:
+
+- develop
+- main
+
+Push only to your working branch.
+
+Example:
+
+```bash
+git push -u origin feature/reservation-system
+```
+
+8. Merge into `develop` only after code review or explicit user approval.
+
+9. Never rewrite public Git history unless explicitly instructed.
+
+10. Keep commit history clean, readable, and professional.
+
+Think of the Git history as permanent project documentation.

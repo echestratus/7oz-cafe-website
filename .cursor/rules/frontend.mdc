@@ -1,0 +1,332 @@
+---
+description: Frontend development standards for the 7Oz Espresso Cafe platform.
+alwaysApply: true
+---
+
+# Frontend Development Standards
+
+This project uses:
+
+- Next.js 15
+- React 19
+- App Router
+- TypeScript
+- Tailwind CSS v4
+- shadcn/ui
+- Framer Motion
+- Zustand
+- TanStack Query
+- React Hook Form
+- Zod
+
+Always follow modern React best practices.
+
+---
+
+# Component Design
+
+Always create components that are:
+
+- Small
+- Reusable
+- Predictable
+- Testable
+
+Avoid giant components.
+
+If a component exceeds approximately 250 lines,
+consider extracting smaller components.
+
+---
+
+# Component Structure
+
+Prefer this order:
+
+Imports
+
+↓
+
+Types
+
+↓
+
+Constants
+
+↓
+
+Hooks
+
+↓
+
+Functions
+
+↓
+
+JSX
+
+↓
+
+Export
+
+---
+
+# Component Naming
+
+Good
+
+ReservationCard
+
+MenuItemCard
+
+GalleryGrid
+
+HeroSection
+
+CoffeeBadge
+
+NavigationMenu
+
+Bad
+
+Card1
+
+Menu2
+
+Component
+
+Test
+
+MyComponent
+
+---
+
+# Page Responsibilities
+
+Pages should:
+
+- Fetch data
+- Compose sections
+- Handle metadata
+
+Pages should NOT:
+
+Contain business logic.
+
+---
+
+# Business Logic
+
+Business logic belongs in:
+
+- Hooks
+- Services
+- Server Actions (when appropriate)
+
+Never inside JSX.
+
+---
+
+# State Management
+
+Use:
+
+React State
+
+↓
+
+Context
+
+↓
+
+Zustand
+
+Choose the simplest solution.
+
+Never use Zustand for local component state.
+
+---
+
+# Data Fetching
+
+Always use:
+
+TanStack Query
+
+Benefits:
+
+- Cache
+- Retry
+- Optimistic updates
+- Background refetch
+- Loading state
+
+Never manually duplicate fetching logic.
+
+---
+
+# Forms
+
+Always use:
+
+React Hook Form
+
++
+
+Zod
+
+Never manually validate forms.
+
+---
+
+# Styling
+
+Use Tailwind utilities only.
+
+Never write inline styles.
+
+Never use CSS Modules unless explicitly required.
+
+Never hardcode colors.
+
+Use design tokens.
+
+---
+
+# Animation
+
+Use Framer Motion.
+
+Animation should be:
+
+Elegant
+
+Minimal
+
+Fast
+
+Purposeful
+
+Avoid flashy animations.
+
+---
+
+# Accessibility
+
+Every button must:
+
+Have an accessible label.
+
+Every image:
+
+Must include meaningful alt text.
+
+Every form:
+
+Must have associated labels.
+
+Support keyboard navigation.
+
+Respect reduced motion preferences.
+
+---
+
+# Images
+
+Always use:
+
+next/image
+
+Optimize images.
+
+Lazy load below-the-fold images.
+
+Use proper sizes.
+
+---
+
+# Performance
+
+Prefer Server Components whenever possible.
+
+Use Client Components only when needed.
+
+Avoid unnecessary use client directives.
+
+---
+
+# Error Handling
+
+Every async UI must include:
+
+Loading state
+
+Empty state
+
+Error state
+
+Retry action when applicable.
+
+---
+
+# Responsive Design
+
+Design mobile-first.
+
+Support:
+
+Mobile
+
+Tablet
+
+Laptop
+
+Desktop
+
+Ultra-wide screens
+
+Never optimize only for desktop.
+
+---
+
+# SEO
+
+Use:
+
+Metadata API
+
+OpenGraph
+
+Twitter Cards
+
+Canonical URLs
+
+Structured Data
+
+Semantic HTML
+
+Every page should have unique metadata.
+
+---
+
+# Quality Checklist
+
+Before completing any frontend task:
+
+✓ Responsive
+
+✓ Accessible
+
+✓ Type-safe
+
+✓ No console.log
+
+✓ No unused imports
+
+✓ Metadata implemented
+
+✓ Images optimized
+
+✓ Animation consistent
+
+✓ Clean code

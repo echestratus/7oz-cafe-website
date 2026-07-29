@@ -1,0 +1,170 @@
+---
+description: TypeScript standards for all frontend applications.
+alwaysApply: true
+---
+
+# TypeScript Standards
+
+Strict mode is mandatory.
+
+Never disable strict mode.
+
+---
+
+# any
+
+Never use:
+
+any
+
+unless absolutely unavoidable.
+
+Prefer:
+
+unknown
+
+or
+
+Generics.
+
+---
+
+# Type vs Interface
+
+Use:
+
+interface
+
+for object contracts.
+
+Use:
+
+type
+
+for unions,
+
+mapped types,
+
+utility types,
+
+aliases.
+
+---
+
+# Enums
+
+Avoid enums.
+
+Prefer:
+
+const objects
+
+or
+
+union types.
+
+---
+
+# Nullability
+
+Never assume values exist.
+
+Always handle:
+
+null
+
+undefined
+
+optional values.
+
+---
+
+# Assertions
+
+Avoid:
+
+as
+
+unless fully justified.
+
+Prefer proper type inference.
+
+---
+
+# Generics
+
+Use generics when reusable.
+
+Avoid overengineering.
+
+---
+
+# Props
+
+Always define explicit Props interfaces.
+
+Never inline complex prop types.
+
+---
+
+# Utility Types
+
+Prefer built-in utilities:
+
+Partial
+
+Required
+
+Pick
+
+Omit
+
+Record
+
+Readonly
+
+Awaited
+
+ReturnType
+
+Parameters
+
+---
+
+# Imports
+
+Prefer type imports.
+
+Example
+
+import type { User }
+
+---
+
+# API Models
+
+Separate:
+
+DTO
+
+API Response
+
+Database Entity
+
+UI Model
+
+Never mix them.
+
+---
+
+# Validation
+
+Runtime validation belongs to Zod.
+
+TypeScript is compile-time only.
+
+---
+
+# Goal
+
+Every line should be type-safe.

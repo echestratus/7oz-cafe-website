@@ -1,0 +1,102 @@
+---
+description: Motion design standards.
+alwaysApply: true
+---
+
+# Animation Philosophy
+
+Motion should support usability,
+
+not distract from it.
+
+---
+
+# Library
+
+Use Framer Motion.
+
+Do not introduce multiple animation libraries.
+
+---
+
+# Principles
+
+Animations should be:
+
+Subtle
+
+Natural
+
+Consistent
+
+Fast
+
+---
+
+# Duration
+
+Recommended:
+
+150ms
+
+200ms
+
+300ms
+
+Maximum:
+
+500ms
+
+---
+
+# Easing
+
+Prefer smooth easing.
+
+Avoid bounce effects unless intentionally designed.
+
+---
+
+# Entrance
+
+Fade
+
+Slide
+
+Scale
+
+Blur
+
+Use sparingly.
+
+---
+
+# Scroll
+
+Avoid excessive scroll-triggered animations.
+
+Do not animate every element.
+
+---
+
+# Hover
+
+Hover should provide feedback,
+
+not entertainment.
+
+---
+
+# Accessibility
+
+Respect prefers-reduced-motion.
+
+Provide graceful degradation.
+
+---
+
+# Goal
+
+Premium experience,
+
+not flashy effects.

@@ -1,0 +1,116 @@
+---
+description: Membership rules for the 7Oz Espresso Cafe platform.
+alwaysApply: true
+---
+
+# Membership
+
+Membership is a customer relationship feature.
+
+Membership should never be tightly coupled with authentication.
+
+Authentication identifies a user.
+
+Membership provides benefits.
+
+Treat them separately.
+
+---
+
+# Membership Card
+
+Each member has:
+
+Membership Number
+
+Membership Tier
+
+Join Date
+
+Expiry Date (optional)
+
+QR Code
+
+Status
+
+---
+
+# Membership Tier
+
+Supported tiers:
+
+Bronze
+
+Silver
+
+Gold
+
+Platinum
+
+Future tiers should be configurable.
+
+Never hardcode tier logic inside frontend.
+
+---
+
+# Membership Benefits
+
+Benefits should come from database configuration.
+
+Examples:
+
+Discount
+
+Birthday Reward
+
+Priority Reservation
+
+Exclusive Menu
+
+Bonus Loyalty Points
+
+---
+
+# Upgrade
+
+Membership upgrade rules belong to backend.
+
+Frontend only displays results.
+
+---
+
+# Expiration
+
+Membership expiration rules must be configurable.
+
+Support lifetime memberships.
+
+---
+
+# QR Code
+
+Every member should have a unique QR Code.
+
+QR should never expose sensitive data.
+
+Prefer tokenized identifiers.
+
+---
+
+# Customer Profile
+
+Membership information belongs inside Customer Profile.
+
+Do not duplicate membership data elsewhere.
+
+---
+
+# Future Ready
+
+Gift Membership
+
+Corporate Membership
+
+Family Membership
+
+Partner Membership

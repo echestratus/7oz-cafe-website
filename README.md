@@ -80,8 +80,26 @@ In non-development environments, missing Postgres/Redis fails startup.
 ## Documentation
 
 - AI / engineering docs: `docs/ai/`
+- Deployment: `docs/deployment/README.md`
 - Architecture decisions: `docs/adr/`
 - Cursor rules: `.cursor/rules/`
+
+## Deployment (Docker)
+
+Local Postgres/Redis:
+
+```bash
+docker compose -f docker-compose.dev.yml up -d
+```
+
+Staging stack (API + website + admin + Nginx gateway on port 8088):
+
+```bash
+cp .env.staging.example .env.staging
+./scripts/deploy.sh staging staging
+```
+
+Production uses versioned images and `docker-compose.prod.yml`. See `docs/deployment/README.md`.
 
 ## Git workflow
 

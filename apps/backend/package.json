@@ -6,6 +6,7 @@
     "dev": "node ../../scripts/go.mjs run ./cmd/api",
     "build": "node ../../scripts/go.mjs build -o bin/api ./cmd/api",
     "lint": "node ../../scripts/go.mjs vet ./...",
+    "test": "node ../../scripts/go.mjs test ./...",
     "typecheck": "node ../../scripts/go.mjs test ./... -count=1 -run=^$"
   }
 }

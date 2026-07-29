@@ -1,32 +1,30 @@
 package health
 
 import (
-	"time"
+	"net/http"
 
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/shared/response"
 	"github.com/gofiber/fiber/v3"
 )
 
-type StatusPayload struct {
-	Status    string `json:"status"`
-	Service   string `json:"service"`
-	Timestamp string `json:"timestamp"`
-}
-
 type Handler struct {
-	serviceName string
+	service *Service
 }
 
-func NewHandler(serviceName string) *Handler {
-	return &Handler{serviceName: serviceName}
+func NewHandler(service *Service) *Handler {
+	return &Handler{service: service}
 }
 
-func (h *Handler) Check(c fiber.Ctx) error {
-	payload := StatusPayload{
-		Status:    "healthy",
-		Service:   h.serviceName,
-		Timestamp: time.Now().UTC().Format(time.RFC3339),
+func (h *Handler) Live(c fiber.Ctx) error {
+	return response.JSON(c, http.StatusOK, response.OK("OK", h.service.Live()))
+}
+
+func (h *Handler) Ready(c fiber.Ctx) error {
+	report := h.service.Ready(c.Context())
+	status := http.StatusOK
+	if report.Status != "healthy" {
+		status = http.StatusServiceUnavailable
 	}
 
-	return c.JSON(response.OK("OK", payload))
+	return response.JSON(c, status, response.OK("OK", report))
 }

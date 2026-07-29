@@ -42,8 +42,14 @@ pnpm backend:dev
 
 Health checks:
 
-- `GET http://localhost:8080/health`
+- `GET http://localhost:8080/health` — liveness
+- `GET http://localhost:8080/health/ready` — readiness (Postgres + Redis)
 - `GET http://localhost:8080/api/v1/health`
+- `GET http://localhost:8080/api/v1/health/ready`
+- `GET http://localhost:8080/openapi.yaml` — OpenAPI 3.1 shell
+
+In development, the API starts even if Postgres/Redis are down and reports degraded readiness.
+In non-development environments, missing Postgres/Redis fails startup.
 
 ## Workspace scripts
 

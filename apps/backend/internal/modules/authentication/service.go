@@ -11,6 +11,7 @@ import (
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/config"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/database"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/database/sqlcdb"
+	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/mailer"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/security/password"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/security/token"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/shared/apperr"
@@ -25,9 +26,10 @@ const (
 )
 
 type Service struct {
-	cfg    *config.Config
-	db     *database.Postgres
-	access *token.AccessManager
+	cfg      *config.Config
+	db       *database.Postgres
+	access   *token.AccessManager
+	notifier *mailer.Notifier
 }
 
 type RegisterInput struct {
@@ -66,11 +68,12 @@ type RequestMeta struct {
 	IPAddress string
 }
 
-func NewService(cfg *config.Config, db *database.Postgres) *Service {
+func NewService(cfg *config.Config, db *database.Postgres, notifier *mailer.Notifier) *Service {
 	return &Service{
-		cfg:    cfg,
-		db:     db,
-		access: token.NewAccessManager(cfg.JWT.AccessSecret, cfg.JWT.AccessTTL, cfg.Name),
+		cfg:      cfg,
+		db:       db,
+		access:   token.NewAccessManager(cfg.JWT.AccessSecret, cfg.JWT.AccessTTL, cfg.Name),
+		notifier: notifier,
 	}
 }
 
@@ -150,6 +153,11 @@ func (s *Service) Register(ctx context.Context, input RegisterInput) (*AuthResul
 	_ = s.writeAudit(ctx, &user.ID, "auth.register", "user", user.ID.String(), RequestMeta{}, map[string]any{
 		"email": user.Email,
 	})
+
+	if s.notifier != nil {
+		// Fail soft: account + token already exist; delivery issues should not block registration.
+		_ = s.notifier.SendVerification(ctx, user.Email, user.FullName, verificationRaw)
+	}
 
 	result := &AuthResult{
 		User: UserDTO{
@@ -397,6 +405,11 @@ func (s *Service) ForgotPassword(ctx context.Context, email string) (string, err
 	}
 
 	_ = s.writeAudit(ctx, &user.ID, "auth.password_reset_requested", "user", user.ID.String(), RequestMeta{}, nil)
+
+	if s.notifier != nil {
+		// Fail soft and keep generic response to avoid account enumeration.
+		_ = s.notifier.SendPasswordReset(ctx, user.Email, user.FullName, raw)
+	}
 
 	if s.cfg.IsDevelopment() {
 		return raw, nil

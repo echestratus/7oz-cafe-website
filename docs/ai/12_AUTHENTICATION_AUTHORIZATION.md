@@ -192,6 +192,9 @@ Verification links:
 - Single use.
 - Expire after 24 hours.
 
+Delivery uses the backend mailer (`SMTP_*` + `WEBSITE_URL`).
+In development, tokens may also be returned in the API response when SMTP is not configured.
+
 Support resend verification email.
 
 ---

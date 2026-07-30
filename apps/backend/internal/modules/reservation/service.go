@@ -13,6 +13,7 @@ import (
 
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/database"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/database/sqlcdb"
+	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/mailer"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/shared/apperr"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/shared/response"
 	"github.com/google/uuid"
@@ -26,6 +27,7 @@ var (
 
 type Service struct {
 	db          *database.Postgres
+	notifier    *mailer.Notifier
 	onCompleted func(ctx context.Context, userID uuid.UUID, reservationID uuid.UUID)
 }
 
@@ -70,8 +72,8 @@ type dayHours struct {
 	Close string `json:"close"`
 }
 
-func NewService(db *database.Postgres) *Service {
-	return &Service{db: db}
+func NewService(db *database.Postgres, notifier *mailer.Notifier) *Service {
+	return &Service{db: db, notifier: notifier}
 }
 
 func (s *Service) GetAvailability(ctx context.Context, dateStr string, guestCount int) ([]AvailabilitySlot, error) {
@@ -300,6 +302,17 @@ func (s *Service) Create(ctx context.Context, input CreateInput) (*ReservationDT
 	})
 
 	dto := toDTO(created)
+	if s.notifier != nil {
+		_ = s.notifier.SendReservationConfirmation(ctx, mailer.ReservationConfirmation{
+			GuestFullName:     dto.GuestFullName,
+			GuestEmail:        dto.GuestEmail,
+			ReservationNumber: dto.ReservationNumber,
+			Date:              dto.Date,
+			Time:              dto.Time,
+			GuestCount:        dto.GuestCount,
+			Status:            dto.Status,
+		})
+	}
 	return &dto, nil
 }
 

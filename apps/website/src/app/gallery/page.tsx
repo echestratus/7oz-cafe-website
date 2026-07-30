@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Image from 'next/image';
 import { readdir } from 'node:fs/promises';
 import path from 'node:path';
 
@@ -7,6 +6,7 @@ import { SiteShell } from '@/components/layout/site-shell';
 import { Container } from '@/components/ui/container';
 import { Reveal } from '@/components/ui/reveal';
 import { SectionIntro } from '@/components/ui/section-intro';
+import { GalleryGrid } from '@/features/gallery/components/gallery-grid';
 import { getPublishedCmsPage } from '@/services/cms';
 
 export const metadata: Metadata = {
@@ -24,7 +24,11 @@ async function listGalleryImages() {
     return entries
       .filter((entry) => IMAGE_EXTENSIONS.has(path.extname(entry).toLowerCase()))
       .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
-      .map((entry) => `/assets/gallery/${entry}`);
+      .map((entry, index) => ({
+        src: `/assets/gallery/${entry}`,
+        alt: `7Oz cafe atmosphere ${index + 1}`,
+        caption: `Gallery ${index + 1}`,
+      }));
   } catch {
     return [];
   }
@@ -49,26 +53,7 @@ export default async function GalleryPage() {
             />
           </Reveal>
 
-          {images.length === 0 ? (
-            <p className="text-lede">Gallery imagery will appear after asset sync.</p>
-          ) : (
-            <div className="columns-1 gap-5 sm:columns-2 lg:columns-3">
-              {images.map((src, index) => (
-                <Reveal key={src} delay={(index % 6) * 0.04} className="mb-5 break-inside-avoid">
-                  <div className="relative overflow-hidden rounded-media">
-                    <Image
-                      src={src}
-                      alt={`7Oz gallery image ${index + 1}`}
-                      width={900}
-                      height={1200}
-                      className="h-auto w-full object-cover"
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    />
-                  </div>
-                </Reveal>
-              ))}
-            </div>
-          )}
+          <GalleryGrid images={images} />
         </Container>
       </main>
     </SiteShell>

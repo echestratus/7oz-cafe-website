@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 import { SiteShell } from '@/components/layout/site-shell';
+import { Button } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
 import { Reveal } from '@/components/ui/reveal';
 import { SectionIntro } from '@/components/ui/section-intro';
@@ -79,6 +80,23 @@ export default async function MembershipPage() {
                 <p className="text-sm text-text-secondary">Benefits will be published soon.</p>
               ) : null}
             </div>
+          </section>
+
+          <section className="space-y-6 border-t border-border pt-12" aria-labelledby="join-heading">
+            <Reveal>
+              <h2 id="join-heading" className="text-section-title text-text">
+                Start your membership
+              </h2>
+              <p className="mt-3 max-w-xl text-sm leading-relaxed text-text-secondary">
+                Create a free account to track your tier, benefits, and visit progress.
+              </p>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <Button href="/register">Create account</Button>
+                <Button href="/account" variant="outline">
+                  View my account
+                </Button>
+              </div>
+            </Reveal>
           </section>
         </Container>
       </main>

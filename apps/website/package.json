@@ -12,11 +12,16 @@
   },
   "dependencies": {
     "@7oz/shared-types": "workspace:*",
+    "@hookform/resolvers": "^5.5.7",
+    "@tanstack/react-query": "^5.101.4",
     "framer-motion": "^12.43.0",
     "lucide-react": "^1.27.0",
     "next": "^15.4.1",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "react-hook-form": "^7.83.0",
+    "zod": "^4.4.3",
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
     "@7oz/eslint-config": "workspace:*",

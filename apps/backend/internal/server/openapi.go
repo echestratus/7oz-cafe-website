@@ -1206,6 +1206,74 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/loyalty/rewards:
+    get:
+      summary: List loyalty rewards
+      operationId: listLoyaltyRewardsAdmin
+      tags: [Loyalty]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Rewards
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+    post:
+      summary: Create a loyalty reward
+      operationId: createLoyaltyReward
+      tags: [Loyalty]
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: Reward created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/loyalty/rewards/{id}:
+    patch:
+      summary: Update a loyalty reward
+      operationId: updateLoyaltyReward
+      tags: [Loyalty]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Reward updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+    delete:
+      summary: Soft-delete a loyalty reward
+      operationId: deleteLoyaltyReward
+      tags: [Loyalty]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Reward deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
   /public/blogs:
     get:
       summary: List published blog posts

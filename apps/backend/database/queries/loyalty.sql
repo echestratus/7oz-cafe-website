@@ -282,6 +282,82 @@ RETURNING
     updated_at,
     deleted_at;
 
+-- name: CreateLoyaltyReward :one
+INSERT INTO loyalty_rewards (
+    id,
+    code,
+    title,
+    description,
+    points_cost,
+    stock,
+    is_active,
+    sort_order,
+    data,
+    created_at,
+    updated_at
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW()
+) RETURNING
+    id,
+    code,
+    title,
+    description,
+    points_cost,
+    stock,
+    is_active,
+    sort_order,
+    data,
+    created_at,
+    updated_at,
+    deleted_at;
+
+-- name: UpdateLoyaltyReward :one
+UPDATE loyalty_rewards
+SET title = $2,
+    description = $3,
+    points_cost = $4,
+    stock = $5,
+    is_active = $6,
+    sort_order = $7,
+    data = $8,
+    updated_at = NOW()
+WHERE id = $1
+  AND deleted_at IS NULL
+RETURNING
+    id,
+    code,
+    title,
+    description,
+    points_cost,
+    stock,
+    is_active,
+    sort_order,
+    data,
+    created_at,
+    updated_at,
+    deleted_at;
+
+-- name: SoftDeleteLoyaltyReward :one
+UPDATE loyalty_rewards
+SET deleted_at = NOW(),
+    is_active = FALSE,
+    updated_at = NOW()
+WHERE id = $1
+  AND deleted_at IS NULL
+RETURNING
+    id,
+    code,
+    title,
+    description,
+    points_cost,
+    stock,
+    is_active,
+    sort_order,
+    data,
+    created_at,
+    updated_at,
+    deleted_at;
+
 -- name: CreateLoyaltyRedemption :one
 INSERT INTO loyalty_redemptions (
     id,

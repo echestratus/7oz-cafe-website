@@ -35,6 +35,29 @@ export type LoyaltyCampaign = {
   isActive: boolean;
 };
 
+export type LoyaltyReward = {
+  id: string;
+  code: string;
+  title: string;
+  description: string;
+  pointsCost: number;
+  stock: number | null;
+  isActive: boolean;
+  sortOrder: number;
+  data: Record<string, unknown>;
+};
+
+export type LoyaltyRewardInput = {
+  code?: string;
+  title: string;
+  description?: string;
+  pointsCost: number;
+  stock?: number | null;
+  isActive?: boolean;
+  sortOrder?: number;
+  data?: Record<string, unknown>;
+};
+
 export type Paginated<T> = {
   items: T[];
   page: number;
@@ -63,4 +86,31 @@ export async function adjustLoyalty(input: {
 
 export async function listLoyaltyCampaigns(): Promise<LoyaltyCampaign[]> {
   return apiRequest<LoyaltyCampaign[]>('/admin/loyalty/campaigns');
+}
+
+export async function listLoyaltyRewards(): Promise<LoyaltyReward[]> {
+  return apiRequest<LoyaltyReward[]>('/admin/loyalty/rewards');
+}
+
+export async function createLoyaltyReward(input: LoyaltyRewardInput): Promise<LoyaltyReward> {
+  return apiRequest<LoyaltyReward>('/admin/loyalty/rewards', {
+    method: 'POST',
+    body: input,
+  });
+}
+
+export async function updateLoyaltyReward(
+  id: string,
+  input: LoyaltyRewardInput,
+): Promise<LoyaltyReward> {
+  return apiRequest<LoyaltyReward>(`/admin/loyalty/rewards/${id}`, {
+    method: 'PATCH',
+    body: input,
+  });
+}
+
+export async function deleteLoyaltyReward(id: string): Promise<void> {
+  await apiRequest<Record<string, never>>(`/admin/loyalty/rewards/${id}`, {
+    method: 'DELETE',
+  });
 }

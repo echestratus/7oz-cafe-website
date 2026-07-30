@@ -182,6 +182,65 @@ func (h *Handler) ListCampaigns(c fiber.Ctx) error {
 	return response.JSON(c, fiber.StatusOK, response.OK("OK", items))
 }
 
+func (h *Handler) ListRewards(c fiber.Ctx) error {
+	items, err := h.service.ListRewardsAdmin(c.Context())
+	if err != nil {
+		return err
+	}
+	return response.JSON(c, fiber.StatusOK, response.OK("OK", items))
+}
+
+func (h *Handler) CreateReward(c fiber.Ctx) error {
+	principal, ok := authctx.PrincipalFromCtx(c)
+	if !ok {
+		return apperr.Unauthorized("Authentication required.")
+	}
+	input, err := bindReward(c)
+	if err != nil {
+		return err
+	}
+	item, err := h.service.CreateReward(c.Context(), principal.UserID, input)
+	if err != nil {
+		return err
+	}
+	return response.JSON(c, fiber.StatusCreated, response.OK("Reward created.", item))
+}
+
+func (h *Handler) UpdateReward(c fiber.Ctx) error {
+	principal, ok := authctx.PrincipalFromCtx(c)
+	if !ok {
+		return apperr.Unauthorized("Authentication required.")
+	}
+	rewardID, err := uuid.Parse(c.Params("id"))
+	if err != nil {
+		return apperr.BadRequest("Invalid reward id.")
+	}
+	input, err := bindReward(c)
+	if err != nil {
+		return err
+	}
+	item, err := h.service.UpdateReward(c.Context(), rewardID, principal.UserID, input)
+	if err != nil {
+		return err
+	}
+	return response.JSON(c, fiber.StatusOK, response.OK("Reward updated.", item))
+}
+
+func (h *Handler) DeleteReward(c fiber.Ctx) error {
+	principal, ok := authctx.PrincipalFromCtx(c)
+	if !ok {
+		return apperr.Unauthorized("Authentication required.")
+	}
+	rewardID, err := uuid.Parse(c.Params("id"))
+	if err != nil {
+		return apperr.BadRequest("Invalid reward id.")
+	}
+	if err := h.service.DeleteReward(c.Context(), rewardID, principal.UserID); err != nil {
+		return err
+	}
+	return response.JSON(c, fiber.StatusOK, response.OK("Reward deleted.", map[string]any{}))
+}
+
 func (h *Handler) CreateCampaign(c fiber.Ctx) error {
 	principal, ok := authctx.PrincipalFromCtx(c)
 	if !ok {
@@ -258,5 +317,42 @@ func bindCampaign(c fiber.Ctx) (CampaignInput, error) {
 		BonusPoints:        req.BonusPoints,
 		EligibleLevelCodes: req.EligibleLevelCodes,
 		IsActive:           isActive,
+	}, nil
+}
+
+func bindReward(c fiber.Ctx) (RewardInput, error) {
+	var req struct {
+		Code        string         `json:"code"`
+		Title       string         `json:"title"`
+		Description string         `json:"description"`
+		PointsCost  int32          `json:"pointsCost"`
+		Stock       *int32         `json:"stock"`
+		IsActive    *bool          `json:"isActive"`
+		SortOrder   *int32         `json:"sortOrder"`
+		Data        map[string]any `json:"data"`
+	}
+	if err := c.Bind().Body(&req); err != nil {
+		return RewardInput{}, apperr.BadRequest("Invalid JSON body.")
+	}
+	isActive := true
+	if req.IsActive != nil {
+		isActive = *req.IsActive
+	}
+	var sortOrder int32
+	if req.SortOrder != nil {
+		sortOrder = *req.SortOrder
+	}
+	if req.Data == nil {
+		req.Data = map[string]any{}
+	}
+	return RewardInput{
+		Code:        req.Code,
+		Title:       req.Title,
+		Description: req.Description,
+		PointsCost:  req.PointsCost,
+		Stock:       req.Stock,
+		IsActive:    isActive,
+		SortOrder:   sortOrder,
+		Data:        req.Data,
 	}, nil
 }

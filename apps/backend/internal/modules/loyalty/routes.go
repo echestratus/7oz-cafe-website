@@ -26,4 +26,8 @@ func RegisterAdminRoutes(router fiber.Router, handler *Handler, authenticate fib
 	admin.Get("/campaigns", handler.ListCampaigns)
 	admin.Post("/campaigns", handler.CreateCampaign)
 	admin.Patch("/campaigns/:id", handler.UpdateCampaign)
+	admin.Get("/rewards", handler.ListRewards)
+	admin.Post("/rewards", handler.CreateReward)
+	admin.Patch("/rewards/:id", handler.UpdateReward)
+	admin.Delete("/rewards/:id", handler.DeleteReward)
 }

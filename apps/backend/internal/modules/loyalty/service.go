@@ -16,6 +16,7 @@ import (
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/shared/response"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Service struct {
@@ -26,8 +27,8 @@ type AccountDTO struct {
 	ID               string `json:"id"`
 	UserID           string `json:"userId"`
 	Balance          int32  `json:"balance"`
-	LifetimeEarned    int32  `json:"lifetimeEarned"`
-	LifetimeRedeemed  int32  `json:"lifetimeRedeemed"`
+	LifetimeEarned   int32  `json:"lifetimeEarned"`
+	LifetimeRedeemed int32  `json:"lifetimeRedeemed"`
 	UserEmail        string `json:"userEmail,omitempty"`
 	UserFullName     string `json:"userFullName,omitempty"`
 	UpdatedAt        string `json:"updatedAt"`
@@ -53,8 +54,9 @@ type RewardDTO struct {
 	Title       string         `json:"title"`
 	Description string         `json:"description"`
 	PointsCost  int32          `json:"pointsCost"`
-	Stock       *int32         `json:"stock,omitempty"`
+	Stock       *int32         `json:"stock"`
 	IsActive    bool           `json:"isActive"`
+	SortOrder   int32          `json:"sortOrder"`
 	Data        map[string]any `json:"data"`
 }
 
@@ -72,13 +74,13 @@ type CampaignDTO struct {
 }
 
 type RedemptionDTO struct {
-	ID          string    `json:"id"`
-	RewardID    string    `json:"rewardId"`
-	PointsSpent int32     `json:"pointsSpent"`
-	Status      string    `json:"status"`
-	CreatedAt   string    `json:"createdAt"`
+	ID          string     `json:"id"`
+	RewardID    string     `json:"rewardId"`
+	PointsSpent int32      `json:"pointsSpent"`
+	Status      string     `json:"status"`
+	CreatedAt   string     `json:"createdAt"`
 	Account     AccountDTO `json:"account"`
-	Reward      RewardDTO `json:"reward"`
+	Reward      RewardDTO  `json:"reward"`
 }
 
 type AdjustInput struct {
@@ -86,6 +88,17 @@ type AdjustInput struct {
 	Points int32
 	Reason string
 	Actor  uuid.UUID
+}
+
+type RewardInput struct {
+	Code        string
+	Title       string
+	Description string
+	PointsCost  int32
+	Stock       *int32
+	IsActive    bool
+	SortOrder   int32
+	Data        map[string]any
 }
 
 type CampaignInput struct {
@@ -227,8 +240,8 @@ func (s *Service) Redeem(ctx context.Context, userID, rewardID uuid.UUID) (*Rede
 	updatedAccount, err := qtx.UpdateLoyaltyAccountBalances(ctx, sqlcdb.UpdateLoyaltyAccountBalancesParams{
 		ID:               account.ID,
 		Balance:          newBalance,
-		LifetimeEarned:    account.LifetimeEarned,
-		LifetimeRedeemed:  newRedeemed,
+		LifetimeEarned:   account.LifetimeEarned,
+		LifetimeRedeemed: newRedeemed,
 	})
 	if err != nil {
 		return nil, apperr.Wrap(apperr.Internal("Failed to update loyalty balance."), err)
@@ -416,8 +429,8 @@ func (s *Service) EarnForReservationCompleted(ctx context.Context, userID, reser
 	updated, err := qtx.UpdateLoyaltyAccountBalances(ctx, sqlcdb.UpdateLoyaltyAccountBalancesParams{
 		ID:               account.ID,
 		Balance:          newBalance,
-		LifetimeEarned:    newEarned,
-		LifetimeRedeemed:  account.LifetimeRedeemed,
+		LifetimeEarned:   newEarned,
+		LifetimeRedeemed: account.LifetimeRedeemed,
 	})
 	if err != nil {
 		return nil, apperr.Wrap(apperr.Internal("Failed to update loyalty balances."), err)
@@ -485,8 +498,8 @@ func (s *Service) Adjust(ctx context.Context, input AdjustInput) (*AccountDTO, e
 	updated, err := qtx.UpdateLoyaltyAccountBalances(ctx, sqlcdb.UpdateLoyaltyAccountBalancesParams{
 		ID:               account.ID,
 		Balance:          newBalance,
-		LifetimeEarned:    newEarned,
-		LifetimeRedeemed:  newRedeemed,
+		LifetimeEarned:   newEarned,
+		LifetimeRedeemed: newRedeemed,
 	})
 	if err != nil {
 		return nil, apperr.Wrap(apperr.Internal("Failed to update loyalty balances."), err)
@@ -546,14 +559,14 @@ func (s *Service) ListAdminAccounts(ctx context.Context, page, limit int) ([]Acc
 	result := make([]AccountDTO, 0, len(rows))
 	for _, row := range rows {
 		result = append(result, AccountDTO{
-			ID:              row.ID.String(),
-			UserID:          row.UserID.String(),
-			Balance:         row.Balance,
+			ID:               row.ID.String(),
+			UserID:           row.UserID.String(),
+			Balance:          row.Balance,
 			LifetimeEarned:   row.LifetimeEarned,
 			LifetimeRedeemed: row.LifetimeRedeemed,
-			UserEmail:       row.UserEmail,
-			UserFullName:    row.UserFullName,
-			UpdatedAt:       row.UpdatedAt.UTC().Format(time.RFC3339),
+			UserEmail:        row.UserEmail,
+			UserFullName:     row.UserFullName,
+			UpdatedAt:        row.UpdatedAt.UTC().Format(time.RFC3339),
 		})
 	}
 	return result, total, nil
@@ -615,6 +628,107 @@ func (s *Service) ListCampaigns(ctx context.Context) ([]CampaignDTO, error) {
 		return nil, apperr.Wrap(apperr.Internal("Failed to list campaigns."), err)
 	}
 	return mapCampaigns(rows)
+}
+
+func (s *Service) ListRewardsAdmin(ctx context.Context) ([]RewardDTO, error) {
+	if err := s.requireDB(); err != nil {
+		return nil, err
+	}
+	rows, err := s.db.Queries.ListLoyaltyRewardsAdmin(ctx)
+	if err != nil {
+		return nil, apperr.Wrap(apperr.Internal("Failed to list rewards."), err)
+	}
+	return mapRewards(rows)
+}
+
+func (s *Service) CreateReward(ctx context.Context, actor uuid.UUID, input RewardInput) (*RewardDTO, error) {
+	if err := s.requireDB(); err != nil {
+		return nil, err
+	}
+	if err := validateRewardInput(input, true); err != nil {
+		return nil, err
+	}
+	data, err := encodeRewardData(input.Data)
+	if err != nil {
+		return nil, err
+	}
+	created, err := s.db.Queries.CreateLoyaltyReward(ctx, sqlcdb.CreateLoyaltyRewardParams{
+		ID:          uuid.New(),
+		Code:        strings.TrimSpace(strings.ToLower(input.Code)),
+		Title:       strings.TrimSpace(input.Title),
+		Description: strings.TrimSpace(input.Description),
+		PointsCost:  input.PointsCost,
+		Stock:       toNullableInt4(input.Stock),
+		IsActive:    input.IsActive,
+		SortOrder:   input.SortOrder,
+		Data:        data,
+	})
+	if err != nil {
+		if isUniqueViolation(err) {
+			return nil, apperr.Conflict("A reward with this code already exists.")
+		}
+		return nil, apperr.Wrap(apperr.Internal("Failed to create reward."), err)
+	}
+	_ = s.writeAudit(ctx, &actor, "loyalty.reward_created", created.ID.String(), map[string]any{
+		"code": created.Code,
+	})
+	dto, err := toRewardDTO(created)
+	if err != nil {
+		return nil, err
+	}
+	return &dto, nil
+}
+
+func (s *Service) UpdateReward(ctx context.Context, rewardID, actor uuid.UUID, input RewardInput) (*RewardDTO, error) {
+	if err := s.requireDB(); err != nil {
+		return nil, err
+	}
+	if err := validateRewardInput(input, false); err != nil {
+		return nil, err
+	}
+	data, err := encodeRewardData(input.Data)
+	if err != nil {
+		return nil, err
+	}
+	updated, err := s.db.Queries.UpdateLoyaltyReward(ctx, sqlcdb.UpdateLoyaltyRewardParams{
+		ID:          rewardID,
+		Title:       strings.TrimSpace(input.Title),
+		Description: strings.TrimSpace(input.Description),
+		PointsCost:  input.PointsCost,
+		Stock:       toNullableInt4(input.Stock),
+		IsActive:    input.IsActive,
+		SortOrder:   input.SortOrder,
+		Data:        data,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, apperr.NotFound("Reward not found.")
+		}
+		return nil, apperr.Wrap(apperr.Internal("Failed to update reward."), err)
+	}
+	_ = s.writeAudit(ctx, &actor, "loyalty.reward_updated", updated.ID.String(), nil)
+	dto, err := toRewardDTO(updated)
+	if err != nil {
+		return nil, err
+	}
+	return &dto, nil
+}
+
+func (s *Service) DeleteReward(ctx context.Context, rewardID, actor uuid.UUID) error {
+	if err := s.requireDB(); err != nil {
+		return err
+	}
+	deleted, err := s.db.Queries.SoftDeleteLoyaltyReward(ctx, rewardID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return apperr.NotFound("Reward not found.")
+		}
+		return apperr.Wrap(apperr.Internal("Failed to delete reward."), err)
+	}
+	_ = s.writeAudit(ctx, &actor, "loyalty.reward_deleted", deleted.ID.String(), map[string]any{
+		"code": deleted.Code,
+	})
+	return nil
 }
 
 func (s *Service) CreateCampaign(ctx context.Context, actor uuid.UUID, input CampaignInput) (*CampaignDTO, error) {
@@ -790,12 +904,12 @@ func formatMultiplier(value float64) string {
 
 func toAccountDTO(account sqlcdb.LoyaltyAccount) AccountDTO {
 	return AccountDTO{
-		ID:              account.ID.String(),
-		UserID:          account.UserID.String(),
-		Balance:         account.Balance,
+		ID:               account.ID.String(),
+		UserID:           account.UserID.String(),
+		Balance:          account.Balance,
 		LifetimeEarned:   account.LifetimeEarned,
 		LifetimeRedeemed: account.LifetimeRedeemed,
-		UpdatedAt:       account.UpdatedAt.UTC().Format(time.RFC3339),
+		UpdatedAt:        account.UpdatedAt.UTC().Format(time.RFC3339),
 	}
 }
 
@@ -849,6 +963,7 @@ func toRewardDTO(row sqlcdb.LoyaltyReward) (RewardDTO, error) {
 		Description: row.Description,
 		PointsCost:  row.PointsCost,
 		IsActive:    row.IsActive,
+		SortOrder:   row.SortOrder,
 		Data:        data,
 	}
 	if row.Stock.Valid {
@@ -857,6 +972,45 @@ func toRewardDTO(row sqlcdb.LoyaltyReward) (RewardDTO, error) {
 	}
 	return dto, nil
 }
+
+func validateRewardInput(input RewardInput, requireCode bool) error {
+	var fieldErrors []response.FieldError
+	if requireCode && strings.TrimSpace(input.Code) == "" {
+		fieldErrors = append(fieldErrors, response.FieldError{Field: "code", Message: "is required"})
+	}
+	if strings.TrimSpace(input.Title) == "" {
+		fieldErrors = append(fieldErrors, response.FieldError{Field: "title", Message: "is required"})
+	}
+	if input.PointsCost <= 0 {
+		fieldErrors = append(fieldErrors, response.FieldError{Field: "pointsCost", Message: "must be greater than 0"})
+	}
+	if input.Stock != nil && *input.Stock < 0 {
+		fieldErrors = append(fieldErrors, response.FieldError{Field: "stock", Message: "must be greater than or equal to 0"})
+	}
+	if len(fieldErrors) > 0 {
+		return apperr.Validation("Invalid reward payload.", fieldErrors...)
+	}
+	return nil
+}
+
+func encodeRewardData(data map[string]any) ([]byte, error) {
+	if data == nil {
+		data = map[string]any{}
+	}
+	encoded, err := json.Marshal(data)
+	if err != nil {
+		return nil, apperr.Internal("Failed to encode reward data.")
+	}
+	return encoded, nil
+}
+
+func toNullableInt4(value *int32) pgtype.Int4 {
+	if value == nil {
+		return pgtype.Int4{}
+	}
+	return pgtype.Int4{Int32: *value, Valid: true}
+}
+
 func mapCampaigns(rows []sqlcdb.LoyaltyCampaign) ([]CampaignDTO, error) {
 	result := make([]CampaignDTO, 0, len(rows))
 	for _, row := range rows {

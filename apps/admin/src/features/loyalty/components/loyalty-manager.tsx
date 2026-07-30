@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { PageHeader } from '@/components/layout/page-header';
 import { ApiClientError } from '@/lib/api-client';
@@ -10,12 +10,14 @@ import {
   createLoyaltyCampaign,
   createLoyaltyReward,
   deleteLoyaltyReward,
+  getLoyaltySettings,
   listLoyaltyAccounts,
   listLoyaltyCampaigns,
   listLoyaltyHistory,
   listLoyaltyRewards,
   updateLoyaltyCampaign,
   updateLoyaltyReward,
+  updateLoyaltySettings,
   type LoyaltyCampaign,
   type LoyaltyReward,
 } from '@/services/loyalty';
@@ -86,7 +88,9 @@ const emptyCampaignForm = (): CampaignFormState => ({
 
 export function LoyaltyManager() {
   const queryClient = useQueryClient();
-  const [tab, setTab] = useState<'accounts' | 'history' | 'campaigns' | 'rewards'>('accounts');
+  const [tab, setTab] = useState<'accounts' | 'history' | 'campaigns' | 'rewards' | 'settings'>(
+    'accounts',
+  );
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [userId, setUserId] = useState('');
@@ -96,6 +100,10 @@ export function LoyaltyManager() {
   const [rewardForm, setRewardForm] = useState<RewardFormState>(emptyRewardForm);
   const [editingCampaignId, setEditingCampaignId] = useState<string | null>(null);
   const [campaignForm, setCampaignForm] = useState<CampaignFormState>(emptyCampaignForm);
+  const [pointsPerReservation, setPointsPerReservation] = useState(50);
+  const [expirationStrategy, setExpirationStrategy] = useState<'never' | 'rolling_months'>('never');
+  const [expirationMonths, setExpirationMonths] = useState(12);
+  const [settingsHydrated, setSettingsHydrated] = useState(false);
 
   const accountsQuery = useQuery({
     queryKey: ['admin-loyalty-accounts'],
@@ -122,6 +130,23 @@ export function LoyaltyManager() {
     queryFn: () => listLoyaltyRewards(),
     enabled: tab === 'rewards',
   });
+  const settingsQuery = useQuery({
+    queryKey: ['admin-loyalty-settings'],
+    queryFn: () => getLoyaltySettings(),
+    enabled: tab === 'settings',
+  });
+
+  useEffect(() => {
+    if (!settingsQuery.data || settingsHydrated) {
+      return;
+    }
+    setPointsPerReservation(settingsQuery.data.pointsPerCompletedReservation);
+    setExpirationStrategy(
+      settingsQuery.data.expirationStrategy === 'rolling_months' ? 'rolling_months' : 'never',
+    );
+    setExpirationMonths(settingsQuery.data.expirationMonths);
+    setSettingsHydrated(true);
+  }, [settingsQuery.data, settingsHydrated]);
   const adjustMutation = useMutation({
     mutationFn: () =>
       adjustLoyalty({
@@ -241,6 +266,25 @@ export function LoyaltyManager() {
     },
   });
 
+  const settingsMutation = useMutation({
+    mutationFn: () =>
+      updateLoyaltySettings({
+        pointsPerCompletedReservation: pointsPerReservation,
+        expirationStrategy,
+        expirationMonths,
+      }),
+    onSuccess: async () => {
+      setError(null);
+      setMessage('Loyalty settings updated.');
+      setSettingsHydrated(false);
+      await queryClient.invalidateQueries({ queryKey: ['admin-loyalty-settings'] });
+    },
+    onError: (err) => {
+      setMessage(null);
+      setError(err instanceof ApiClientError ? err.message : 'Settings update failed.');
+    },
+  });
+
   function startEdit(reward: LoyaltyReward) {
     setEditingRewardId(reward.id);
     setRewardForm({
@@ -284,12 +328,18 @@ export function LoyaltyManager() {
             ['history', 'History'],
             ['rewards', 'Rewards'],
             ['campaigns', 'Campaigns'],
+            ['settings', 'Settings'],
           ] as const
         ).map(([value, label]) => (
           <button
             key={value}
             type="button"
-            onClick={() => setTab(value)}
+            onClick={() => {
+              setTab(value);
+              if (value === 'settings') {
+                setSettingsHydrated(false);
+              }
+            }}
             className={`rounded-[12px] px-4 py-2 text-sm ${
               tab === value ? 'bg-primary text-white' : 'border border-border text-text'
             }`}
@@ -765,6 +815,77 @@ export function LoyaltyManager() {
               </article>
             ))}
           </div>
+        </div>
+      ) : null}
+
+      {tab === 'settings' ? (
+        <div className="space-y-6">
+          {settingsQuery.isLoading ? (
+            <p className="text-sm text-text-secondary">Loading settings…</p>
+          ) : null}
+          {settingsQuery.error ? (
+            <p className="text-sm text-red-700" role="alert">
+              {settingsQuery.error instanceof ApiClientError
+                ? settingsQuery.error.message
+                : 'Unable to load settings.'}
+            </p>
+          ) : null}
+          <form
+            className="grid max-w-xl gap-4 rounded-[16px] border border-border bg-surface p-4"
+            onSubmit={(event) => {
+              event.preventDefault();
+              settingsMutation.mutate();
+            }}
+          >
+            <p className="text-sm font-medium text-text">Program settings</p>
+            <label className="space-y-1 text-sm">
+              <span className="text-text-secondary">Points per completed reservation</span>
+              <input
+                type="number"
+                min={0}
+                required
+                value={pointsPerReservation}
+                onChange={(event) => setPointsPerReservation(Number(event.target.value) || 0)}
+                className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+              />
+            </label>
+            <label className="space-y-1 text-sm">
+              <span className="text-text-secondary">Expiration strategy</span>
+              <select
+                value={expirationStrategy}
+                onChange={(event) =>
+                  setExpirationStrategy(event.target.value as 'never' | 'rolling_months')
+                }
+                className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+              >
+                <option value="never">Never expire</option>
+                <option value="rolling_months">Rolling months (FIFO)</option>
+              </select>
+            </label>
+            <label className="space-y-1 text-sm">
+              <span className="text-text-secondary">Expiration months</span>
+              <input
+                type="number"
+                min={1}
+                required
+                disabled={expirationStrategy !== 'rolling_months'}
+                value={expirationMonths}
+                onChange={(event) => setExpirationMonths(Number(event.target.value) || 1)}
+                className="w-full rounded-[12px] border border-border bg-background px-3 py-2 disabled:opacity-60"
+              />
+            </label>
+            <p className="text-xs text-text-muted">
+              Run <code className="rounded bg-surface-secondary px-1">pnpm --filter @7oz/backend loyalty:expire</code>{' '}
+              on a schedule after enabling rolling months.
+            </p>
+            <button
+              type="submit"
+              disabled={settingsMutation.isPending || settingsQuery.isLoading}
+              className="w-fit rounded-[12px] bg-primary px-4 py-2 text-sm text-white hover:bg-primary-hover disabled:opacity-60"
+            >
+              Save settings
+            </button>
+          </form>
         </div>
       ) : null}
     </div>

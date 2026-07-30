@@ -10,6 +10,55 @@ FROM loyalty_settings
 ORDER BY created_at ASC
 LIMIT 1;
 
+-- name: UpdateLoyaltySettings :one
+UPDATE loyalty_settings
+SET points_per_completed_reservation = $2,
+    expiration_strategy = $3,
+    expiration_months = $4,
+    updated_at = NOW()
+WHERE id = $1
+RETURNING
+    id,
+    points_per_completed_reservation,
+    expiration_strategy,
+    expiration_months,
+    created_at,
+    updated_at;
+
+-- name: ListLoyaltyAccountsWithBalance :many
+SELECT
+    id,
+    user_id,
+    balance,
+    lifetime_earned,
+    lifetime_redeemed,
+    created_at,
+    updated_at,
+    deleted_at
+FROM loyalty_accounts
+WHERE deleted_at IS NULL
+  AND balance > 0
+ORDER BY created_at ASC;
+
+-- name: ListLoyaltyTransactionsByAccountAsc :many
+SELECT
+    id,
+    account_id,
+    user_id,
+    type,
+    points,
+    balance_after,
+    source,
+    description,
+    related_entity_type,
+    related_entity_id,
+    campaign_id,
+    actor_user_id,
+    created_at
+FROM loyalty_transactions
+WHERE account_id = $1
+ORDER BY created_at ASC, id ASC;
+
 -- name: GetLoyaltyAccountByUserID :one
 SELECT
     id,

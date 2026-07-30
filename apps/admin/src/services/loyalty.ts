@@ -36,6 +36,20 @@ export type LoyaltyCampaign = {
   isActive: boolean;
 };
 
+export type LoyaltySettings = {
+  id: string;
+  pointsPerCompletedReservation: number;
+  expirationStrategy: 'never' | 'rolling_months' | string;
+  expirationMonths: number;
+  updatedAt: string;
+};
+
+export type LoyaltySettingsInput = {
+  pointsPerCompletedReservation: number;
+  expirationStrategy: 'never' | 'rolling_months';
+  expirationMonths: number;
+};
+
 export type LoyaltyCampaignInput = {
   code: string;
   name: string;
@@ -80,6 +94,19 @@ export type Paginated<T> = {
 
 export async function listLoyaltyAccounts(page = 1, limit = 20): Promise<Paginated<LoyaltyAccount>> {
   return apiRequest<Paginated<LoyaltyAccount>>(`/admin/loyalty?page=${page}&limit=${limit}`);
+}
+
+export async function getLoyaltySettings(): Promise<LoyaltySettings> {
+  return apiRequest<LoyaltySettings>('/admin/loyalty/settings');
+}
+
+export async function updateLoyaltySettings(
+  input: LoyaltySettingsInput,
+): Promise<LoyaltySettings> {
+  return apiRequest<LoyaltySettings>('/admin/loyalty/settings', {
+    method: 'PATCH',
+    body: input,
+  });
 }
 
 export async function listLoyaltyHistory(page = 1, limit = 30): Promise<Paginated<LoyaltyTransaction>> {

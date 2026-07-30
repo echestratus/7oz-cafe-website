@@ -20,6 +20,38 @@ func NewHandler(service *Service) *Handler {
 	return &Handler{service: service}
 }
 
+func (h *Handler) GetSettings(c fiber.Ctx) error {
+	item, err := h.service.GetSettings(c.Context())
+	if err != nil {
+		return err
+	}
+	return response.JSON(c, fiber.StatusOK, response.OK("OK", item))
+}
+
+func (h *Handler) UpdateSettings(c fiber.Ctx) error {
+	principal, ok := authctx.PrincipalFromCtx(c)
+	if !ok {
+		return apperr.Unauthorized("Authentication required.")
+	}
+	var req struct {
+		PointsPerCompletedReservation int32  `json:"pointsPerCompletedReservation"`
+		ExpirationStrategy            string `json:"expirationStrategy"`
+		ExpirationMonths              int32  `json:"expirationMonths"`
+	}
+	if err := c.Bind().Body(&req); err != nil {
+		return apperr.BadRequest("Invalid JSON body.")
+	}
+	item, err := h.service.UpdateSettings(c.Context(), principal.UserID, SettingsInput{
+		PointsPerCompletedReservation: req.PointsPerCompletedReservation,
+		ExpirationStrategy:            req.ExpirationStrategy,
+		ExpirationMonths:              req.ExpirationMonths,
+	})
+	if err != nil {
+		return err
+	}
+	return response.JSON(c, fiber.StatusOK, response.OK("Loyalty settings updated.", item))
+}
+
 func (h *Handler) ListPublicRewards(c fiber.Ctx) error {
 	items, err := h.service.ListPublicRewards(c.Context())
 	if err != nil {

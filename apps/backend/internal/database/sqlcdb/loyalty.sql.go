@@ -814,6 +814,51 @@ func (q *Queries) ListLoyaltyAccountsAdmin(ctx context.Context, arg ListLoyaltyA
 	return items, nil
 }
 
+const listLoyaltyAccountsWithBalance = `-- name: ListLoyaltyAccountsWithBalance :many
+SELECT
+    id,
+    user_id,
+    balance,
+    lifetime_earned,
+    lifetime_redeemed,
+    created_at,
+    updated_at,
+    deleted_at
+FROM loyalty_accounts
+WHERE deleted_at IS NULL
+  AND balance > 0
+ORDER BY created_at ASC
+`
+
+func (q *Queries) ListLoyaltyAccountsWithBalance(ctx context.Context) ([]LoyaltyAccount, error) {
+	rows, err := q.db.Query(ctx, listLoyaltyAccountsWithBalance)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []LoyaltyAccount{}
+	for rows.Next() {
+		var i LoyaltyAccount
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Balance,
+			&i.LifetimeEarned,
+			&i.LifetimeRedeemed,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listLoyaltyCampaignsAdmin = `-- name: ListLoyaltyCampaignsAdmin :many
 SELECT
     id,
@@ -993,6 +1038,60 @@ func (q *Queries) ListLoyaltyTransactionsAdmin(ctx context.Context, arg ListLoya
 			&i.CreatedAt,
 			&i.UserEmail,
 			&i.UserFullName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listLoyaltyTransactionsByAccountAsc = `-- name: ListLoyaltyTransactionsByAccountAsc :many
+SELECT
+    id,
+    account_id,
+    user_id,
+    type,
+    points,
+    balance_after,
+    source,
+    description,
+    related_entity_type,
+    related_entity_id,
+    campaign_id,
+    actor_user_id,
+    created_at
+FROM loyalty_transactions
+WHERE account_id = $1
+ORDER BY created_at ASC, id ASC
+`
+
+func (q *Queries) ListLoyaltyTransactionsByAccountAsc(ctx context.Context, accountID uuid.UUID) ([]LoyaltyTransaction, error) {
+	rows, err := q.db.Query(ctx, listLoyaltyTransactionsByAccountAsc, accountID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []LoyaltyTransaction{}
+	for rows.Next() {
+		var i LoyaltyTransaction
+		if err := rows.Scan(
+			&i.ID,
+			&i.AccountID,
+			&i.UserID,
+			&i.Type,
+			&i.Points,
+			&i.BalanceAfter,
+			&i.Source,
+			&i.Description,
+			&i.RelatedEntityType,
+			&i.RelatedEntityID,
+			&i.CampaignID,
+			&i.ActorUserID,
+			&i.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -1289,6 +1388,48 @@ func (q *Queries) UpdateLoyaltyReward(ctx context.Context, arg UpdateLoyaltyRewa
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
+	)
+	return i, err
+}
+
+const updateLoyaltySettings = `-- name: UpdateLoyaltySettings :one
+UPDATE loyalty_settings
+SET points_per_completed_reservation = $2,
+    expiration_strategy = $3,
+    expiration_months = $4,
+    updated_at = NOW()
+WHERE id = $1
+RETURNING
+    id,
+    points_per_completed_reservation,
+    expiration_strategy,
+    expiration_months,
+    created_at,
+    updated_at
+`
+
+type UpdateLoyaltySettingsParams struct {
+	ID                            uuid.UUID `json:"id"`
+	PointsPerCompletedReservation int32     `json:"points_per_completed_reservation"`
+	ExpirationStrategy            string    `json:"expiration_strategy"`
+	ExpirationMonths              int32     `json:"expiration_months"`
+}
+
+func (q *Queries) UpdateLoyaltySettings(ctx context.Context, arg UpdateLoyaltySettingsParams) (LoyaltySetting, error) {
+	row := q.db.QueryRow(ctx, updateLoyaltySettings,
+		arg.ID,
+		arg.PointsPerCompletedReservation,
+		arg.ExpirationStrategy,
+		arg.ExpirationMonths,
+	)
+	var i LoyaltySetting
+	err := row.Scan(
+		&i.ID,
+		&i.PointsPerCompletedReservation,
+		&i.ExpirationStrategy,
+		&i.ExpirationMonths,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }

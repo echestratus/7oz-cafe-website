@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 
 import { SiteShell } from '@/components/layout/site-shell';
 import { HomePageView } from '@/features/home/components/home-page-view';
+import { getMenuCatalog, pickFeaturedMenuItems } from '@/features/menu/lib/menu-catalog';
 import { metadataFromSeo } from '@/lib/seo';
 import { fallbackBlogPosts, listPublishedBlogs } from '@/services/blog';
 import { getPublishedCmsPage } from '@/services/cms';
@@ -16,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const [homepage, footer, blogs] = await Promise.all([
+  const [homepage, footer, blogs, catalog] = await Promise.all([
     getPublishedCmsPage('homepage'),
     getPublishedCmsPage('footer'),
     listPublishedBlogs(1, 3).catch(() => ({
@@ -25,11 +26,14 @@ export default async function HomePage() {
       limit: 3,
       total: fallbackBlogPosts.length,
     })),
+    getMenuCatalog(),
   ]);
+
+  const featuredMenu = pickFeaturedMenuItems(catalog);
 
   return (
     <SiteShell footer={footer} headerTone="overlay">
-      <HomePageView homepage={homepage} blogPosts={blogs.items} />
+      <HomePageView homepage={homepage} blogPosts={blogs.items} featuredMenu={featuredMenu} />
     </SiteShell>
   );
 }

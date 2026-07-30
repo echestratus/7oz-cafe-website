@@ -7,6 +7,7 @@ import { GalleryPreviewSection } from '@/features/home/components/gallery-previe
 import { HeroSection } from '@/features/home/components/hero-section';
 import { TestimonialsSection } from '@/features/home/components/testimonials-section';
 import { BlogsPreviewSection } from '@/features/blogs/components/blogs-preview-section';
+import type { MenuItem } from '@/features/menu/lib/menu-catalog';
 import type { BlogPost } from '@/services/blog';
 
 const fallbackHero = {
@@ -18,7 +19,7 @@ const fallbackHero = {
 
 const fallbackFeaturedMenu = {
   heading: 'Signature Selections',
-  description: 'A curated taste of our espresso and pastry craft.',
+  description: 'Coffee, house drinks, and pastry — a taste of what we craft each day.',
 };
 
 const fallbackAbout = {
@@ -69,16 +70,37 @@ const fallbackReservation = {
 interface HomePageViewProps {
   homepage: CmsPageSnapshot | null;
   blogPosts?: BlogPost[];
+  featuredMenu?: {
+    coffee: MenuItem[];
+    nonCoffee: MenuItem[];
+    pastries: MenuItem[];
+  };
 }
 
-export function HomePageView({ homepage, blogPosts = [] }: HomePageViewProps) {
+export function HomePageView({
+  homepage,
+  blogPosts = [],
+  featuredMenu = { coffee: [], nonCoffee: [], pastries: [] },
+}: HomePageViewProps) {
   const sections = homepage?.sections.filter((section) => section.isEnabled) ?? [];
+
+  function renderFeaturedMenu(data: Record<string, unknown>, key: string) {
+    return (
+      <FeaturedMenuSection
+        key={key}
+        data={data}
+        coffee={featuredMenu.coffee}
+        nonCoffee={featuredMenu.nonCoffee}
+        pastries={featuredMenu.pastries}
+      />
+    );
+  }
 
   if (sections.length === 0) {
     return (
       <main>
         <HeroSection data={fallbackHero} />
-        <FeaturedMenuSection data={fallbackFeaturedMenu} />
+        {renderFeaturedMenu(fallbackFeaturedMenu, 'featured-menu-fallback')}
         <AboutPreviewSection data={fallbackAbout} />
         <GalleryPreviewSection data={fallbackGallery} />
         <BlogsPreviewSection data={fallbackBlogs} posts={blogPosts} />
@@ -96,7 +118,7 @@ export function HomePageView({ homepage, blogPosts = [] }: HomePageViewProps) {
           case 'hero':
             return <HeroSection key={section.id} data={section.data} />;
           case 'featured_menu':
-            return <FeaturedMenuSection key={section.id} data={section.data} />;
+            return renderFeaturedMenu(section.data, section.id);
           case 'about_preview':
             return <AboutPreviewSection key={section.id} data={section.data} />;
           case 'gallery_preview':

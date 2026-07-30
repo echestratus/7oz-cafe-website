@@ -101,6 +101,7 @@ func New(deps Dependencies) *fiber.App {
 	loyalty.RegisterAdminRoutes(api, loyaltyHandler, authenticate)
 	customer.RegisterAdminRoutes(api, customerHandler, authenticate)
 	contact.RegisterPublicRoutes(api, contactHandler)
+	contact.RegisterAdminRoutes(api, contactHandler, authenticate)
 	api.Get("/openapi.yaml", serveOpenAPI)
 
 	deps.Logger.Info("routes registered", zap.String("service", deps.Config.Name))

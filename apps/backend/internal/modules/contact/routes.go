@@ -3,6 +3,7 @@ package contact
 import (
 	"time"
 
+	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/middleware"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/shared/apperr"
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/limiter"
@@ -20,4 +21,11 @@ func RegisterPublicRoutes(router fiber.Router, handler *Handler) {
 	})
 
 	public.Post("/", submitLimiter, handler.Create)
+}
+
+func RegisterAdminRoutes(router fiber.Router, handler *Handler, authenticate fiber.Handler) {
+	admin := router.Group("/admin/contact-messages", authenticate, middleware.RequirePermission("contact.manage"))
+	admin.Get("/", handler.ListAdmin)
+	admin.Get("/:id", handler.GetAdmin)
+	admin.Patch("/:id/status", handler.UpdateStatus)
 }

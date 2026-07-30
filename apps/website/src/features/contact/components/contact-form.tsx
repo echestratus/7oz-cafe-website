@@ -59,9 +59,9 @@ export function ContactForm() {
 
   if (submitted) {
     return (
-      <div className="space-y-6 rounded-media bg-surface-secondary/90 p-8 md:p-10">
+      <div className="space-y-6 rounded-media border border-border/60 bg-surface p-8 shadow-soft md:p-10">
         <p className="text-eyebrow">Message sent</p>
-        <h2 className="text-section-title text-text">Thank you</h2>
+        <h3 className="font-heading text-2xl text-text md:text-3xl">Thank you</h3>
         <p className="text-sm leading-relaxed text-text-secondary">
           We received your note and will get back to you soon.
         </p>
@@ -82,16 +82,9 @@ export function ContactForm() {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="space-y-6 rounded-media bg-surface-secondary/90 p-8 md:p-10"
+      className="space-y-6 rounded-media border border-border/60 bg-surface p-8 shadow-soft md:p-10"
       noValidate
     >
-      <div className="space-y-3">
-        <h2 className="text-section-title text-text">Send a message</h2>
-        <p className="text-sm leading-relaxed text-text-secondary">
-          Questions about the cafe, private gatherings, or anything else — write to us here.
-        </p>
-      </div>
-
       <label className="block space-y-2 text-sm">
         <span className="text-text">Full name</span>
         <input

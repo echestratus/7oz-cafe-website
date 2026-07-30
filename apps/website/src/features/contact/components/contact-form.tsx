@@ -23,7 +23,12 @@ const contactSchema = z.object({
 
 type ContactValues = z.infer<typeof contactSchema>;
 
-export function ContactForm() {
+interface ContactFormProps {
+  /** When true, renders the section title inside the form card (single source of heading). */
+  includeHeading?: boolean;
+}
+
+export function ContactForm({ includeHeading = true }: ContactFormProps) {
   const [formError, setFormError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
 
@@ -73,7 +78,7 @@ export function ContactForm() {
             setFormError(null);
           }}
         >
-          Send another message
+          Write again
         </Button>
       </div>
     );
@@ -82,9 +87,22 @@ export function ContactForm() {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="space-y-6 rounded-media border border-border/60 bg-surface p-8 shadow-soft md:p-10"
+      className="space-y-7 rounded-media border border-border/60 bg-surface p-8 shadow-soft md:space-y-8 md:p-10"
       noValidate
+      aria-labelledby={includeHeading ? 'contact-write-heading' : undefined}
     >
+      {includeHeading ? (
+        <div className="space-y-4 border-b border-border/70 pb-7 md:pb-8">
+          <p className="text-eyebrow">Contact</p>
+          <h2 id="contact-write-heading" className="text-section-title text-text">
+            Write to us
+          </h2>
+          <p className="text-sm leading-relaxed text-text-secondary md:text-base">
+            Questions about a visit, catering, or a coming location — we read every note.
+          </p>
+        </div>
+      ) : null}
+
       <label className="block space-y-2 text-sm">
         <span className="text-text">Full name</span>
         <input
@@ -136,7 +154,7 @@ export function ContactForm() {
       </label>
 
       <label className="block space-y-2 text-sm">
-        <span className="text-text">Message</span>
+        <span className="text-text">Your note</span>
         <textarea
           rows={5}
           className={authFieldClassName}
@@ -157,7 +175,7 @@ export function ContactForm() {
       ) : null}
 
       <Button type="submit" disabled={isSubmitting} className="w-full">
-        {isSubmitting ? 'Sending…' : 'Send message'}
+        {isSubmitting ? 'Sending…' : 'Submit'}
       </Button>
     </form>
   );

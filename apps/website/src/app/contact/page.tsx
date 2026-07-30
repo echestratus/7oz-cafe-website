@@ -74,10 +74,7 @@ export default async function ContactPage() {
           </Container>
         </section>
 
-        <section
-          aria-labelledby="contact-write-heading"
-          className="py-16 md:py-24 lg:py-28"
-        >
+        <section className="py-16 md:py-24 lg:py-28">
           <Container>
             <div className="grid gap-14 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-20 xl:gap-24">
               <Reveal className="space-y-10 lg:sticky lg:top-28 lg:self-start">
@@ -121,16 +118,7 @@ export default async function ContactPage() {
                 </ul>
               </Reveal>
 
-              <Reveal delay={0.08} className="space-y-8">
-                <div className="max-w-xl space-y-4">
-                  <p className="text-eyebrow">Write to us</p>
-                  <h2 id="contact-write-heading" className="text-section-title text-text">
-                    Send a message
-                  </h2>
-                  <p className="text-lede">
-                    Questions about a visit, catering, or a coming location — we read every note.
-                  </p>
-                </div>
+              <Reveal delay={0.08}>
                 <ContactForm />
               </Reveal>
             </div>

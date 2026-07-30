@@ -14,6 +14,49 @@ const fallbackHero = {
   ctaSecondary: { label: 'Explore Menu', href: '/menu' },
 };
 
+const fallbackFeaturedMenu = {
+  heading: 'Signature Selections',
+  description: 'A curated taste of our espresso and pastry craft.',
+};
+
+const fallbackAbout = {
+  heading: 'Our Craft',
+  description: 'We roast and pull with intention—seven ounces of focus in every cup.',
+  cta: { label: 'Our Story', href: '/about' },
+};
+
+const fallbackGallery = {
+  heading: 'Gallery',
+  description: 'Moments from the cafe floor.',
+  limit: 6,
+};
+
+const fallbackTestimonials = {
+  heading: 'Guest Voices',
+  items: [
+    {
+      name: 'Maya',
+      review: 'Quiet, precise, and worth the pause. The espresso tastes intentional.',
+    },
+    {
+      name: 'Arif',
+      review: 'A calm room with cups that feel crafted. I keep coming back for the latte.',
+    },
+  ],
+};
+
+const fallbackMembership = {
+  heading: 'Membership',
+  description: 'Join for priority reservations and member rewards.',
+  cta: { label: 'Become a Member', href: '/membership' },
+};
+
+const fallbackReservation = {
+  heading: 'Reserve Your Spot',
+  description: 'Book a table for coffee, conversation, and quiet hours.',
+  cta: { label: 'Book Now', href: '/reservations' },
+};
+
 interface HomePageViewProps {
   homepage: CmsPageSnapshot | null;
 }
@@ -25,6 +68,12 @@ export function HomePageView({ homepage }: HomePageViewProps) {
     return (
       <main>
         <HeroSection data={fallbackHero} />
+        <FeaturedMenuSection data={fallbackFeaturedMenu} />
+        <AboutPreviewSection data={fallbackAbout} />
+        <GalleryPreviewSection data={fallbackGallery} />
+        <TestimonialsSection data={fallbackTestimonials} />
+        <CtaBandSection data={fallbackMembership} tone="accent" />
+        <CtaBandSection data={fallbackReservation} tone="primary" />
       </main>
     );
   }

@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
 import { Reveal } from '@/components/ui/reveal';
+import { SectionIntro } from '@/components/ui/section-intro';
 import { asCta, asString } from '@/services/cms';
 
 interface CtaBandSectionProps {
@@ -12,15 +13,25 @@ export function CtaBandSection({ data, tone = 'primary' }: CtaBandSectionProps) 
   const heading = asString(data.heading, 'Join us');
   const description = asString(data.description, '');
   const cta = asCta(data.cta) ?? { label: 'Learn more', href: '/' };
-  const surface = tone === 'primary' ? 'bg-primary text-white' : 'bg-accent text-white';
+  const isPrimary = tone === 'primary';
 
   return (
-    <section className={`${surface} py-24 md:py-28`}>
+    <section
+      className={
+        isPrimary
+          ? 'section-pad bg-primary'
+          : 'section-pad border-y border-border bg-surface-secondary'
+      }
+    >
       <Container>
-        <Reveal className="mx-auto max-w-3xl space-y-6 text-center">
-          <h2 className="font-heading text-4xl md:text-5xl">{heading}</h2>
-          {description ? <p className="text-lg text-white/80">{description}</p> : null}
-          <Button href={cta.href} variant="secondary">
+        <Reveal className="mx-auto max-w-2xl space-y-8 text-center">
+          <SectionIntro
+            title={heading}
+            description={description || undefined}
+            align="center"
+            tone={isPrimary ? 'dark' : 'light'}
+          />
+          <Button href={cta.href} variant={isPrimary ? 'inverse' : 'primary'}>
             {cta.label}
           </Button>
         </Reveal>

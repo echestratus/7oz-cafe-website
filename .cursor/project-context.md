@@ -104,7 +104,9 @@ Notion
 
 Typography:
 
-Instrument Serif + Manrope
+Fraunces + Inter
+
+(Open alternatives to Blue Bottle Coffee's ABC Marfa + ABC Diatype)
 
 Minimal.
 

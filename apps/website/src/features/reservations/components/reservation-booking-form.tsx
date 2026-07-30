@@ -95,10 +95,10 @@ export function ReservationBookingForm() {
 
   if (confirmation) {
     return (
-      <div className="space-y-6 rounded-[24px] bg-surface-secondary p-8 md:p-10">
-        <p className="text-sm tracking-[0.18em] text-text-secondary uppercase">Confirmed request</p>
-        <h2 className="font-heading text-4xl text-text">We saved your table request</h2>
-        <p className="text-text-secondary">
+      <div className="space-y-6 rounded-media bg-surface-secondary/90 p-8 md:p-10">
+        <p className="text-eyebrow">Confirmed request</p>
+        <h2 className="text-section-title text-text">We saved your table request</h2>
+        <p className="text-lede text-base">
           Reservation <span className="text-text">{confirmation.reservationNumber}</span> for{' '}
           {confirmation.guestCount} guests on {confirmation.date} at {confirmation.time}.
         </p>
@@ -108,7 +108,7 @@ export function ReservationBookingForm() {
         </p>
         <Button
           type="button"
-          variant="ghost"
+          variant="outline"
           onClick={() => {
             setConfirmation(null);
             setNotes('');
@@ -124,10 +124,10 @@ export function ReservationBookingForm() {
   const availableSlots = slots.filter((slot) => slot.available);
 
   return (
-    <form onSubmit={onSubmit} className="space-y-8 rounded-[24px] bg-surface-secondary p-8 md:p-10">
-      <div className="space-y-2">
-        <h2 className="font-heading text-3xl text-text md:text-4xl">Reserve a table</h2>
-        <p className="text-sm text-text-secondary">
+    <form onSubmit={onSubmit} className="space-y-8 rounded-media bg-surface-secondary/90 p-8 md:p-10">
+      <div className="space-y-3">
+        <h2 className="text-section-title text-text">Reserve a table</h2>
+        <p className="text-sm leading-relaxed text-text-secondary">
           Choose a date and party size, then pick an open time.
         </p>
       </div>
@@ -179,7 +179,7 @@ export function ReservationBookingForm() {
                 type="button"
                 onClick={() => setTime(slot.time)}
                 aria-pressed={selected}
-                className={`min-h-11 rounded-[12px] border px-4 py-2 text-sm transition-colors ${
+                className={`min-h-11 rounded-full border px-5 py-2 text-sm transition-colors ${
                   selected
                     ? 'border-primary bg-primary text-white'
                     : 'border-border bg-surface text-text hover:bg-background'

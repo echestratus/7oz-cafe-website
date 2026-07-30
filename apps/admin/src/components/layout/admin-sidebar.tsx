@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
+  BookOpenText,
   CalendarDays,
   FileImage,
   Gift,
@@ -21,6 +22,7 @@ const links = [
   { href: '/reservations', label: 'Reservations', icon: CalendarDays, permission: 'reservation.manage' },
   { href: '/membership', label: 'Membership', icon: Sparkles, permission: 'membership.manage' },
   { href: '/loyalty', label: 'Loyalty', icon: Gift, permission: 'loyalty.manage' },
+  { href: '/blogs', label: 'Blogs', icon: BookOpenText, permission: 'blog.manage' },
   { href: '/cms', label: 'CMS', icon: Newspaper, permission: 'cms.manage' },
   { href: '/media', label: 'Media', icon: FileImage, permission: 'cms.manage' },
 ] as const;

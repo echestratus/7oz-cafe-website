@@ -1120,6 +1120,167 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessEnvelope"
+  /public/blogs:
+    get:
+      summary: List published blog posts
+      operationId: listPublicBlogs
+      tags: [Blogs]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 12
+      responses:
+        "200":
+          description: Published blog posts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /public/blogs/{slug}:
+    get:
+      summary: Get a published blog post by slug
+      operationId: getPublicBlogBySlug
+      tags: [Blogs]
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Blog post detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+        "404":
+          description: Blog post not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+  /admin/blogs:
+    get:
+      summary: List blog posts for admin
+      operationId: listAdminBlogs
+      tags: [Blogs]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, published, archived]
+        - name: kind
+          in: query
+          schema:
+            type: string
+            enum: [news, event]
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Blog posts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+    post:
+      summary: Create a blog post
+      operationId: createBlogPost
+      tags: [Blogs]
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: Blog post created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/blogs/{id}:
+    get:
+      summary: Get blog post by id
+      operationId: getAdminBlog
+      tags: [Blogs]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Blog post
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+    patch:
+      summary: Update a blog post
+      operationId: updateBlogPost
+      tags: [Blogs]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Blog post updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+    delete:
+      summary: Soft-delete a blog post
+      operationId: deleteBlogPost
+      tags: [Blogs]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Blog post deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
 components:
   securitySchemes:
     bearerAuth:

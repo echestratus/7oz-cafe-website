@@ -6,6 +6,8 @@ import { FeaturedMenuSection } from '@/features/home/components/featured-menu-se
 import { GalleryPreviewSection } from '@/features/home/components/gallery-preview-section';
 import { HeroSection } from '@/features/home/components/hero-section';
 import { TestimonialsSection } from '@/features/home/components/testimonials-section';
+import { BlogsPreviewSection } from '@/features/blogs/components/blogs-preview-section';
+import type { BlogPost } from '@/services/blog';
 
 const fallbackHero = {
   title: 'Espresso Cafe',
@@ -20,8 +22,9 @@ const fallbackFeaturedMenu = {
 };
 
 const fallbackAbout = {
-  heading: 'Our Craft',
-  description: 'We roast and pull with intention—seven ounces of focus in every cup.',
+  heading: 'From Jakarta to Tashkent',
+  description:
+    "Jakarta's finest has arrived in the heart of Tashkent — bringing Indonesian coffee heritage to an international stage.",
   cta: { label: 'Our Story', href: '/about' },
 };
 
@@ -29,6 +32,12 @@ const fallbackGallery = {
   heading: 'Gallery',
   description: 'Moments from the cafe floor.',
   limit: 6,
+};
+
+const fallbackBlogs = {
+  heading: 'News & Events',
+  description: 'Stories from the cafe — openings, visits, and moments worth sharing.',
+  limit: 3,
 };
 
 const fallbackTestimonials = {
@@ -59,9 +68,10 @@ const fallbackReservation = {
 
 interface HomePageViewProps {
   homepage: CmsPageSnapshot | null;
+  blogPosts?: BlogPost[];
 }
 
-export function HomePageView({ homepage }: HomePageViewProps) {
+export function HomePageView({ homepage, blogPosts = [] }: HomePageViewProps) {
   const sections = homepage?.sections.filter((section) => section.isEnabled) ?? [];
 
   if (sections.length === 0) {
@@ -71,6 +81,7 @@ export function HomePageView({ homepage }: HomePageViewProps) {
         <FeaturedMenuSection data={fallbackFeaturedMenu} />
         <AboutPreviewSection data={fallbackAbout} />
         <GalleryPreviewSection data={fallbackGallery} />
+        <BlogsPreviewSection data={fallbackBlogs} posts={blogPosts} />
         <TestimonialsSection data={fallbackTestimonials} />
         <CtaBandSection data={fallbackMembership} tone="accent" />
         <CtaBandSection data={fallbackReservation} tone="primary" />
@@ -90,6 +101,10 @@ export function HomePageView({ homepage }: HomePageViewProps) {
             return <AboutPreviewSection key={section.id} data={section.data} />;
           case 'gallery_preview':
             return <GalleryPreviewSection key={section.id} data={section.data} />;
+          case 'blogs_preview':
+            return (
+              <BlogsPreviewSection key={section.id} data={section.data} posts={blogPosts} />
+            );
           case 'membership_promo':
             return <CtaBandSection key={section.id} data={section.data} tone="accent" />;
           case 'reservation_cta':

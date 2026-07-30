@@ -6,6 +6,7 @@ import { Container } from '@/components/ui/container';
 const navItems = [
   { href: '/menu', label: 'Menu' },
   { href: '/gallery', label: 'Gallery' },
+  { href: '/blogs', label: 'Blogs' },
   { href: '/about', label: 'About' },
   { href: '/membership', label: 'Membership' },
   { href: '/loyalty', label: 'Loyalty' },

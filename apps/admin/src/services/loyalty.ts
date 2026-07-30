@@ -32,7 +32,20 @@ export type LoyaltyCampaign = {
   endsAt: string;
   pointMultiplier: number;
   bonusPoints: number;
+  eligibleLevelCodes: string[];
   isActive: boolean;
+};
+
+export type LoyaltyCampaignInput = {
+  code: string;
+  name: string;
+  description?: string;
+  startsAt: string;
+  endsAt: string;
+  pointMultiplier: number;
+  bonusPoints: number;
+  eligibleLevelCodes?: string[];
+  isActive?: boolean;
 };
 
 export type LoyaltyReward = {
@@ -86,6 +99,25 @@ export async function adjustLoyalty(input: {
 
 export async function listLoyaltyCampaigns(): Promise<LoyaltyCampaign[]> {
   return apiRequest<LoyaltyCampaign[]>('/admin/loyalty/campaigns');
+}
+
+export async function createLoyaltyCampaign(
+  input: LoyaltyCampaignInput,
+): Promise<LoyaltyCampaign> {
+  return apiRequest<LoyaltyCampaign>('/admin/loyalty/campaigns', {
+    method: 'POST',
+    body: input,
+  });
+}
+
+export async function updateLoyaltyCampaign(
+  id: string,
+  input: LoyaltyCampaignInput,
+): Promise<LoyaltyCampaign> {
+  return apiRequest<LoyaltyCampaign>(`/admin/loyalty/campaigns/${id}`, {
+    method: 'PATCH',
+    body: input,
+  });
 }
 
 export async function listLoyaltyRewards(): Promise<LoyaltyReward[]> {

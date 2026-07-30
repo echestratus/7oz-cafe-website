@@ -15,6 +15,7 @@ type Message struct {
 	Subject string
 	Text    string
 	HTML    string
+	ReplyTo string
 }
 
 // Sender delivers email messages.
@@ -33,13 +34,22 @@ type ReservationConfirmation struct {
 	Status            string
 }
 
-// Notifier sends product emails (verification, reset, reservation).
+// ContactInquiry carries a public contact form submission for staff notification.
+type ContactInquiry struct {
+	FullName string
+	Email    string
+	Phone    string
+	Message  string
+}
+
+// Notifier sends product emails (verification, reset, reservation, contact).
 type Notifier struct {
-	sender     Sender
-	fromEmail  string
-	fromName   string
-	websiteURL string
-	log        *zap.Logger
+	sender         Sender
+	fromEmail      string
+	fromName       string
+	websiteURL     string
+	contactToEmail string
+	log            *zap.Logger
 }
 
 // NewFromConfig builds a Sender + Notifier from application config.
@@ -76,12 +86,18 @@ func NewFromConfig(cfg *config.Config, log *zap.Logger) (*Notifier, error) {
 		fromName = "7Oz Espresso Cafe"
 	}
 
+	contactTo := strings.TrimSpace(cfg.ContactToEmail)
+	if contactTo == "" {
+		contactTo = fromEmail
+	}
+
 	return &Notifier{
-		sender:     sender,
-		fromEmail:  fromEmail,
-		fromName:   fromName,
-		websiteURL: websiteURL,
-		log:        log,
+		sender:         sender,
+		fromEmail:      fromEmail,
+		fromName:       fromName,
+		websiteURL:     websiteURL,
+		contactToEmail: contactTo,
+		log:            log,
 	}, nil
 }
 
@@ -98,7 +114,7 @@ func (n *Notifier) SendVerification(ctx context.Context, toEmail, fullName, rawT
 		escapeHTML(displayName(fullName)),
 		escapeHTML(link),
 	)
-	return n.send(ctx, toEmail, subject, text, html)
+	return n.send(ctx, toEmail, subject, text, html, "")
 }
 
 func (n *Notifier) SendPasswordReset(ctx context.Context, toEmail, fullName, rawToken string) error {
@@ -114,7 +130,7 @@ func (n *Notifier) SendPasswordReset(ctx context.Context, toEmail, fullName, raw
 		escapeHTML(displayName(fullName)),
 		escapeHTML(link),
 	)
-	return n.send(ctx, toEmail, subject, text, html)
+	return n.send(ctx, toEmail, subject, text, html, "")
 }
 
 func (n *Notifier) SendReservationConfirmation(ctx context.Context, reservation ReservationConfirmation) error {
@@ -142,15 +158,44 @@ func (n *Notifier) SendReservationConfirmation(ctx context.Context, reservation 
 		reservation.GuestCount,
 		escapeHTML(reservation.Status),
 	)
-	return n.send(ctx, to, subject, text, html)
+	return n.send(ctx, to, subject, text, html, "")
 }
 
-func (n *Notifier) send(ctx context.Context, to, subject, text, html string) error {
+func (n *Notifier) SendContactMessage(ctx context.Context, inquiry ContactInquiry) error {
+	to := strings.TrimSpace(n.contactToEmail)
+	if to == "" {
+		return fmt.Errorf("contact recipient email is not configured")
+	}
+
+	subject := fmt.Sprintf("New contact message from %s", displayName(inquiry.FullName))
+	phoneLine := strings.TrimSpace(inquiry.Phone)
+	if phoneLine == "" {
+		phoneLine = "—"
+	}
+	text := fmt.Sprintf(
+		"New website contact message\n\nName: %s\nEmail: %s\nPhone: %s\n\nMessage:\n%s\n",
+		displayName(inquiry.FullName),
+		strings.TrimSpace(inquiry.Email),
+		phoneLine,
+		strings.TrimSpace(inquiry.Message),
+	)
+	html := fmt.Sprintf(
+		`<p>New website contact message</p><ul><li><strong>Name:</strong> %s</li><li><strong>Email:</strong> %s</li><li><strong>Phone:</strong> %s</li></ul><p><strong>Message</strong></p><p>%s</p>`,
+		escapeHTML(displayName(inquiry.FullName)),
+		escapeHTML(strings.TrimSpace(inquiry.Email)),
+		escapeHTML(phoneLine),
+		escapeHTML(strings.TrimSpace(inquiry.Message)),
+	)
+	return n.send(ctx, to, subject, text, html, strings.TrimSpace(inquiry.Email))
+}
+
+func (n *Notifier) send(ctx context.Context, to, subject, text, html, replyTo string) error {
 	msg := Message{
 		To:      []string{to},
 		Subject: subject,
 		Text:    text,
 		HTML:    html,
+		ReplyTo: replyTo,
 	}
 	if err := n.sender.Send(ctx, msg); err != nil {
 		n.log.Error("failed to send email",

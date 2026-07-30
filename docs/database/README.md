@@ -57,6 +57,7 @@ Override with `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, `SEED_ADMIN_NAME`.
 | `cafe_tables` | Physical tables and seat capacity | Yes (`deleted_at`) |
 | `reservations` | Guest/customer bookings | Yes (`deleted_at`) |
 | `reservation_histories` | Reservation status audit trail | No |
+| `contact_messages` | Public contact form submissions | No |
 | `membership_levels` | Configurable membership tiers | Yes (`deleted_at`) |
 | `membership_benefits` | Tier and global benefits | Yes (`deleted_at`) |
 | `memberships` | Customer membership profiles | Yes (`deleted_at`) |

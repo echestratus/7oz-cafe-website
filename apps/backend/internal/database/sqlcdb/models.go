@@ -106,6 +106,19 @@ type CmsVersion struct {
 	CreatedAt     time.Time  `json:"created_at"`
 }
 
+type ContactMessage struct {
+	ID        uuid.UUID `json:"id"`
+	FullName  string    `json:"full_name"`
+	Email     string    `json:"email"`
+	Phone     string    `json:"phone"`
+	Message   string    `json:"message"`
+	Status    string    `json:"status"`
+	IpAddress string    `json:"ip_address"`
+	UserAgent string    `json:"user_agent"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
 type LoyaltyAccount struct {
 	ID               uuid.UUID  `json:"id"`
 	UserID           uuid.UUID  `json:"user_id"`

@@ -433,6 +433,36 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorEnvelope"
+  /public/contact:
+    post:
+      summary: Submit a public contact message
+      operationId: createPublicContactMessage
+      tags: [Contact]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateContactMessageRequest"
+      responses:
+        "201":
+          description: Contact message accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+        "422":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "429":
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
   /customer/reservations:
     get:
       summary: List authenticated customer reservations
@@ -1516,4 +1546,21 @@ components:
           minimum: 1
         notes:
           type: string
+    CreateContactMessageRequest:
+      type: object
+      required: [fullName, email, message]
+      properties:
+        fullName:
+          type: string
+          maxLength: 120
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+          maxLength: 40
+        message:
+          type: string
+          minLength: 1
+          maxLength: 5000
 `

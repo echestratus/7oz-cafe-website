@@ -14,6 +14,7 @@ type Config struct {
 	Port               int
 	URL                string
 	WebsiteURL         string
+	ContactToEmail     string
 	CORSAllowedOrigins []string
 	Database           DatabaseConfig
 	Redis              RedisConfig
@@ -82,6 +83,7 @@ func Load() (*Config, error) {
 		Port:               v.GetInt("APP_PORT"),
 		URL:                v.GetString("APP_URL"),
 		WebsiteURL:         v.GetString("WEBSITE_URL"),
+		ContactToEmail:     v.GetString("CONTACT_TO_EMAIL"),
 		CORSAllowedOrigins: splitAndTrim(v.GetString("CORS_ALLOWED_ORIGINS")),
 		Database: DatabaseConfig{
 			Host:     v.GetString("DB_HOST"),
@@ -150,6 +152,7 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("STORAGE_LOCAL_PATH", "./storage")
 
 	v.SetDefault("WEBSITE_URL", "http://localhost:3000")
+	v.SetDefault("CONTACT_TO_EMAIL", "")
 	v.SetDefault("SMTP_HOST", "")
 	v.SetDefault("SMTP_PORT", 1025)
 	v.SetDefault("SMTP_USERNAME", "")
@@ -160,7 +163,7 @@ func setDefaults(v *viper.Viper) {
 
 func bindEnv(v *viper.Viper) {
 	keys := []string{
-		"APP_ENV", "APP_NAME", "APP_PORT", "APP_URL", "WEBSITE_URL", "CORS_ALLOWED_ORIGINS",
+		"APP_ENV", "APP_NAME", "APP_PORT", "APP_URL", "WEBSITE_URL", "CONTACT_TO_EMAIL", "CORS_ALLOWED_ORIGINS",
 		"DB_HOST", "DB_PORT", "DB_USER", "DB_PASSWORD", "DB_NAME", "DB_SSLMODE",
 		"REDIS_HOST", "REDIS_PORT", "REDIS_PASSWORD",
 		"JWT_ACCESS_SECRET", "JWT_REFRESH_SECRET", "JWT_ACCESS_TTL", "JWT_REFRESH_TTL",

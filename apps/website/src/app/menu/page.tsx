@@ -1,13 +1,12 @@
 import type { Metadata } from 'next';
-import { readdir } from 'node:fs/promises';
-import path from 'node:path';
 
 import { SiteShell } from '@/components/layout/site-shell';
 import { Container } from '@/components/ui/container';
 import { Reveal } from '@/components/ui/reveal';
 import { SectionIntro } from '@/components/ui/section-intro';
 import { MenuBookSection } from '@/features/menu/components/menu-book-section';
-import { MenuHighlightsGrid } from '@/features/menu/components/menu-highlights-grid';
+import { MenuCategorySections } from '@/features/menu/components/menu-category-sections';
+import { getMenuCatalog } from '@/features/menu/lib/menu-catalog';
 import { getPublishedCmsPage } from '@/services/cms';
 
 export const metadata: Metadata = {
@@ -16,35 +15,8 @@ export const metadata: Metadata = {
   alternates: { canonical: '/menu' },
 };
 
-const IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.avif']);
-
-function toLabel(filename: string): string {
-  return filename
-    .replace(/\.[^.]+$/, '')
-    .split('-')
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ');
-}
-
-async function listMenuItems() {
-  const directory = path.join(process.cwd(), 'public', 'assets', 'menu');
-  try {
-    const entries = await readdir(directory);
-    return entries
-      .filter((entry) => IMAGE_EXTENSIONS.has(path.extname(entry).toLowerCase()))
-      .sort((a, b) => a.localeCompare(b))
-      .map((entry) => ({
-        src: `/assets/menu/${entry}`,
-        alt: toLabel(entry),
-        caption: toLabel(entry),
-      }));
-  } catch {
-    return [];
-  }
-}
-
 export default async function MenuPage() {
-  const [footer, items] = await Promise.all([getPublishedCmsPage('footer'), listMenuItems()]);
+  const [footer, catalog] = await Promise.all([getPublishedCmsPage('footer'), getMenuCatalog()]);
 
   return (
     <SiteShell footer={footer}>
@@ -64,19 +36,17 @@ export default async function MenuPage() {
           </Reveal>
         </Container>
 
-        {items.length > 0 ? (
-          <Container className="mt-24 md:mt-32">
-            <Reveal className="mb-14">
-              <SectionIntro
-                eyebrow="Highlights"
-                title="From the Bar"
-                description="A closer look at the drinks and pastry we craft daily."
-              />
-            </Reveal>
+        <Container className="mt-24 md:mt-32">
+          <Reveal className="mb-10">
+            <SectionIntro
+              eyebrow="Highlights"
+              title="By Category"
+              description="Explore coffee, non-coffee drinks, and pastry — photographed as served at 7Oz."
+            />
+          </Reveal>
 
-            <MenuHighlightsGrid items={items} />
-          </Container>
-        ) : null}
+          <MenuCategorySections categories={catalog.categories} />
+        </Container>
       </main>
     </SiteShell>
   );

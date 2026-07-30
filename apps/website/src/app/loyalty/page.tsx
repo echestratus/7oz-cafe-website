@@ -4,6 +4,7 @@ import { SiteShell } from '@/components/layout/site-shell';
 import { Container } from '@/components/ui/container';
 import { Reveal } from '@/components/ui/reveal';
 import { SectionIntro } from '@/components/ui/section-intro';
+import { LoyaltyPageCta } from '@/features/loyalty/components/loyalty-page-cta';
 import { getPublishedCmsPage } from '@/services/cms';
 import { getPublicLoyaltyRewards } from '@/services/loyalty';
 
@@ -36,6 +37,9 @@ export default async function LoyaltyPage() {
               titleAs="h1"
               className="max-w-3xl"
             />
+            <div className="mt-8">
+              <LoyaltyPageCta />
+            </div>
           </Reveal>
 
           <section className="space-y-10" aria-labelledby="rewards-heading">

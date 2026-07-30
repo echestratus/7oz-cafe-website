@@ -1,6 +1,8 @@
 import type { ApiErrorResponse, ApiSuccessResponse } from '@7oz/shared-types';
 
+import { ApiClientError, apiRequest } from '@/lib/api-client';
 import { getApiBaseUrl } from '@/lib/env';
+import { useAuthStore } from '@/stores/auth-store';
 
 export type AvailabilitySlot = {
   time: string;
@@ -72,15 +74,19 @@ export async function getAvailability(date: string, guestCount: number): Promise
   return parseResponse<AvailabilitySlot[]>(response);
 }
 
+/** Creates via public endpoint; attaches Bearer when the customer is signed in. */
 export async function createReservation(input: CreateReservationInput): Promise<Reservation> {
-  const response = await fetch(`${getApiBaseUrl()}/public/reservations`, {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(input),
-  });
-
-  return parseResponse<Reservation>(response);
+  const hasToken = Boolean(useAuthStore.getState().accessToken);
+  try {
+    return await apiRequest<Reservation>('/public/reservations', {
+      method: 'POST',
+      auth: hasToken,
+      body: input,
+    });
+  } catch (error) {
+    if (error instanceof ApiClientError) {
+      throw new ReservationApiError(error.message, error.status);
+    }
+    throw error;
+  }
 }

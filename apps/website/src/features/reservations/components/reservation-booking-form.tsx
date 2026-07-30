@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useTransition, type FormEvent } from 'react';
+import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -10,6 +11,7 @@ import {
   type AvailabilitySlot,
   type Reservation,
 } from '@/services/reservations';
+import { useAuthStore } from '@/stores/auth-store';
 
 function todayISODate(): string {
   const now = new Date();
@@ -19,6 +21,10 @@ function todayISODate(): string {
 }
 
 export function ReservationBookingForm() {
+  const user = useAuthStore((state) => state.user);
+  const hydrated = useAuthStore((state) => state.hydrated);
+  const accessToken = useAuthStore((state) => state.accessToken);
+
   const [date, setDate] = useState(todayISODate);
   const [guestCount, setGuestCount] = useState(2);
   const [time, setTime] = useState('');
@@ -32,6 +38,16 @@ export function ReservationBookingForm() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [confirmation, setConfirmation] = useState<Reservation | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [prefilled, setPrefilled] = useState(false);
+
+  useEffect(() => {
+    if (!hydrated || prefilled || !user) {
+      return;
+    }
+    setFullName((current) => current || user.fullName);
+    setEmail((current) => current || user.email);
+    setPrefilled(true);
+  }, [hydrated, prefilled, user]);
 
   useEffect(() => {
     let cancelled = false;
@@ -106,6 +122,15 @@ export function ReservationBookingForm() {
           Status is currently <span className="capitalize text-text">{confirmation.status}</span>.
           Our team will confirm shortly.
         </p>
+        {accessToken ? (
+          <p className="text-sm text-text-secondary">
+            This booking is linked to your account. Manage it from{' '}
+            <Link className="text-primary underline-offset-4 hover:underline" href="/account#reservations">
+              your account
+            </Link>
+            .
+          </p>
+        ) : null}
         <Button
           type="button"
           variant="outline"
@@ -129,6 +154,9 @@ export function ReservationBookingForm() {
         <h2 className="text-section-title text-text">Reserve a table</h2>
         <p className="text-sm leading-relaxed text-text-secondary">
           Choose a date and party size, then pick an open time.
+          {accessToken
+            ? ' Signed in — this reservation will count toward loyalty and membership.'
+            : null}
         </p>
       </div>
 

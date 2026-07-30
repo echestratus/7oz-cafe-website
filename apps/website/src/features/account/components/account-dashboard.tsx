@@ -15,6 +15,7 @@ import {
 } from '@/services/customer-membership';
 import { useAuthStore } from '@/stores/auth-store';
 
+import { AccountReservationsSection } from './account-reservations-section';
 import { LoyaltyRedeemSection } from './loyalty-redeem-section';
 
 function formatDate(value: string): string {
@@ -72,6 +73,8 @@ export function AccountDashboard() {
           </Button>
         </div>
       </section>
+
+      <AccountReservationsSection />
 
       <section className="space-y-6" aria-labelledby="membership-heading">
         <h2 id="membership-heading" className="text-section-title text-text">

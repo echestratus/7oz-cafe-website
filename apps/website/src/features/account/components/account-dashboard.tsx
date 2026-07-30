@@ -15,6 +15,8 @@ import {
 } from '@/services/customer-membership';
 import { useAuthStore } from '@/stores/auth-store';
 
+import { LoyaltyRedeemSection } from './loyalty-redeem-section';
+
 function formatDate(value: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
@@ -165,20 +167,23 @@ export function AccountDashboard() {
           </p>
         ) : null}
         {loyalty ? (
-          <div className="grid gap-8 sm:grid-cols-3">
-            <div className="space-y-2 border-t border-border pt-6">
-              <p className="text-eyebrow">Balance</p>
-              <p className="text-page-title text-text">{loyalty.balance}</p>
+          <>
+            <div className="grid gap-8 sm:grid-cols-3">
+              <div className="space-y-2 border-t border-border pt-6">
+                <p className="text-eyebrow">Balance</p>
+                <p className="text-page-title text-text">{loyalty.balance}</p>
+              </div>
+              <div className="space-y-2 border-t border-border pt-6">
+                <p className="text-eyebrow">Lifetime earned</p>
+                <p className="text-section-title text-text">{loyalty.lifetimeEarned}</p>
+              </div>
+              <div className="space-y-2 border-t border-border pt-6">
+                <p className="text-eyebrow">Lifetime redeemed</p>
+                <p className="text-section-title text-text">{loyalty.lifetimeRedeemed}</p>
+              </div>
             </div>
-            <div className="space-y-2 border-t border-border pt-6">
-              <p className="text-eyebrow">Lifetime earned</p>
-              <p className="text-section-title text-text">{loyalty.lifetimeEarned}</p>
-            </div>
-            <div className="space-y-2 border-t border-border pt-6">
-              <p className="text-eyebrow">Lifetime redeemed</p>
-              <p className="text-section-title text-text">{loyalty.lifetimeRedeemed}</p>
-            </div>
-          </div>
+            <LoyaltyRedeemSection balance={loyalty.balance} />
+          </>
         ) : null}
 
         {loyaltyHistoryQuery.data && loyaltyHistoryQuery.data.length > 0 ? (

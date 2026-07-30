@@ -28,7 +28,10 @@ export function LoginForm() {
         session.user.permissions.includes('cms.manage') ||
         session.user.permissions.includes('reservation.manage') ||
         session.user.permissions.includes('membership.manage') ||
-        session.user.permissions.includes('loyalty.manage');
+        session.user.permissions.includes('loyalty.manage') ||
+        session.user.permissions.includes('contact.manage') ||
+        session.user.permissions.includes('customer.read') ||
+        session.user.permissions.includes('blog.manage');
 
       if (!canAccessAdmin) {
         setError('This account does not have admin access.');

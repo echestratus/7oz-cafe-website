@@ -75,6 +75,8 @@ Override with `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, `SEED_ADMIN_NAME`.
 - `admin`
 - `super_admin`
 
+Admin contact inbox uses permission `contact.manage` (granted to Admin and Super Admin).
+
 ## ER Diagram
 
 ```mermaid

@@ -463,6 +463,86 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorEnvelope"
+  /admin/contact-messages:
+    get:
+      summary: List contact messages
+      operationId: listAdminContactMessages
+      tags: [Contact]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [new, read, archived]
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Paginated contact messages
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/contact-messages/{id}:
+    get:
+      summary: Get a contact message
+      operationId: getAdminContactMessage
+      tags: [Contact]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Contact message details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/contact-messages/{id}/status:
+    patch:
+      summary: Update contact message status
+      operationId: updateAdminContactMessageStatus
+      tags: [Contact]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateContactMessageStatusRequest"
+      responses:
+        "200":
+          description: Contact message status updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
   /customer/reservations:
     get:
       summary: List authenticated customer reservations
@@ -1563,4 +1643,11 @@ components:
           type: string
           minLength: 1
           maxLength: 5000
+    UpdateContactMessageStatusRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [new, read, archived]
 `

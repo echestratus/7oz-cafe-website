@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { SiteShell } from '@/components/layout/site-shell';
 import { HomePageView } from '@/features/home/components/home-page-view';
 import { metadataFromSeo } from '@/lib/seo';
+import { fallbackBlogPosts, listPublishedBlogs } from '@/services/blog';
 import { getPublishedCmsPage } from '@/services/cms';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -15,14 +16,20 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const [homepage, footer] = await Promise.all([
+  const [homepage, footer, blogs] = await Promise.all([
     getPublishedCmsPage('homepage'),
     getPublishedCmsPage('footer'),
+    listPublishedBlogs(1, 3).catch(() => ({
+      items: fallbackBlogPosts.slice(0, 3),
+      page: 1,
+      limit: 3,
+      total: fallbackBlogPosts.length,
+    })),
   ]);
 
   return (
     <SiteShell footer={footer} headerTone="overlay">
-      <HomePageView homepage={homepage} />
+      <HomePageView homepage={homepage} blogPosts={blogs.items} />
     </SiteShell>
   );
 }

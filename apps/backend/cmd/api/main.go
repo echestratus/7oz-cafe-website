@@ -13,6 +13,7 @@ import (
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/database"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/logger"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/authentication"
+	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/blog"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/cms"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/health"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/loyalty"
@@ -77,6 +78,7 @@ func main() {
 	healthService := health.NewService(cfg.Name, postgres, redisClient)
 	authService := authentication.NewService(cfg, postgres)
 	cmsService := cms.NewService(postgres)
+	blogService := blog.NewService(postgres)
 	mediaService := media.NewService(cfg, postgres)
 	reservationService := reservation.NewService(postgres)
 	membershipService := membership.NewService(postgres)
@@ -93,6 +95,7 @@ func main() {
 		HealthService:      healthService,
 		AuthService:        authService,
 		CMSService:         cmsService,
+		BlogService:        blogService,
 		MediaService:       mediaService,
 		ReservationService: reservationService,
 		MembershipService:  membershipService,

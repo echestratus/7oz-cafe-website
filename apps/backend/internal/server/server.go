@@ -5,6 +5,7 @@ import (
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/database"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/middleware"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/authentication"
+	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/blog"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/cms"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/health"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/loyalty"
@@ -25,6 +26,7 @@ type Dependencies struct {
 	HealthService *health.Service
 	AuthService        *authentication.Service
 	CMSService         *cms.Service
+	BlogService        *blog.Service
 	MediaService       *media.Service
 	ReservationService *reservation.Service
 	MembershipService  *membership.Service
@@ -59,6 +61,7 @@ func New(deps Dependencies) *fiber.App {
 	healthHandler := health.NewHandler(deps.HealthService)
 	authHandler := authentication.NewHandler(deps.AuthService, deps.Config)
 	cmsHandler := cms.NewHandler(deps.CMSService)
+	blogHandler := blog.NewHandler(deps.BlogService)
 	mediaHandler := media.NewHandler(deps.MediaService)
 	reservationHandler := reservation.NewHandler(deps.ReservationService)
 	membershipHandler := membership.NewHandler(deps.MembershipService)
@@ -78,6 +81,8 @@ func New(deps Dependencies) *fiber.App {
 	authentication.RegisterRoutes(api, authHandler, authenticate, deps.Config.CORSAllowedOrigins)
 	cms.RegisterPublicRoutes(api, cmsHandler)
 	cms.RegisterAdminRoutes(api, cmsHandler, authenticate)
+	blog.RegisterPublicRoutes(api, blogHandler)
+	blog.RegisterAdminRoutes(api, blogHandler, authenticate)
 	media.RegisterAdminRoutes(api, mediaHandler, authenticate)
 	reservation.RegisterPublicRoutes(api, reservationHandler, optionalAuth)
 	reservation.RegisterCustomerRoutes(api, reservationHandler, authenticate)

@@ -13,6 +13,7 @@ interface SiteFooterProps {
 const fallbackLinks = [
   { label: 'Menu', href: '/menu' },
   { label: 'Gallery', href: '/gallery' },
+  { label: 'Blogs', href: '/blogs' },
   { label: 'About', href: '/about' },
   { label: 'Membership', href: '/membership' },
   { label: 'Loyalty', href: '/loyalty' },

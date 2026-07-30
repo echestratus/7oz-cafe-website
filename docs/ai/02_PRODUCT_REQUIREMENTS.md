@@ -185,6 +185,19 @@ Customers shall be able to:
 
 ---
 
+## Blogs / News & Events
+
+The public website shall include:
+
+- Blog listing page
+- Blog detail pages by SEO-friendly slug
+- Homepage blogs preview
+- Support for news and event kinds
+
+Content is managed via Admin (not hardcoded).
+
+---
+
 ## Contact
 
 Provide:
@@ -253,6 +266,18 @@ Categories
 Ordering
 
 Visibility
+
+---
+
+## Blogs
+
+CRUD
+
+News and event kinds
+
+Draft / publish / archive
+
+SEO fields
 
 ---
 

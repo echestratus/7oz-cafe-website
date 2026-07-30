@@ -33,6 +33,23 @@ type AuthToken struct {
 	CreatedAt time.Time  `json:"created_at"`
 }
 
+type BlogPost struct {
+	ID           uuid.UUID  `json:"id"`
+	Slug         string     `json:"slug"`
+	Title        string     `json:"title"`
+	Excerpt      string     `json:"excerpt"`
+	Body         string     `json:"body"`
+	Kind         string     `json:"kind"`
+	CoverUrl     *string    `json:"cover_url"`
+	CoverMediaID *uuid.UUID `json:"cover_media_id"`
+	Status       string     `json:"status"`
+	PublishedAt  *time.Time `json:"published_at"`
+	Seo          []byte     `json:"seo"`
+	CreatedAt    time.Time  `json:"created_at"`
+	UpdatedAt    time.Time  `json:"updated_at"`
+	DeletedAt    *time.Time `json:"deleted_at"`
+}
+
 type CafeTable struct {
 	ID        uuid.UUID  `json:"id"`
 	Code      string     `json:"code"`

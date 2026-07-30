@@ -48,11 +48,10 @@ The CMS manages:
 - SEO Metadata
 - Social Media
 - Announcement Banner
+- Blog / News & Events
 
 Future:
 
-- Blog
-- Events
 - Careers
 
 ---
@@ -86,6 +85,10 @@ Reservation CTA
 ↓
 
 Testimonials
+
+↓
+
+Blogs Preview
 
 ↓
 
@@ -312,6 +315,20 @@ GET /api/v1/public/cms/footer
 
 GET /api/v1/public/cms/contact
 
+Blog posts are a dedicated domain (not cms_pages):
+
+GET /api/v1/public/blogs
+
+GET /api/v1/public/blogs/{slug}
+
+GET /api/v1/admin/blogs
+
+POST /api/v1/admin/blogs
+
+PATCH /api/v1/admin/blogs/{id}
+
+DELETE /api/v1/admin/blogs/{id}
+
 Admin
 
 GET /api/v1/admin/cms
@@ -337,6 +354,8 @@ cms_versions
 media_assets
 
 media_folders
+
+blog_posts
 
 ---
 

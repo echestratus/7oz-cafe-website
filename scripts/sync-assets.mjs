@@ -18,7 +18,7 @@ const targets = [
   join(root, 'apps', 'admin', 'public', 'assets'),
 ];
 
-const includeCategories = ['logo', 'home', 'menu', 'gallery', 'favicon', 'social', 'about'];
+const includeCategories = ['logo', 'home', 'menu', 'gallery', 'favicon', 'social', 'about', 'news'];
 
 function ensureDir(path) {
   if (!existsSync(path)) {

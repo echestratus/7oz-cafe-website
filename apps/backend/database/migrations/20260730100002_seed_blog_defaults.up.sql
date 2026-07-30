@@ -44,7 +44,7 @@ INSERT INTO blog_posts (
     'Malaysia''s Minister of Religious Affairs visited 7oz Cafe in Uzbekistan during an official visit, highlighting warm hospitality and quality coffee culture.',
     $body1$Malaysia's Minister of Religious Affairs visited 7oz Cafe in Uzbekistan during an official visit. The stop showcased the cafe's warm hospitality, inviting atmosphere, and commitment to serving quality food and beverages, making it a memorable moment that reflects the growing friendship between Malaysia and Uzbekistan.$body1$,
     'news',
-    NULL,
+    '/assets/news/minister-visit-uzbekistan.jpg',
     'published',
     TIMESTAMPTZ '2026-05-25 07:00:00+00',
     '{"metaTitle":"Malaysia''s Minister of Religious Affairs Visits 7oz Cafe","metaDescription":"Official visit to 7oz Cafe in Uzbekistan.","canonicalPath":"/blogs/malaysias-minister-of-religious-affairs-visits-7oz-cafe-in-uzbekistan"}'::jsonb
@@ -68,7 +68,7 @@ The facade and interior blend modern industrial aesthetics with warm Nusantara h
 
 On inauguration day, locals and the Indonesian diaspora filled the cafe. The program included coffee cupping, latte art demonstrations by a head barista from Jakarta, and freshly baked pastries from the EGI Food kitchen — a strong start for international F&B operations.$body2$,
     'event',
-    NULL,
+    '/assets/news/grand-opening-tashkent.jpg',
     'published',
     TIMESTAMPTZ '2026-04-15 10:00:00+00',
     '{"metaTitle":"Grand Opening 7oz Espresso Cafe in Tashkent","metaDescription":"7oz opens in Tashkent Boulevard, Uzbekistan.","canonicalPath":"/blogs/grand-opening-7oz-espresso-cafe-in-tashkent"}'::jsonb

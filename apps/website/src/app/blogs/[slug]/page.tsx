@@ -1,10 +1,12 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { SiteShell } from '@/components/layout/site-shell';
 import { Container } from '@/components/ui/container';
 import { Reveal } from '@/components/ui/reveal';
+import { BlogArticleBody } from '@/features/blogs/components/blog-article-body';
 import { fallbackBlogPosts, getPublishedBlogBySlug } from '@/services/blog';
 import { getPublishedCmsPage } from '@/services/cms';
 
@@ -65,47 +67,51 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
     notFound();
   }
 
-  const paragraphs = post.body
-    .split(/\n{2,}/)
-    .map((part) => part.trim())
-    .filter(Boolean);
-
   return (
     <SiteShell footer={footer}>
       <main className="pt-28 pb-24 md:pt-36 md:pb-32">
-        <Container className="max-w-3xl">
-          <Reveal className="space-y-6">
-            <p className="text-eyebrow">{post.kind === 'event' ? 'Event' : 'News'}</p>
-            <h1 className="text-page-title text-text">{post.title}</h1>
-            {post.publishedAt ? (
-              <time className="block text-sm text-text-muted" dateTime={post.publishedAt}>
-                {formatDate(post.publishedAt)}
-              </time>
+        <Container>
+          <article className="mx-auto max-w-3xl">
+            <Reveal>
+              <header className="space-y-5 text-center md:space-y-6">
+                <p className="text-eyebrow">{post.kind === 'event' ? 'Event' : 'News'}</p>
+                <h1 className="text-page-title text-balance text-text">{post.title}</h1>
+                {post.publishedAt ? (
+                  <time
+                    className="block text-sm tracking-wide text-text-muted"
+                    dateTime={post.publishedAt}
+                  >
+                    {formatDate(post.publishedAt)}
+                  </time>
+                ) : null}
+              </header>
+            </Reveal>
+
+            {post.coverUrl ? (
+              <Reveal delay={0.04} className="mt-12 md:mt-14">
+                <div className="relative aspect-[16/10] overflow-hidden rounded-media shadow-[var(--shadow-soft)]">
+                  <Image
+                    src={post.coverUrl}
+                    alt={post.title}
+                    fill
+                    priority
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 768px"
+                  />
+                </div>
+              </Reveal>
             ) : null}
-          </Reveal>
 
-          <Reveal delay={0.06} className="mt-12 space-y-6">
-            {paragraphs.map((paragraph) => {
-              if (paragraph.startsWith('## ')) {
-                return (
-                  <h2 key={paragraph} className="text-section-title pt-4 text-text">
-                    {paragraph.replace(/^##\s+/, '')}
-                  </h2>
-                );
-              }
-              return (
-                <p key={paragraph} className="text-lede text-base leading-relaxed text-text-secondary">
-                  {paragraph}
-                </p>
-              );
-            })}
-          </Reveal>
+            <Reveal delay={0.08} className="mt-12 md:mt-16">
+              <BlogArticleBody body={post.body} excerpt={post.excerpt} />
+            </Reveal>
 
-          <Reveal delay={0.1} className="mt-14">
-            <Link href="/blogs" className="text-link-quiet">
-              Back to blogs
-            </Link>
-          </Reveal>
+            <Reveal delay={0.12} className="mt-16 border-t border-border pt-8">
+              <Link href="/blogs" className="text-link-quiet">
+                Back to blogs
+              </Link>
+            </Reveal>
+          </article>
         </Container>
       </main>
     </SiteShell>

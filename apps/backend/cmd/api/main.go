@@ -16,6 +16,7 @@ import (
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/authentication"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/blog"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/cms"
+	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/contact"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/customer"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/health"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/loyalty"
@@ -91,6 +92,7 @@ func main() {
 	membershipService := membership.NewService(postgres)
 	loyaltyService := loyalty.NewService(postgres)
 	customerService := customer.NewService(postgres)
+	contactService := contact.NewService(postgres, emailNotifier)
 	membershipService.SetLifetimePointsProvider(loyaltyService.GetLifetimeEarnedPoints)
 	reservationService.SetOnCompleted(func(ctx context.Context, userID uuid.UUID, reservationID uuid.UUID) {
 		_, _ = loyaltyService.EarnForReservationCompleted(ctx, userID, reservationID)
@@ -109,6 +111,7 @@ func main() {
 		MembershipService:  membershipService,
 		LoyaltyService:     loyaltyService,
 		CustomerService:    customerService,
+		ContactService:     contactService,
 	})
 
 	addr := fmt.Sprintf(":%d", cfg.Port)

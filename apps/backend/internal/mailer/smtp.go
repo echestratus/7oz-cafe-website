@@ -118,6 +118,9 @@ func buildMIMEMessage(from string, msg Message) ([]byte, error) {
 	var builder strings.Builder
 	builder.WriteString(fmt.Sprintf("From: %s\r\n", from))
 	builder.WriteString(fmt.Sprintf("To: %s\r\n", strings.Join(msg.To, ", ")))
+	if strings.TrimSpace(msg.ReplyTo) != "" {
+		builder.WriteString(fmt.Sprintf("Reply-To: %s\r\n", sanitizeHeader(msg.ReplyTo)))
+	}
 	builder.WriteString(fmt.Sprintf("Subject: %s\r\n", sanitizeHeader(msg.Subject)))
 	builder.WriteString("MIME-Version: 1.0\r\n")
 

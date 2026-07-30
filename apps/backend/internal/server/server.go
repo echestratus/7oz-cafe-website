@@ -7,6 +7,7 @@ import (
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/authentication"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/blog"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/cms"
+	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/contact"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/customer"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/health"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/loyalty"
@@ -33,6 +34,7 @@ type Dependencies struct {
 	MembershipService  *membership.Service
 	LoyaltyService     *loyalty.Service
 	CustomerService    *customer.Service
+	ContactService     *contact.Service
 }
 
 func New(deps Dependencies) *fiber.App {
@@ -69,6 +71,7 @@ func New(deps Dependencies) *fiber.App {
 	membershipHandler := membership.NewHandler(deps.MembershipService)
 	loyaltyHandler := loyalty.NewHandler(deps.LoyaltyService)
 	customerHandler := customer.NewHandler(deps.CustomerService)
+	contactHandler := contact.NewHandler(deps.ContactService)
 	authenticate := middleware.Authenticate(deps.AuthService)
 	optionalAuth := middleware.OptionalAuthenticate(deps.AuthService)
 
@@ -97,6 +100,7 @@ func New(deps Dependencies) *fiber.App {
 	loyalty.RegisterCustomerRoutes(api, loyaltyHandler, authenticate)
 	loyalty.RegisterAdminRoutes(api, loyaltyHandler, authenticate)
 	customer.RegisterAdminRoutes(api, customerHandler, authenticate)
+	contact.RegisterPublicRoutes(api, contactHandler)
 	api.Get("/openapi.yaml", serveOpenAPI)
 
 	deps.Logger.Info("routes registered", zap.String("service", deps.Config.Name))

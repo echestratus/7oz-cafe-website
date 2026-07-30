@@ -115,6 +115,7 @@ GitHub Actions (`.github/workflows/ci.yml`) runs:
 - Secrets stay in untracked `.env.staging` / `.env.production`.
 - Migrations run before app containers start.
 - Uploaded media persist in the `*_uploads` Docker volume.
-- Configure `WEBSITE_URL` and `SMTP_*` for verification, password reset, and reservation confirmation emails.
+- Configure `WEBSITE_URL` and `SMTP_*` for verification, password reset, reservation confirmation, and contact-form notification emails.
+  Set `CONTACT_TO_EMAIL` to the cafe inbox (defaults to `SMTP_FROM_EMAIL` when empty).
   In local development, leave `SMTP_HOST` empty to log emails, or point it at Mailpit (`localhost:1025`).
 - Monitoring (Prometheus/Grafana/Loki) remains future work; structured Zap logs and request IDs are already emitted by the API.

@@ -128,9 +128,11 @@ assets/
 ├── home/
 ├── icons/
 ├── illustrations/
+├── locations/
 ├── logo/
 ├── menu/
 ├── mockups/
+├── news/
 └── social/
 ```
 

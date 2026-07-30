@@ -5,6 +5,7 @@ import { CtaBandSection } from '@/features/home/components/cta-band-section';
 import { FeaturedMenuSection } from '@/features/home/components/featured-menu-section';
 import { GalleryPreviewSection } from '@/features/home/components/gallery-preview-section';
 import { HeroSection } from '@/features/home/components/hero-section';
+import { LocationsSection } from '@/features/home/components/locations-section';
 import { TestimonialsSection } from '@/features/home/components/testimonials-section';
 import { BlogsPreviewSection } from '@/features/blogs/components/blogs-preview-section';
 import type { MenuItem } from '@/features/menu/lib/menu-catalog';
@@ -31,7 +32,7 @@ const fallbackAbout = {
 
 const fallbackGallery = {
   heading: 'Gallery',
-  description: 'Moments from the cafe floor.',
+  description: 'Moments from City Park — and a door into every 7Oz room.',
   limit: 6,
 };
 
@@ -102,6 +103,7 @@ export function HomePageView({
         <HeroSection data={fallbackHero} />
         {renderFeaturedMenu(fallbackFeaturedMenu, 'featured-menu-fallback')}
         <AboutPreviewSection data={fallbackAbout} />
+        <LocationsSection />
         <GalleryPreviewSection data={fallbackGallery} />
         <BlogsPreviewSection data={fallbackBlogs} posts={blogPosts} />
         <TestimonialsSection data={fallbackTestimonials} />
@@ -110,6 +112,8 @@ export function HomePageView({
       </main>
     );
   }
+
+  const hasLocationsSection = sections.some((section) => section.code === 'locations');
 
   return (
     <main>
@@ -120,7 +124,14 @@ export function HomePageView({
           case 'featured_menu':
             return renderFeaturedMenu(section.data, section.id);
           case 'about_preview':
-            return <AboutPreviewSection key={section.id} data={section.data} />;
+            return (
+              <div key={section.id}>
+                <AboutPreviewSection data={section.data} />
+                {!hasLocationsSection ? <LocationsSection /> : null}
+              </div>
+            );
+          case 'locations':
+            return <LocationsSection key={section.id} />;
           case 'gallery_preview':
             return <GalleryPreviewSection key={section.id} data={section.data} />;
           case 'blogs_preview':
@@ -137,6 +148,9 @@ export function HomePageView({
             return null;
         }
       })}
+      {!hasLocationsSection && !sections.some((section) => section.code === 'about_preview') ? (
+        <LocationsSection />
+      ) : null}
     </main>
   );
 }

@@ -13,11 +13,13 @@ type Config struct {
 	Name               string
 	Port               int
 	URL                string
+	WebsiteURL         string
 	CORSAllowedOrigins []string
 	Database           DatabaseConfig
 	Redis              RedisConfig
 	JWT                JWTConfig
 	Storage            StorageConfig
+	SMTP               SMTPConfig
 }
 
 type DatabaseConfig struct {
@@ -47,6 +49,15 @@ type StorageConfig struct {
 	LocalPath string
 }
 
+type SMTPConfig struct {
+	Host      string
+	Port      int
+	Username  string
+	Password  string
+	FromEmail string
+	FromName  string
+}
+
 func Load() (*Config, error) {
 	v := viper.New()
 
@@ -70,6 +81,7 @@ func Load() (*Config, error) {
 		Name:               v.GetString("APP_NAME"),
 		Port:               v.GetInt("APP_PORT"),
 		URL:                v.GetString("APP_URL"),
+		WebsiteURL:         v.GetString("WEBSITE_URL"),
 		CORSAllowedOrigins: splitAndTrim(v.GetString("CORS_ALLOWED_ORIGINS")),
 		Database: DatabaseConfig{
 			Host:     v.GetString("DB_HOST"),
@@ -93,6 +105,14 @@ func Load() (*Config, error) {
 		Storage: StorageConfig{
 			Driver:    v.GetString("STORAGE_DRIVER"),
 			LocalPath: v.GetString("STORAGE_LOCAL_PATH"),
+		},
+		SMTP: SMTPConfig{
+			Host:      v.GetString("SMTP_HOST"),
+			Port:      v.GetInt("SMTP_PORT"),
+			Username:  v.GetString("SMTP_USERNAME"),
+			Password:  v.GetString("SMTP_PASSWORD"),
+			FromEmail: v.GetString("SMTP_FROM_EMAIL"),
+			FromName:  v.GetString("SMTP_FROM_NAME"),
 		},
 	}
 
@@ -128,15 +148,24 @@ func setDefaults(v *viper.Viper) {
 
 	v.SetDefault("STORAGE_DRIVER", "local")
 	v.SetDefault("STORAGE_LOCAL_PATH", "./storage")
+
+	v.SetDefault("WEBSITE_URL", "http://localhost:3000")
+	v.SetDefault("SMTP_HOST", "")
+	v.SetDefault("SMTP_PORT", 1025)
+	v.SetDefault("SMTP_USERNAME", "")
+	v.SetDefault("SMTP_PASSWORD", "")
+	v.SetDefault("SMTP_FROM_EMAIL", "noreply@7oz.local")
+	v.SetDefault("SMTP_FROM_NAME", "7Oz Espresso Cafe")
 }
 
 func bindEnv(v *viper.Viper) {
 	keys := []string{
-		"APP_ENV", "APP_NAME", "APP_PORT", "APP_URL", "CORS_ALLOWED_ORIGINS",
+		"APP_ENV", "APP_NAME", "APP_PORT", "APP_URL", "WEBSITE_URL", "CORS_ALLOWED_ORIGINS",
 		"DB_HOST", "DB_PORT", "DB_USER", "DB_PASSWORD", "DB_NAME", "DB_SSLMODE",
 		"REDIS_HOST", "REDIS_PORT", "REDIS_PASSWORD",
 		"JWT_ACCESS_SECRET", "JWT_REFRESH_SECRET", "JWT_ACCESS_TTL", "JWT_REFRESH_TTL",
 		"STORAGE_DRIVER", "STORAGE_LOCAL_PATH",
+		"SMTP_HOST", "SMTP_PORT", "SMTP_USERNAME", "SMTP_PASSWORD", "SMTP_FROM_EMAIL", "SMTP_FROM_NAME",
 	}
 
 	for _, key := range keys {
@@ -167,6 +196,22 @@ func (c *Config) validate() error {
 
 	if c.Redis.Host == "" || c.Redis.Port <= 0 {
 		return fmt.Errorf("redis configuration is incomplete")
+	}
+
+	if !c.IsDevelopment() {
+		if strings.TrimSpace(c.SMTP.Host) == "" {
+			return fmt.Errorf("SMTP_HOST is required outside development")
+		}
+		if strings.TrimSpace(c.SMTP.FromEmail) == "" {
+			return fmt.Errorf("SMTP_FROM_EMAIL is required outside development")
+		}
+		if c.SMTP.Port <= 0 {
+			return fmt.Errorf("SMTP_PORT must be a positive integer")
+		}
+	}
+
+	if strings.TrimSpace(c.WebsiteURL) == "" {
+		return fmt.Errorf("WEBSITE_URL is required")
 	}
 
 	return nil

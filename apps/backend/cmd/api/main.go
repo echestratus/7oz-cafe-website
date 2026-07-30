@@ -12,6 +12,7 @@ import (
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/config"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/database"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/logger"
+	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/mailer"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/authentication"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/blog"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/cms"
@@ -75,12 +76,17 @@ func main() {
 		}()
 	}
 
+	emailNotifier, err := mailer.NewFromConfig(cfg, log)
+	if err != nil {
+		log.Fatal("failed to initialize mailer", zap.Error(err))
+	}
+
 	healthService := health.NewService(cfg.Name, postgres, redisClient)
-	authService := authentication.NewService(cfg, postgres)
+	authService := authentication.NewService(cfg, postgres, emailNotifier)
 	cmsService := cms.NewService(postgres)
 	blogService := blog.NewService(postgres)
 	mediaService := media.NewService(cfg, postgres)
-	reservationService := reservation.NewService(postgres)
+	reservationService := reservation.NewService(postgres, emailNotifier)
 	membershipService := membership.NewService(postgres)
 	loyaltyService := loyalty.NewService(postgres)
 	membershipService.SetLifetimePointsProvider(loyaltyService.GetLifetimeEarnedPoints)

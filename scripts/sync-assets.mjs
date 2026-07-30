@@ -38,11 +38,16 @@ function copyCategory(category, destinationRoot) {
   let copied = 0;
   for (const entry of readdirSync(sourceDir)) {
     const from = join(sourceDir, entry);
-    if (!statSync(from).isFile()) {
+    const to = join(destinationDir, entry);
+
+    if (statSync(from).isDirectory()) {
+      cpSync(from, to, { recursive: true });
+      const count = readdirSync(from).length;
+      copied += count;
+      console.log(`synced ${relative(root, from)}\\ -> ${relative(root, to)}\\ (${count} files)`);
       continue;
     }
 
-    const to = join(destinationDir, entry);
     cpSync(from, to);
     copied += 1;
     console.log(`synced ${relative(root, from)} -> ${relative(root, to)}`);

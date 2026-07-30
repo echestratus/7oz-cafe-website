@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import type { ComponentPropsWithoutRef, ReactNode } from 'react';
 
-type ButtonVariant = 'primary' | 'secondary' | 'ghost';
+type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'onDark' | 'inverse';
 
 interface ButtonBaseProps {
   variant?: ButtonVariant;
@@ -23,11 +23,17 @@ type ButtonProps = ButtonAsButton | ButtonAsLink;
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    'bg-primary text-white hover:bg-primary-hover focus-visible:outline-primary',
+    'bg-primary text-inverse hover:bg-primary-hover focus-visible:outline-primary',
   secondary:
-    'border border-white/70 bg-transparent text-white hover:bg-white/10 focus-visible:outline-white',
-  ghost:
+    'bg-accent text-inverse hover:bg-accent/90 focus-visible:outline-accent',
+  outline:
     'border border-border bg-transparent text-text hover:bg-surface-secondary focus-visible:outline-primary',
+  ghost:
+    'border border-transparent bg-transparent text-text hover:bg-surface-secondary focus-visible:outline-primary',
+  onDark:
+    'border border-white/55 bg-transparent text-white hover:bg-white/10 focus-visible:outline-white',
+  inverse:
+    'bg-white text-primary hover:bg-white/90 focus-visible:outline-white',
 };
 
 function cx(...parts: Array<string | undefined | false>): string {
@@ -37,7 +43,7 @@ function cx(...parts: Array<string | undefined | false>): string {
 export function Button(props: ButtonProps) {
   const { variant = 'primary', className, children, ...rest } = props;
   const classes = cx(
-    'inline-flex min-h-12 items-center justify-center rounded-[12px] px-6 text-sm font-medium tracking-wide transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
+    'inline-flex min-h-12 items-center justify-center rounded-full px-8 text-[0.8125rem] font-semibold uppercase tracking-[0.12em] transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-50',
     variantClasses[variant],
     className,
   );

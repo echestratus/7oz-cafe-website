@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
 import { Reveal } from '@/components/ui/reveal';
+import { SectionIntro } from '@/components/ui/section-intro';
 import { asCta, asString } from '@/services/cms';
 
 interface AboutPreviewSectionProps {
@@ -18,10 +19,10 @@ export function AboutPreviewSection({ data }: AboutPreviewSectionProps) {
   const cta = asCta(data.cta) ?? { label: 'Our Story', href: '/about' };
 
   return (
-    <section className="bg-surface-secondary py-24 md:py-32">
-      <Container className="grid items-center gap-12 md:grid-cols-2 md:gap-16">
+    <section className="section-pad bg-surface-secondary/70">
+      <Container className="grid items-center gap-12 md:grid-cols-2 md:gap-20">
         <Reveal>
-          <div className="relative aspect-[4/5] overflow-hidden rounded-[28px]">
+          <div className="relative aspect-[4/5] overflow-hidden rounded-media">
             <Image
               src="/assets/gallery/7oz-4.jpeg"
               alt="Barista preparing espresso at 7Oz"
@@ -32,10 +33,9 @@ export function AboutPreviewSection({ data }: AboutPreviewSectionProps) {
           </div>
         </Reveal>
 
-        <Reveal delay={0.08} className="space-y-6">
-          <h2 className="font-heading text-4xl text-text md:text-5xl">{heading}</h2>
-          <p className="text-lg leading-relaxed text-text-secondary">{description}</p>
-          <Button href={cta.href} variant="ghost">
+        <Reveal delay={0.08} className="space-y-8">
+          <SectionIntro eyebrow="About" title={heading} description={description} />
+          <Button href={cta.href} variant="outline">
             {cta.label}
           </Button>
         </Reveal>

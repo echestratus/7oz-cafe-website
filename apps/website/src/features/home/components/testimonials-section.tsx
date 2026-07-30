@@ -1,5 +1,6 @@
 import { Container } from '@/components/ui/container';
 import { Reveal } from '@/components/ui/reveal';
+import { SectionIntro } from '@/components/ui/section-intro';
 import { asString } from '@/services/cms';
 
 interface TestimonialsSectionProps {
@@ -15,13 +16,13 @@ export function TestimonialsSection({ data }: TestimonialsSectionProps) {
   }
 
   return (
-    <section className="bg-background py-24 md:py-32">
+    <section className="section-pad border-y border-border bg-surface-secondary/60">
       <Container>
-        <Reveal className="mb-12 max-w-2xl">
-          <h2 className="font-heading text-4xl text-text md:text-5xl">{heading}</h2>
+        <Reveal className="mb-16">
+          <SectionIntro eyebrow="Guests" title={heading} align="center" />
         </Reveal>
 
-        <div className="grid gap-10 md:grid-cols-2">
+        <div className="mx-auto grid max-w-4xl gap-14 md:grid-cols-2 md:gap-16">
           {items.map((item, index) => {
             if (typeof item !== 'object' || item === null) {
               return null;
@@ -34,9 +35,10 @@ export function TestimonialsSection({ data }: TestimonialsSectionProps) {
             }
 
             return (
-              <Reveal key={`${name}-${index}`} delay={index * 0.08} className="space-y-4">
-                <p className="font-heading text-2xl leading-relaxed text-text">&ldquo;{review}&rdquo;</p>
-                <p className="text-sm tracking-[0.08em] text-text-secondary uppercase">{name}</p>
+              <Reveal key={`${name}-${index}`} delay={index * 0.08} className="space-y-6">
+                <span className="block h-px w-10 bg-accent/50" aria-hidden="true" />
+                <p className="text-quote text-text">&ldquo;{review}&rdquo;</p>
+                <p className="text-eyebrow">{name}</p>
               </Reveal>
             );
           })}

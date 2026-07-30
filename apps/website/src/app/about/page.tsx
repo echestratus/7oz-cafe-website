@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { SiteShell } from '@/components/layout/site-shell';
 import { Container } from '@/components/ui/container';
 import { Reveal } from '@/components/ui/reveal';
+import { SectionIntro } from '@/components/ui/section-intro';
 import { metadataFromSeo } from '@/lib/seo';
 import { asString, getPublishedCmsPage, getSection } from '@/services/cms';
 
@@ -36,15 +37,13 @@ export default async function AboutPage() {
     <SiteShell footer={footer}>
       <main>
         <section className="relative isolate overflow-hidden pt-28 pb-16 md:pt-36 md:pb-24">
-          <div className="absolute inset-0 -z-10 bg-surface-secondary" aria-hidden="true" />
-          <Container className="grid items-center gap-12 md:grid-cols-2">
-            <Reveal className="space-y-6">
-              <p className="text-sm tracking-[0.18em] text-text-secondary uppercase">About</p>
-              <h1 className="font-heading text-5xl text-text md:text-6xl">{heading}</h1>
-              <p className="text-lg leading-relaxed text-text-secondary">{body}</p>
+          <div className="absolute inset-0 -z-10 bg-surface-secondary/80" aria-hidden="true" />
+          <Container className="grid items-center gap-12 md:grid-cols-2 md:gap-20">
+            <Reveal>
+              <SectionIntro eyebrow="About" title={heading} description={body} titleAs="h1" />
             </Reveal>
             <Reveal delay={0.08}>
-              <div className="relative aspect-[4/5] overflow-hidden rounded-[28px]">
+              <div className="relative aspect-[4/5] overflow-hidden rounded-media">
                 <Image
                   src="/assets/gallery/7oz-8.jpeg"
                   alt="Interior of 7Oz Espresso Cafe"
@@ -58,12 +57,12 @@ export default async function AboutPage() {
           </Container>
         </section>
 
-        <section className="bg-background py-24">
+        <section className="section-pad bg-transparent">
           <Container>
-            <Reveal className="mb-12 max-w-2xl">
-              <h2 className="font-heading text-4xl text-text md:text-5xl">{valuesHeading}</h2>
+            <Reveal className="mb-14">
+              <SectionIntro title={valuesHeading} />
             </Reveal>
-            <div className="grid gap-10 md:grid-cols-3">
+            <div className="grid gap-12 md:grid-cols-3 md:gap-10">
               {valueItems.map((item, index) => {
                 if (typeof item !== 'object' || item === null) {
                   return null;
@@ -75,9 +74,9 @@ export default async function AboutPage() {
                   return null;
                 }
                 return (
-                  <Reveal key={title} delay={index * 0.08} className="space-y-3">
-                    <h3 className="font-heading text-2xl text-text">{title}</h3>
-                    <p className="text-text-secondary">{text}</p>
+                  <Reveal key={title} delay={index * 0.08} className="space-y-4 border-t border-border pt-6">
+                    <h3 className="text-card-title text-text">{title}</h3>
+                    <p className="text-lede text-base">{text}</p>
                   </Reveal>
                 );
               })}

@@ -1,4 +1,6 @@
+import { BrandLogo } from '@/components/brand/brand-logo';
 import { Button } from '@/components/ui/button';
+import { Container } from '@/components/ui/container';
 import { asCta, asString } from '@/services/cms';
 
 interface HeroSectionProps {
@@ -6,8 +8,6 @@ interface HeroSectionProps {
 }
 
 export function HeroSection({ data }: HeroSectionProps) {
-  const brand = '7Oz';
-  const title = asString(data.title, 'Espresso Cafe');
   const subtitle = asString(
     data.subtitle,
     'Crafted espresso. Calm spaces. Timeless ritual.',
@@ -30,29 +30,47 @@ export function HeroSection({ data }: HeroSectionProps) {
         <source src="/assets/home/hero-page-video.mp4" type="video/mp4" />
       </video>
 
-      <div className="absolute inset-0 bg-primary/40" aria-hidden="true" />
+      {/* Bottom-weighted veil: keeps video open at the top, readable CTA zone at the bottom. */}
       <div
-        className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-black/25"
+        className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"
+        aria-hidden="true"
+      />
+      <div
+        className="absolute inset-x-0 bottom-0 h-[55%] bg-gradient-to-t from-black/55 to-transparent"
         aria-hidden="true"
       />
 
-      <div className="relative z-10 mx-auto flex min-h-[100svh] w-full max-w-6xl flex-col justify-end px-6 pb-20 pt-32 md:px-8 md:pb-24">
-        <div className="max-w-3xl space-y-6">
-          <p className="font-heading text-5xl tracking-tight md:text-7xl lg:text-8xl">{brand}</p>
-          <h1 className="max-w-2xl font-heading text-3xl leading-tight text-white/95 md:text-5xl">
-            {title}
-          </h1>
-          <p className="max-w-xl text-base text-white/80 md:text-lg">{subtitle}</p>
-          <div className="flex flex-wrap gap-4 pt-2">
-            <Button href={primary.href} variant="primary">
+      <Container className="relative z-10 flex min-h-[100svh] flex-col justify-end pb-24 pt-32 md:pb-32">
+        <div className="max-w-2xl space-y-9">
+          {/* Soft local light behind the dark logo — invisible plate, just atmosphere. */}
+          <div className="relative inline-block max-w-full">
+            <span
+              className="pointer-events-none absolute -inset-x-10 -inset-y-8 -z-10 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.28),transparent_68%)] blur-2xl"
+              aria-hidden="true"
+            />
+            <BrandLogo size="hero" onDark priority />
+          </div>
+          <p className="max-w-xl text-quote text-white/90">{subtitle}</p>
+          <div className="flex flex-wrap gap-4 pt-1">
+            <Button href={primary.href} variant="inverse">
               {primary.label}
             </Button>
-            <Button href={secondary.href} variant="secondary">
+            <Button href={secondary.href} variant="onDark">
               {secondary.label}
             </Button>
           </div>
         </div>
-      </div>
+
+        <div
+          className="pointer-events-none absolute bottom-8 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 md:flex"
+          aria-hidden="true"
+        >
+          <span className="text-[0.625rem] font-semibold uppercase tracking-[0.24em] text-white/50">
+            Scroll
+          </span>
+          <span className="h-10 w-px bg-gradient-to-b from-white/60 to-transparent" />
+        </div>
+      </Container>
     </section>
   );
 }

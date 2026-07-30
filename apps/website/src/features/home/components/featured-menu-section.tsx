@@ -4,6 +4,7 @@ import { ArrowUpRight } from 'lucide-react';
 
 import { Container } from '@/components/ui/container';
 import { Reveal } from '@/components/ui/reveal';
+import { SectionIntro } from '@/components/ui/section-intro';
 import { asString } from '@/services/cms';
 
 const featuredItems = [
@@ -24,37 +25,38 @@ export function FeaturedMenuSection({ data }: FeaturedMenuSectionProps) {
   );
 
   return (
-    <section className="bg-background py-24 md:py-32">
+    <section className="section-pad bg-transparent">
       <Container>
-        <Reveal className="mb-12 max-w-2xl space-y-4">
-          <h2 className="font-heading text-4xl text-text md:text-5xl">{heading}</h2>
-          <p className="text-lg text-text-secondary">{description}</p>
+        <Reveal className="mb-14">
+          <SectionIntro eyebrow="Menu" title={heading} description={description} />
         </Reveal>
 
-        <div className="grid gap-8 md:grid-cols-3">
+        <div className="grid gap-12 md:grid-cols-3 md:gap-8">
           {featuredItems.map((item, index) => (
             <Reveal key={item.src} delay={index * 0.08}>
-              <article className="space-y-4">
-                <div className="relative aspect-[4/5] overflow-hidden rounded-[20px]">
+              <article className="group space-y-5">
+                <div className="relative aspect-[4/5] overflow-hidden rounded-media">
                   <Image
                     src={item.src}
                     alt={item.name}
                     fill
-                    className="object-cover"
+                    className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                     sizes="(max-width: 768px) 100vw, 33vw"
                   />
                 </div>
-                <h3 className="font-heading text-2xl text-text">{item.name}</h3>
+                <div className="flex items-baseline justify-between border-t border-border pt-4">
+                  <h3 className="text-card-title text-text">{item.name}</h3>
+                  <span className="text-eyebrow" aria-hidden="true">
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                </div>
               </article>
             </Reveal>
           ))}
         </div>
 
-        <Reveal className="mt-12">
-          <Link
-            href="/menu"
-            className="inline-flex items-center gap-2 text-sm tracking-[0.12em] text-primary uppercase transition-colors duration-200 hover:text-primary-hover"
-          >
+        <Reveal className="mt-14">
+          <Link href="/menu" className="text-link-quiet inline-flex items-center gap-2">
             View full menu
             <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
           </Link>

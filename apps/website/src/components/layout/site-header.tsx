@@ -1,6 +1,6 @@
-import Image from 'next/image';
 import Link from 'next/link';
 
+import { BrandLogo } from '@/components/brand/brand-logo';
 import { Container } from '@/components/ui/container';
 
 const navItems = [
@@ -9,7 +9,6 @@ const navItems = [
   { href: '/about', label: 'About' },
   { href: '/membership', label: 'Membership' },
   { href: '/loyalty', label: 'Loyalty' },
-  { href: '/reservations', label: 'Reserve' },
   { href: '/contact', label: 'Contact' },
 ] as const;
 
@@ -25,34 +24,22 @@ export function SiteHeader({ tone = 'solid' }: SiteHeaderProps) {
       className={
         isOverlay
           ? 'absolute inset-x-0 top-0 z-40'
-          : 'sticky top-0 z-40 border-b border-border/80 bg-background/90 backdrop-blur-md'
+          : 'sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur-md'
       }
     >
-      <Container className="flex items-center justify-between py-5 md:py-6">
-        <Link
-          href="/"
-          className={`flex items-center gap-3 ${isOverlay ? 'text-white' : 'text-text'}`}
-          aria-label="7Oz Espresso Cafe home"
-        >
-          <Image
-            src="/assets/logo/logo-7-oz-espresso-scaled.png"
-            alt=""
-            width={40}
-            height={40}
-            className="h-10 w-10 object-contain"
-            priority
-          />
-          <span className="font-heading text-2xl tracking-tight">7Oz</span>
+      <Container className="flex items-center justify-between py-4 md:py-5">
+        <Link href="/" aria-label="7Oz Espresso Cafe home" className="inline-flex shrink-0">
+          <BrandLogo size="header" onDark={isOverlay} priority />
         </Link>
 
-        <nav aria-label="Primary" className="hidden items-center gap-8 md:flex">
+        <nav aria-label="Primary" className="hidden items-center gap-7 lg:flex">
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className={`text-sm tracking-[0.08em] uppercase transition-colors duration-200 ${
+              className={`text-nav transition-colors duration-200 ${
                 isOverlay
-                  ? 'text-white/80 hover:text-white'
+                  ? 'text-white/78 hover:text-white'
                   : 'text-text-secondary hover:text-text'
               }`}
             >
@@ -61,27 +48,27 @@ export function SiteHeader({ tone = 'solid' }: SiteHeaderProps) {
           ))}
           <Link
             href="/reservations"
-            className={`rounded-[12px] border px-4 py-2 text-sm transition-colors duration-200 ${
+            className={`rounded-full border px-5 py-2.5 text-nav transition-colors duration-200 ${
               isOverlay
-                ? 'border-white/50 text-white hover:bg-white/10'
-                : 'border-border text-text hover:bg-surface-secondary'
+                ? 'border-white/45 text-white hover:bg-white/10'
+                : 'border-divider text-text hover:bg-surface-secondary'
             }`}
           >
             Reserve
           </Link>
         </nav>
 
-        <nav aria-label="Mobile" className="flex items-center gap-4 md:hidden">
+        <nav aria-label="Mobile" className="flex items-center gap-4 lg:hidden">
           <Link
             href="/menu"
-            className={`text-sm ${isOverlay ? 'text-white/90' : 'text-text-secondary'}`}
+            className={`text-nav ${isOverlay ? 'text-white/90' : 'text-text-secondary'}`}
           >
             Menu
           </Link>
           <Link
             href="/reservations"
-            className={`rounded-[12px] border px-3 py-2 text-sm ${
-              isOverlay ? 'border-white/50 text-white' : 'border-border text-text'
+            className={`rounded-full border px-4 py-2 text-nav ${
+              isOverlay ? 'border-white/45 text-white' : 'border-divider text-text'
             }`}
           >
             Reserve

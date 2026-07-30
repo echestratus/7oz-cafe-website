@@ -3,6 +3,7 @@ import Link from 'next/link';
 
 import { Container } from '@/components/ui/container';
 import { Reveal } from '@/components/ui/reveal';
+import { SectionIntro } from '@/components/ui/section-intro';
 import { asString } from '@/services/cms';
 
 const previewImages = [
@@ -25,22 +26,25 @@ export function GalleryPreviewSection({ data }: GalleryPreviewSectionProps) {
   const images = previewImages.slice(0, limit);
 
   return (
-    <section className="bg-background py-24 md:py-32">
+    <section className="section-pad bg-transparent">
       <Container>
-        <Reveal className="mb-12 max-w-2xl space-y-4">
-          <h2 className="font-heading text-4xl text-text md:text-5xl">{heading}</h2>
-          <p className="text-lg text-text-secondary">{description}</p>
+        <Reveal className="mb-14">
+          <SectionIntro eyebrow="Atmosphere" title={heading} description={description} />
         </Reveal>
 
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
+        <div className="columns-2 gap-4 md:columns-3 md:gap-6">
           {images.map((src, index) => (
-            <Reveal key={src} delay={index * 0.05}>
-              <div className="relative aspect-square overflow-hidden rounded-[16px]">
+            <Reveal key={src} delay={index * 0.05} className="mb-4 break-inside-avoid md:mb-6">
+              <div
+                className={`relative overflow-hidden rounded-media ${
+                  index % 3 === 0 ? 'aspect-[3/4]' : index % 3 === 1 ? 'aspect-square' : 'aspect-[4/5]'
+                }`}
+              >
                 <Image
                   src={src}
                   alt={`7Oz cafe atmosphere ${index + 1}`}
                   fill
-                  className="object-cover"
+                  className="object-cover transition-transform duration-500 hover:scale-[1.03]"
                   sizes="(max-width: 768px) 50vw, 33vw"
                 />
               </div>
@@ -48,11 +52,8 @@ export function GalleryPreviewSection({ data }: GalleryPreviewSectionProps) {
           ))}
         </div>
 
-        <Reveal className="mt-12">
-          <Link
-            href="/gallery"
-            className="text-sm tracking-[0.12em] text-primary uppercase transition-colors duration-200 hover:text-primary-hover"
-          >
+        <Reveal className="mt-14">
+          <Link href="/gallery" className="text-link-quiet">
             Open gallery
           </Link>
         </Reveal>

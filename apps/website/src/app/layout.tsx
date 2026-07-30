@@ -1,19 +1,22 @@
 import type { Metadata } from 'next';
-import { Instrument_Serif, Manrope } from 'next/font/google';
+import { Fraunces, Inter } from 'next/font/google';
 import type { ReactNode } from 'react';
 
 import '@/styles/globals.css';
 
-const instrumentSerif = Instrument_Serif({
+/** Clean grotesque for body copy and UI. */
+const inter = Inter({
   subsets: ['latin'],
-  weight: '400',
-  variable: '--font-heading',
+  variable: '--font-inter',
   display: 'swap',
 });
 
-const manrope = Manrope({
+/** Warm editorial serif for display and headings. */
+const fraunces = Fraunces({
   subsets: ['latin'],
-  variable: '--font-body',
+  weight: ['400', '500', '600'],
+  style: ['normal', 'italic'],
+  variable: '--font-fraunces',
   display: 'swap',
 });
 
@@ -33,8 +36,8 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="en" className={`${instrumentSerif.variable} ${manrope.variable}`}>
-      <body className="font-body antialiased">{children}</body>
+    <html lang="en" className={`${inter.variable} ${fraunces.variable}`}>
+      <body className={`${inter.className} antialiased`}>{children}</body>
     </html>
   );
 }

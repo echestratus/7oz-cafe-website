@@ -47,7 +47,7 @@ The repository contained complete FINAL documentation under `./docs/ai` and alwa
 
 **Chosen:** `./docs/ai/06_DESIGN_SYSTEM.md`
 
-- Typography: Instrument Serif (headings) + Manrope (body)
+- Typography: Newsreader (headings) + Inter (body) — open alternatives to Blue Bottle Coffee's ABC Marfa + ABC Diatype
 - Neutrals: Background `#FCFBF8`, text `#1F2937`, border `#E8E4DD`, surface secondary `#F5F3EF`
 - Radius: 8 / 12 / 20 / 28
 - Spacing scale includes 20

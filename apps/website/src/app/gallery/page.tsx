@@ -6,6 +6,7 @@ import path from 'node:path';
 import { SiteShell } from '@/components/layout/site-shell';
 import { Container } from '@/components/ui/container';
 import { Reveal } from '@/components/ui/reveal';
+import { SectionIntro } from '@/components/ui/section-intro';
 import { getPublishedCmsPage } from '@/services/cms';
 
 export const metadata: Metadata = {
@@ -37,23 +38,24 @@ export default async function GalleryPage() {
 
   return (
     <SiteShell footer={footer}>
-      <main className="bg-background pt-28 pb-24 md:pt-36">
+      <main className="pt-28 pb-24 md:pt-36 md:pb-32">
         <Container>
-          <Reveal className="mb-14 max-w-2xl space-y-4">
-            <p className="text-sm tracking-[0.18em] text-text-secondary uppercase">Gallery</p>
-            <h1 className="font-heading text-5xl text-text md:text-6xl">Atmosphere</h1>
-            <p className="text-lg text-text-secondary">
-              Quiet rooms, focused pours, and the daily rhythm of the cafe.
-            </p>
+          <Reveal className="mb-16">
+            <SectionIntro
+              eyebrow="Gallery"
+              title="Atmosphere"
+              description="Quiet rooms, focused pours, and the daily rhythm of the cafe."
+              titleAs="h1"
+            />
           </Reveal>
 
           {images.length === 0 ? (
-            <p className="text-text-secondary">Gallery imagery will appear after asset sync.</p>
+            <p className="text-lede">Gallery imagery will appear after asset sync.</p>
           ) : (
-            <div className="columns-1 gap-4 sm:columns-2 lg:columns-3">
+            <div className="columns-1 gap-5 sm:columns-2 lg:columns-3">
               {images.map((src, index) => (
-                <Reveal key={src} delay={(index % 6) * 0.04} className="mb-4 break-inside-avoid">
-                  <div className="relative overflow-hidden rounded-[16px]">
+                <Reveal key={src} delay={(index % 6) * 0.04} className="mb-5 break-inside-avoid">
+                  <div className="relative overflow-hidden rounded-media">
                     <Image
                       src={src}
                       alt={`7Oz gallery image ${index + 1}`}

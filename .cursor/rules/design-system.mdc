@@ -115,11 +115,11 @@ Info
 
 Heading
 
-Instrument Serif
+Fraunces (sentence case, weight 500)
 
 Body / UI
 
-Manrope
+Inter
 
 Fallback
 
@@ -127,7 +127,7 @@ system-ui
 
 Never use more than two font families.
 
-Do not use Inter or Cormorant Garamond for this brand.
+Headings are never forced uppercase. Eyebrow labels use Inter, uppercase, wide tracking, coffee accent color.
 
 ---
 

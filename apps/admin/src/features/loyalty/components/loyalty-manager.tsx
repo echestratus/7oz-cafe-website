@@ -7,15 +7,19 @@ import { PageHeader } from '@/components/layout/page-header';
 import { ApiClientError } from '@/lib/api-client';
 import {
   adjustLoyalty,
+  createLoyaltyCampaign,
   createLoyaltyReward,
   deleteLoyaltyReward,
   listLoyaltyAccounts,
   listLoyaltyCampaigns,
   listLoyaltyHistory,
   listLoyaltyRewards,
+  updateLoyaltyCampaign,
   updateLoyaltyReward,
+  type LoyaltyCampaign,
   type LoyaltyReward,
 } from '@/services/loyalty';
+import { listMembershipLevels } from '@/services/membership';
 
 type RewardFormState = {
   code: string;
@@ -26,6 +30,18 @@ type RewardFormState = {
   sortOrder: number;
   isActive: boolean;
   category: string;
+};
+
+type CampaignFormState = {
+  code: string;
+  name: string;
+  description: string;
+  startsAt: string;
+  endsAt: string;
+  pointMultiplier: number;
+  bonusPoints: number;
+  eligibleLevelCodes: string[];
+  isActive: boolean;
 };
 
 const emptyRewardForm = (): RewardFormState => ({
@@ -39,6 +55,35 @@ const emptyRewardForm = (): RewardFormState => ({
   category: 'drink',
 });
 
+function toDatetimeLocalValue(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+  const pad = (value: number) => String(value).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function defaultCampaignWindow(): { startsAt: string; endsAt: string } {
+  const starts = new Date();
+  const ends = new Date(starts.getTime() + 30 * 24 * 60 * 60 * 1000);
+  return {
+    startsAt: toDatetimeLocalValue(starts.toISOString()),
+    endsAt: toDatetimeLocalValue(ends.toISOString()),
+  };
+}
+
+const emptyCampaignForm = (): CampaignFormState => ({
+  code: '',
+  name: '',
+  description: '',
+  ...defaultCampaignWindow(),
+  pointMultiplier: 1.5,
+  bonusPoints: 0,
+  eligibleLevelCodes: [],
+  isActive: true,
+});
+
 export function LoyaltyManager() {
   const queryClient = useQueryClient();
   const [tab, setTab] = useState<'accounts' | 'history' | 'campaigns' | 'rewards'>('accounts');
@@ -49,6 +94,8 @@ export function LoyaltyManager() {
   const [reason, setReason] = useState('');
   const [editingRewardId, setEditingRewardId] = useState<string | null>(null);
   const [rewardForm, setRewardForm] = useState<RewardFormState>(emptyRewardForm);
+  const [editingCampaignId, setEditingCampaignId] = useState<string | null>(null);
+  const [campaignForm, setCampaignForm] = useState<CampaignFormState>(emptyCampaignForm);
 
   const accountsQuery = useQuery({
     queryKey: ['admin-loyalty-accounts'],
@@ -65,12 +112,16 @@ export function LoyaltyManager() {
     queryFn: () => listLoyaltyCampaigns(),
     enabled: tab === 'campaigns',
   });
+  const membershipLevelsQuery = useQuery({
+    queryKey: ['admin-membership-levels'],
+    queryFn: () => listMembershipLevels(),
+    enabled: tab === 'campaigns',
+  });
   const rewardsQuery = useQuery({
     queryKey: ['admin-loyalty-rewards'],
     queryFn: () => listLoyaltyRewards(),
     enabled: tab === 'rewards',
   });
-
   const adjustMutation = useMutation({
     mutationFn: () =>
       adjustLoyalty({
@@ -143,6 +194,53 @@ export function LoyaltyManager() {
     },
   });
 
+  const campaignMutation = useMutation({
+    mutationFn: async () => {
+      const startsAt = new Date(campaignForm.startsAt);
+      const endsAt = new Date(campaignForm.endsAt);
+      if (Number.isNaN(startsAt.getTime()) || Number.isNaN(endsAt.getTime())) {
+        throw new Error('Start and end dates must be valid.');
+      }
+      if (!endsAt.getTime() || endsAt <= startsAt) {
+        throw new Error('End date must be after the start date.');
+      }
+      if (campaignForm.pointMultiplier <= 0) {
+        throw new Error('Point multiplier must be greater than zero.');
+      }
+      if (campaignForm.bonusPoints < 0) {
+        throw new Error('Bonus points cannot be negative.');
+      }
+      const payload = {
+        code: campaignForm.code.trim(),
+        name: campaignForm.name.trim(),
+        description: campaignForm.description.trim(),
+        startsAt: startsAt.toISOString(),
+        endsAt: endsAt.toISOString(),
+        pointMultiplier: campaignForm.pointMultiplier,
+        bonusPoints: campaignForm.bonusPoints,
+        eligibleLevelCodes: campaignForm.eligibleLevelCodes,
+        isActive: campaignForm.isActive,
+      };
+      if (editingCampaignId) {
+        return updateLoyaltyCampaign(editingCampaignId, payload);
+      }
+      return createLoyaltyCampaign(payload);
+    },
+    onSuccess: async () => {
+      setError(null);
+      setMessage(editingCampaignId ? 'Campaign updated.' : 'Campaign created.');
+      setEditingCampaignId(null);
+      setCampaignForm(emptyCampaignForm());
+      await queryClient.invalidateQueries({ queryKey: ['admin-loyalty-campaigns'] });
+    },
+    onError: (err) => {
+      setMessage(null);
+      setError(
+        err instanceof ApiClientError || err instanceof Error ? err.message : 'Campaign save failed.',
+      );
+    },
+  });
+
   function startEdit(reward: LoyaltyReward) {
     setEditingRewardId(reward.id);
     setRewardForm({
@@ -154,6 +252,21 @@ export function LoyaltyManager() {
       sortOrder: reward.sortOrder,
       isActive: reward.isActive,
       category: typeof reward.data.category === 'string' ? reward.data.category : 'drink',
+    });
+  }
+
+  function startEditCampaign(campaign: LoyaltyCampaign) {
+    setEditingCampaignId(campaign.id);
+    setCampaignForm({
+      code: campaign.code,
+      name: campaign.name,
+      description: campaign.description,
+      startsAt: toDatetimeLocalValue(campaign.startsAt),
+      endsAt: toDatetimeLocalValue(campaign.endsAt),
+      pointMultiplier: campaign.pointMultiplier,
+      bonusPoints: campaign.bonusPoints,
+      eligibleLevelCodes: campaign.eligibleLevelCodes ?? [],
+      isActive: campaign.isActive,
     });
   }
 
@@ -446,18 +559,212 @@ export function LoyaltyManager() {
       ) : null}
 
       {tab === 'campaigns' ? (
-        <div className="space-y-3">
-          {campaignsQuery.isLoading ? <p className="text-sm text-text-secondary">Loading campaigns…</p> : null}
-          {(campaignsQuery.data ?? []).map((campaign) => (
-            <article key={campaign.id} className="rounded-[16px] border border-border bg-surface p-4">
-              <p className="font-medium text-text">{campaign.name}</p>
-              <p className="text-sm text-text-secondary">{campaign.description}</p>
-              <p className="text-sm text-text-muted">
-                {campaign.pointMultiplier}x · +{campaign.bonusPoints} bonus ·{' '}
-                {campaign.isActive ? 'Active' : 'Inactive'}
-              </p>
-            </article>
-          ))}
+        <div className="space-y-6">
+          <form
+            className="grid gap-3 rounded-[16px] border border-border bg-surface p-4 md:grid-cols-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              campaignMutation.mutate();
+            }}
+          >
+            <p className="md:col-span-2 text-sm font-medium text-text">
+              {editingCampaignId ? 'Edit campaign' : 'Create campaign'}
+            </p>
+            <label className="space-y-1 text-sm">
+              <span className="text-text-secondary">Code</span>
+              <input
+                required={!editingCampaignId}
+                disabled={Boolean(editingCampaignId)}
+                value={campaignForm.code}
+                onChange={(event) =>
+                  setCampaignForm((prev) => ({ ...prev, code: event.target.value }))
+                }
+                className="w-full rounded-[12px] border border-border bg-background px-3 py-2 disabled:opacity-60"
+              />
+            </label>
+            <label className="space-y-1 text-sm">
+              <span className="text-text-secondary">Name</span>
+              <input
+                required
+                value={campaignForm.name}
+                onChange={(event) =>
+                  setCampaignForm((prev) => ({ ...prev, name: event.target.value }))
+                }
+                className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+              />
+            </label>
+            <label className="space-y-1 text-sm md:col-span-2">
+              <span className="text-text-secondary">Description</span>
+              <textarea
+                value={campaignForm.description}
+                onChange={(event) =>
+                  setCampaignForm((prev) => ({ ...prev, description: event.target.value }))
+                }
+                rows={3}
+                className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+              />
+            </label>
+            <label className="space-y-1 text-sm">
+              <span className="text-text-secondary">Starts at</span>
+              <input
+                type="datetime-local"
+                required
+                value={campaignForm.startsAt}
+                onChange={(event) =>
+                  setCampaignForm((prev) => ({ ...prev, startsAt: event.target.value }))
+                }
+                className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+              />
+            </label>
+            <label className="space-y-1 text-sm">
+              <span className="text-text-secondary">Ends at</span>
+              <input
+                type="datetime-local"
+                required
+                value={campaignForm.endsAt}
+                onChange={(event) =>
+                  setCampaignForm((prev) => ({ ...prev, endsAt: event.target.value }))
+                }
+                className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+              />
+            </label>
+            <label className="space-y-1 text-sm">
+              <span className="text-text-secondary">Point multiplier</span>
+              <input
+                type="number"
+                min={0.1}
+                step={0.1}
+                required
+                value={campaignForm.pointMultiplier}
+                onChange={(event) =>
+                  setCampaignForm((prev) => ({
+                    ...prev,
+                    pointMultiplier: Number(event.target.value) || 0,
+                  }))
+                }
+                className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+              />
+            </label>
+            <label className="space-y-1 text-sm">
+              <span className="text-text-secondary">Bonus points</span>
+              <input
+                type="number"
+                min={0}
+                required
+                value={campaignForm.bonusPoints}
+                onChange={(event) =>
+                  setCampaignForm((prev) => ({
+                    ...prev,
+                    bonusPoints: Number(event.target.value) || 0,
+                  }))
+                }
+                className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+              />
+            </label>
+            <fieldset className="space-y-2 md:col-span-2">
+              <legend className="text-sm text-text-secondary">
+                Eligible membership levels (none selected = all levels)
+              </legend>
+              <div className="flex flex-wrap gap-3">
+                {(membershipLevelsQuery.data ?? []).map((level) => {
+                  const checked = campaignForm.eligibleLevelCodes.includes(level.code);
+                  return (
+                    <label key={level.id} className="inline-flex items-center gap-2 text-sm text-text">
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={(event) => {
+                          setCampaignForm((prev) => {
+                            const next = event.target.checked
+                              ? [...prev.eligibleLevelCodes, level.code]
+                              : prev.eligibleLevelCodes.filter((code) => code !== level.code);
+                            return { ...prev, eligibleLevelCodes: next };
+                          });
+                        }}
+                      />
+                      {level.name}
+                    </label>
+                  );
+                })}
+                {membershipLevelsQuery.isLoading ? (
+                  <p className="text-sm text-text-secondary">Loading levels…</p>
+                ) : null}
+              </div>
+            </fieldset>
+            <label className="flex items-center gap-2 text-sm md:col-span-2">
+              <input
+                type="checkbox"
+                checked={campaignForm.isActive}
+                onChange={(event) =>
+                  setCampaignForm((prev) => ({ ...prev, isActive: event.target.checked }))
+                }
+              />
+              <span className="text-text">Active</span>
+            </label>
+            <div className="flex flex-wrap gap-2 md:col-span-2">
+              <button
+                type="submit"
+                disabled={campaignMutation.isPending}
+                className="rounded-[12px] bg-primary px-4 py-2 text-sm text-white hover:bg-primary-hover disabled:opacity-60"
+              >
+                {editingCampaignId ? 'Save campaign' : 'Create campaign'}
+              </button>
+              {editingCampaignId ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingCampaignId(null);
+                    setCampaignForm(emptyCampaignForm());
+                  }}
+                  className="rounded-[12px] border border-border px-4 py-2 text-sm text-text"
+                >
+                  Cancel edit
+                </button>
+              ) : null}
+            </div>
+          </form>
+
+          {campaignsQuery.isLoading ? (
+            <p className="text-sm text-text-secondary">Loading campaigns…</p>
+          ) : null}
+          {!campaignsQuery.isLoading && (campaignsQuery.data?.length ?? 0) === 0 ? (
+            <p className="text-sm text-text-secondary">No campaigns configured yet.</p>
+          ) : null}
+          <div className="space-y-3">
+            {(campaignsQuery.data ?? []).map((campaign) => (
+              <article key={campaign.id} className="rounded-[16px] border border-border bg-surface p-4">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p className="font-medium text-text">{campaign.name}</p>
+                    <p className="text-sm text-text-secondary">
+                      {campaign.description || 'No description'}
+                    </p>
+                    <p className="mt-1 text-sm text-text-muted">
+                      {campaign.pointMultiplier}x · +{campaign.bonusPoints} bonus ·{' '}
+                      {campaign.isActive ? 'Active' : 'Inactive'} · {campaign.code}
+                    </p>
+                    <p className="text-xs text-text-muted">
+                      {new Date(campaign.startsAt).toLocaleString()} →{' '}
+                      {new Date(campaign.endsAt).toLocaleString()}
+                    </p>
+                    <p className="text-xs text-text-muted">
+                      Levels:{' '}
+                      {(campaign.eligibleLevelCodes ?? []).length > 0
+                        ? campaign.eligibleLevelCodes.join(', ')
+                        : 'All'}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => startEditCampaign(campaign)}
+                    className="rounded-[10px] border border-border px-3 py-1.5 text-xs text-text"
+                  >
+                    Edit
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
         </div>
       ) : null}
     </div>

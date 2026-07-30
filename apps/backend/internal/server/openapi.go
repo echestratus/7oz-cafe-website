@@ -1225,6 +1225,50 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/loyalty/settings:
+    get:
+      summary: Get loyalty program settings
+      operationId: getAdminLoyaltySettings
+      tags: [Loyalty]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Loyalty settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+    patch:
+      summary: Update loyalty program settings
+      operationId: updateAdminLoyaltySettings
+      tags: [Loyalty]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [pointsPerCompletedReservation, expirationStrategy, expirationMonths]
+              properties:
+                pointsPerCompletedReservation:
+                  type: integer
+                  minimum: 0
+                expirationStrategy:
+                  type: string
+                  enum: [never, rolling_months]
+                expirationMonths:
+                  type: integer
+                  minimum: 1
+      responses:
+        "200":
+          description: Loyalty settings updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
   /admin/loyalty/history:
     get:
       summary: List loyalty transactions

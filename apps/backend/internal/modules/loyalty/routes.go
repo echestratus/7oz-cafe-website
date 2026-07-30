@@ -21,6 +21,8 @@ func RegisterCustomerRoutes(router fiber.Router, handler *Handler, authenticate 
 func RegisterAdminRoutes(router fiber.Router, handler *Handler, authenticate fiber.Handler) {
 	admin := router.Group("/admin/loyalty", authenticate, middleware.RequirePermission("loyalty.manage"))
 	admin.Get("/", handler.ListAdminAccounts)
+	admin.Get("/settings", handler.GetSettings)
+	admin.Patch("/settings", handler.UpdateSettings)
 	admin.Get("/history", handler.ListAdminHistory)
 	admin.Post("/adjustments", handler.Adjust)
 	admin.Get("/campaigns", handler.ListCampaigns)

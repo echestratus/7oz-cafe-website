@@ -9,6 +9,7 @@
     "test": "node ../../scripts/go.mjs test ./...",
     "typecheck": "node ../../scripts/go.mjs test ./... -count=1 -run=^$",
     "sqlc:generate": "sqlc generate",
-    "db:seed": "node ../../scripts/go.mjs run ./cmd/seed"
+    "db:seed": "node ../../scripts/go.mjs run ./cmd/seed",
+    "loyalty:expire": "node ../../scripts/go.mjs run ./cmd/expire-loyalty"
   }
 }

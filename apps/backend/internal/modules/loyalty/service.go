@@ -34,6 +34,20 @@ type AccountDTO struct {
 	UpdatedAt        string `json:"updatedAt"`
 }
 
+type SettingsDTO struct {
+	ID                            string `json:"id"`
+	PointsPerCompletedReservation int32  `json:"pointsPerCompletedReservation"`
+	ExpirationStrategy            string `json:"expirationStrategy"`
+	ExpirationMonths              int32  `json:"expirationMonths"`
+	UpdatedAt                     string `json:"updatedAt"`
+}
+
+type SettingsInput struct {
+	PointsPerCompletedReservation int32
+	ExpirationStrategy            string
+	ExpirationMonths              int32
+}
+
 type TransactionDTO struct {
 	ID                string  `json:"id"`
 	Type              string  `json:"type"`
@@ -123,6 +137,69 @@ func (s *Service) GetCustomerAccount(ctx context.Context, userID uuid.UUID) (*Ac
 		return nil, err
 	}
 	dto := toAccountDTO(*account)
+	return &dto, nil
+}
+
+func (s *Service) GetSettings(ctx context.Context) (*SettingsDTO, error) {
+	if err := s.requireDB(); err != nil {
+		return nil, err
+	}
+	settings, err := s.db.Queries.GetLoyaltySettings(ctx)
+	if err != nil {
+		return nil, apperr.Wrap(apperr.Internal("Failed to load loyalty settings."), err)
+	}
+	dto := toSettingsDTO(settings)
+	return &dto, nil
+}
+
+func (s *Service) UpdateSettings(ctx context.Context, actor uuid.UUID, input SettingsInput) (*SettingsDTO, error) {
+	if err := s.requireDB(); err != nil {
+		return nil, err
+	}
+	if input.PointsPerCompletedReservation < 0 {
+		return nil, apperr.Validation("Invalid points per reservation.", response.FieldError{
+			Field:   "pointsPerCompletedReservation",
+			Message: "must be >= 0",
+		})
+	}
+	strategy := strings.TrimSpace(strings.ToLower(input.ExpirationStrategy))
+	switch strategy {
+	case expirationStrategyNever, expirationStrategyRollingMonths:
+	default:
+		return nil, apperr.Validation("Invalid expiration strategy.", response.FieldError{
+			Field:   "expirationStrategy",
+			Message: "must be never or rolling_months",
+		})
+	}
+	if input.ExpirationMonths < 1 {
+		return nil, apperr.Validation("Invalid expiration months.", response.FieldError{
+			Field:   "expirationMonths",
+			Message: "must be >= 1",
+		})
+	}
+
+	existing, err := s.db.Queries.GetLoyaltySettings(ctx)
+	if err != nil {
+		return nil, apperr.Wrap(apperr.Internal("Failed to load loyalty settings."), err)
+	}
+
+	updated, err := s.db.Queries.UpdateLoyaltySettings(ctx, sqlcdb.UpdateLoyaltySettingsParams{
+		ID:                            existing.ID,
+		PointsPerCompletedReservation: input.PointsPerCompletedReservation,
+		ExpirationStrategy:            strategy,
+		ExpirationMonths:              input.ExpirationMonths,
+	})
+	if err != nil {
+		return nil, apperr.Wrap(apperr.Internal("Failed to update loyalty settings."), err)
+	}
+
+	_ = s.writeAudit(ctx, &actor, "loyalty.settings_updated", updated.ID.String(), map[string]any{
+		"pointsPerCompletedReservation": updated.PointsPerCompletedReservation,
+		"expirationStrategy":            updated.ExpirationStrategy,
+		"expirationMonths":              updated.ExpirationMonths,
+	})
+
+	dto := toSettingsDTO(updated)
 	return &dto, nil
 }
 
@@ -910,6 +987,16 @@ func toAccountDTO(account sqlcdb.LoyaltyAccount) AccountDTO {
 		LifetimeEarned:   account.LifetimeEarned,
 		LifetimeRedeemed: account.LifetimeRedeemed,
 		UpdatedAt:        account.UpdatedAt.UTC().Format(time.RFC3339),
+	}
+}
+
+func toSettingsDTO(settings sqlcdb.LoyaltySetting) SettingsDTO {
+	return SettingsDTO{
+		ID:                            settings.ID.String(),
+		PointsPerCompletedReservation: settings.PointsPerCompletedReservation,
+		ExpirationStrategy:            settings.ExpirationStrategy,
+		ExpirationMonths:              settings.ExpirationMonths,
+		UpdatedAt:                     settings.UpdatedAt.UTC().Format(time.RFC3339),
 	}
 }
 

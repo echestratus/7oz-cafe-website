@@ -2,6 +2,7 @@ import Link from 'next/link';
 
 import { BrandLogo } from '@/components/brand/brand-logo';
 import { Container } from '@/components/ui/container';
+import { AccountNav } from '@/features/auth/components/account-nav';
 
 const navItems = [
   { href: '/menu', label: 'Menu' },
@@ -47,6 +48,7 @@ export function SiteHeader({ tone = 'solid' }: SiteHeaderProps) {
               {item.label}
             </Link>
           ))}
+          <AccountNav tone={tone} />
           <Link
             href="/reservations"
             className={`rounded-full border px-5 py-2.5 text-nav transition-colors duration-200 ${
@@ -60,12 +62,7 @@ export function SiteHeader({ tone = 'solid' }: SiteHeaderProps) {
         </nav>
 
         <nav aria-label="Mobile" className="flex items-center gap-4 lg:hidden">
-          <Link
-            href="/menu"
-            className={`text-nav ${isOverlay ? 'text-white/90' : 'text-text-secondary'}`}
-          >
-            Menu
-          </Link>
+          <AccountNav tone={tone} />
           <Link
             href="/reservations"
             className={`rounded-full border px-4 py-2 text-nav ${

@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { Fraunces, Inter } from 'next/font/google';
 import type { ReactNode } from 'react';
 
+import { Providers } from '@/components/providers';
+
 import '@/styles/globals.css';
 
 /** Clean grotesque for body copy and UI. */
@@ -41,7 +43,9 @@ interface RootLayoutProps {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" className={`${inter.variable} ${fraunces.variable}`}>
-      <body className={`${inter.className} antialiased`}>{children}</body>
+      <body className={`${inter.className} antialiased`}>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

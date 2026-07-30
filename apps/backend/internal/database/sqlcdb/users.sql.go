@@ -28,6 +28,40 @@ func (q *Queries) AssignUserRole(ctx context.Context, arg AssignUserRoleParams) 
 	return err
 }
 
+const countCustomersAdmin = `-- name: CountCustomersAdmin :one
+SELECT COUNT(*)::bigint AS total
+FROM users u
+WHERE u.deleted_at IS NULL
+  AND EXISTS (
+    SELECT 1
+    FROM user_roles ur
+    INNER JOIN roles r ON r.id = ur.role_id
+    WHERE ur.user_id = u.id
+      AND r.code = 'customer'
+  )
+  AND (
+    $1::text IS NULL
+    OR u.status = $1
+  )
+  AND (
+    $2::text IS NULL
+    OR u.email::text ILIKE '%' || $2 || '%'
+    OR u.full_name ILIKE '%' || $2 || '%'
+  )
+`
+
+type CountCustomersAdminParams struct {
+	Status *string `json:"status"`
+	Search *string `json:"search"`
+}
+
+func (q *Queries) CountCustomersAdmin(ctx context.Context, arg CountCustomersAdminParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countCustomersAdmin, arg.Status, arg.Search)
+	var total int64
+	err := row.Scan(&total)
+	return total, err
+}
+
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
     id,
@@ -157,6 +191,90 @@ func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (User, error) {
 	return i, err
 }
 
+const listCustomersAdmin = `-- name: ListCustomersAdmin :many
+SELECT
+    u.id,
+    u.email,
+    u.full_name,
+    u.status,
+    u.email_verified_at,
+    u.last_login_at,
+    u.created_at,
+    u.updated_at
+FROM users u
+WHERE u.deleted_at IS NULL
+  AND EXISTS (
+    SELECT 1
+    FROM user_roles ur
+    INNER JOIN roles r ON r.id = ur.role_id
+    WHERE ur.user_id = u.id
+      AND r.code = 'customer'
+  )
+  AND (
+    $3::text IS NULL
+    OR u.status = $3
+  )
+  AND (
+    $4::text IS NULL
+    OR u.email::text ILIKE '%' || $4 || '%'
+    OR u.full_name ILIKE '%' || $4 || '%'
+  )
+ORDER BY u.created_at DESC
+LIMIT $1 OFFSET $2
+`
+
+type ListCustomersAdminParams struct {
+	Limit  int32   `json:"limit"`
+	Offset int32   `json:"offset"`
+	Status *string `json:"status"`
+	Search *string `json:"search"`
+}
+
+type ListCustomersAdminRow struct {
+	ID              uuid.UUID  `json:"id"`
+	Email           string     `json:"email"`
+	FullName        string     `json:"full_name"`
+	Status          string     `json:"status"`
+	EmailVerifiedAt *time.Time `json:"email_verified_at"`
+	LastLoginAt     *time.Time `json:"last_login_at"`
+	CreatedAt       time.Time  `json:"created_at"`
+	UpdatedAt       time.Time  `json:"updated_at"`
+}
+
+func (q *Queries) ListCustomersAdmin(ctx context.Context, arg ListCustomersAdminParams) ([]ListCustomersAdminRow, error) {
+	rows, err := q.db.Query(ctx, listCustomersAdmin,
+		arg.Limit,
+		arg.Offset,
+		arg.Status,
+		arg.Search,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListCustomersAdminRow{}
+	for rows.Next() {
+		var i ListCustomersAdminRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Email,
+			&i.FullName,
+			&i.Status,
+			&i.EmailVerifiedAt,
+			&i.LastLoginAt,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listUserPermissionCodes = `-- name: ListUserPermissionCodes :many
 SELECT DISTINCT p.code
 FROM user_roles ur
@@ -281,4 +399,68 @@ type UpdateUserPasswordParams struct {
 func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error {
 	_, err := q.db.Exec(ctx, updateUserPassword, arg.ID, arg.PasswordHash)
 	return err
+}
+
+const updateUserStatus = `-- name: UpdateUserStatus :one
+UPDATE users
+SET status = $2,
+    updated_at = NOW()
+WHERE id = $1
+  AND deleted_at IS NULL
+RETURNING
+    id,
+    email,
+    password_hash,
+    full_name,
+    status,
+    email_verified_at,
+    last_login_at,
+    created_at,
+    updated_at,
+    deleted_at
+`
+
+type UpdateUserStatusParams struct {
+	ID     uuid.UUID `json:"id"`
+	Status string    `json:"status"`
+}
+
+func (q *Queries) UpdateUserStatus(ctx context.Context, arg UpdateUserStatusParams) (User, error) {
+	row := q.db.QueryRow(ctx, updateUserStatus, arg.ID, arg.Status)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.PasswordHash,
+		&i.FullName,
+		&i.Status,
+		&i.EmailVerifiedAt,
+		&i.LastLoginAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
+const userHasRoleCode = `-- name: UserHasRoleCode :one
+SELECT EXISTS (
+    SELECT 1
+    FROM user_roles ur
+    INNER JOIN roles r ON r.id = ur.role_id
+    WHERE ur.user_id = $1
+      AND r.code = $2
+)::bool AS has_role
+`
+
+type UserHasRoleCodeParams struct {
+	UserID uuid.UUID `json:"user_id"`
+	Code   string    `json:"code"`
+}
+
+func (q *Queries) UserHasRoleCode(ctx context.Context, arg UserHasRoleCodeParams) (bool, error) {
+	row := q.db.QueryRow(ctx, userHasRoleCode, arg.UserID, arg.Code)
+	var has_role bool
+	err := row.Scan(&has_role)
+	return has_role, err
 }

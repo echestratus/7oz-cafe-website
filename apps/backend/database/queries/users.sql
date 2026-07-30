@@ -106,3 +106,82 @@ SET password_hash = $2,
     updated_at = NOW()
 WHERE id = $1
   AND deleted_at IS NULL;
+
+-- name: ListCustomersAdmin :many
+SELECT
+    u.id,
+    u.email,
+    u.full_name,
+    u.status,
+    u.email_verified_at,
+    u.last_login_at,
+    u.created_at,
+    u.updated_at
+FROM users u
+WHERE u.deleted_at IS NULL
+  AND EXISTS (
+    SELECT 1
+    FROM user_roles ur
+    INNER JOIN roles r ON r.id = ur.role_id
+    WHERE ur.user_id = u.id
+      AND r.code = 'customer'
+  )
+  AND (
+    sqlc.narg('status')::text IS NULL
+    OR u.status = sqlc.narg('status')
+  )
+  AND (
+    sqlc.narg('search')::text IS NULL
+    OR u.email::text ILIKE '%' || sqlc.narg('search') || '%'
+    OR u.full_name ILIKE '%' || sqlc.narg('search') || '%'
+  )
+ORDER BY u.created_at DESC
+LIMIT $1 OFFSET $2;
+
+-- name: CountCustomersAdmin :one
+SELECT COUNT(*)::bigint AS total
+FROM users u
+WHERE u.deleted_at IS NULL
+  AND EXISTS (
+    SELECT 1
+    FROM user_roles ur
+    INNER JOIN roles r ON r.id = ur.role_id
+    WHERE ur.user_id = u.id
+      AND r.code = 'customer'
+  )
+  AND (
+    sqlc.narg('status')::text IS NULL
+    OR u.status = sqlc.narg('status')
+  )
+  AND (
+    sqlc.narg('search')::text IS NULL
+    OR u.email::text ILIKE '%' || sqlc.narg('search') || '%'
+    OR u.full_name ILIKE '%' || sqlc.narg('search') || '%'
+  );
+
+-- name: UserHasRoleCode :one
+SELECT EXISTS (
+    SELECT 1
+    FROM user_roles ur
+    INNER JOIN roles r ON r.id = ur.role_id
+    WHERE ur.user_id = $1
+      AND r.code = $2
+)::bool AS has_role;
+
+-- name: UpdateUserStatus :one
+UPDATE users
+SET status = $2,
+    updated_at = NOW()
+WHERE id = $1
+  AND deleted_at IS NULL
+RETURNING
+    id,
+    email,
+    password_hash,
+    full_name,
+    status,
+    email_verified_at,
+    last_login_at,
+    created_at,
+    updated_at,
+    deleted_at;

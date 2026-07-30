@@ -12,6 +12,7 @@ import {
   LogOut,
   Newspaper,
   Sparkles,
+  Users,
 } from 'lucide-react';
 
 import { logout } from '@/services/auth';
@@ -20,6 +21,7 @@ import { useAuthStore } from '@/stores/auth-store';
 const links = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/reservations', label: 'Reservations', icon: CalendarDays, permission: 'reservation.manage' },
+  { href: '/customers', label: 'Customers', icon: Users, permission: 'customer.read' },
   { href: '/membership', label: 'Membership', icon: Sparkles, permission: 'membership.manage' },
   { href: '/loyalty', label: 'Loyalty', icon: Gift, permission: 'loyalty.manage' },
   { href: '/blogs', label: 'Blogs', icon: BookOpenText, permission: 'blog.manage' },

@@ -7,6 +7,7 @@ import (
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/authentication"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/blog"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/cms"
+	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/customer"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/health"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/loyalty"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/media"
@@ -20,10 +21,10 @@ import (
 )
 
 type Dependencies struct {
-	Config        *config.Config
-	Logger        *zap.Logger
-	Postgres      *database.Postgres
-	HealthService *health.Service
+	Config             *config.Config
+	Logger             *zap.Logger
+	Postgres           *database.Postgres
+	HealthService      *health.Service
 	AuthService        *authentication.Service
 	CMSService         *cms.Service
 	BlogService        *blog.Service
@@ -31,6 +32,7 @@ type Dependencies struct {
 	ReservationService *reservation.Service
 	MembershipService  *membership.Service
 	LoyaltyService     *loyalty.Service
+	CustomerService    *customer.Service
 }
 
 func New(deps Dependencies) *fiber.App {
@@ -66,6 +68,7 @@ func New(deps Dependencies) *fiber.App {
 	reservationHandler := reservation.NewHandler(deps.ReservationService)
 	membershipHandler := membership.NewHandler(deps.MembershipService)
 	loyaltyHandler := loyalty.NewHandler(deps.LoyaltyService)
+	customerHandler := customer.NewHandler(deps.CustomerService)
 	authenticate := middleware.Authenticate(deps.AuthService)
 	optionalAuth := middleware.OptionalAuthenticate(deps.AuthService)
 
@@ -93,6 +96,7 @@ func New(deps Dependencies) *fiber.App {
 	loyalty.RegisterPublicRoutes(api, loyaltyHandler)
 	loyalty.RegisterCustomerRoutes(api, loyaltyHandler, authenticate)
 	loyalty.RegisterAdminRoutes(api, loyaltyHandler, authenticate)
+	customer.RegisterAdminRoutes(api, customerHandler, authenticate)
 	api.Get("/openapi.yaml", serveOpenAPI)
 
 	deps.Logger.Info("routes registered", zap.String("service", deps.Config.Name))

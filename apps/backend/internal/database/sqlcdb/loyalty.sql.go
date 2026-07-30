@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const countLoyaltyAccountsAdmin = `-- name: CountLoyaltyAccountsAdmin :one
@@ -224,6 +225,78 @@ func (q *Queries) CreateLoyaltyRedemption(ctx context.Context, arg CreateLoyalty
 		&i.PointsSpent,
 		&i.Status,
 		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const createLoyaltyReward = `-- name: CreateLoyaltyReward :one
+INSERT INTO loyalty_rewards (
+    id,
+    code,
+    title,
+    description,
+    points_cost,
+    stock,
+    is_active,
+    sort_order,
+    data,
+    created_at,
+    updated_at
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW()
+) RETURNING
+    id,
+    code,
+    title,
+    description,
+    points_cost,
+    stock,
+    is_active,
+    sort_order,
+    data,
+    created_at,
+    updated_at,
+    deleted_at
+`
+
+type CreateLoyaltyRewardParams struct {
+	ID          uuid.UUID   `json:"id"`
+	Code        string      `json:"code"`
+	Title       string      `json:"title"`
+	Description string      `json:"description"`
+	PointsCost  int32       `json:"points_cost"`
+	Stock       pgtype.Int4 `json:"stock"`
+	IsActive    bool        `json:"is_active"`
+	SortOrder   int32       `json:"sort_order"`
+	Data        []byte      `json:"data"`
+}
+
+func (q *Queries) CreateLoyaltyReward(ctx context.Context, arg CreateLoyaltyRewardParams) (LoyaltyReward, error) {
+	row := q.db.QueryRow(ctx, createLoyaltyReward,
+		arg.ID,
+		arg.Code,
+		arg.Title,
+		arg.Description,
+		arg.PointsCost,
+		arg.Stock,
+		arg.IsActive,
+		arg.SortOrder,
+		arg.Data,
+	)
+	var i LoyaltyReward
+	err := row.Scan(
+		&i.ID,
+		&i.Code,
+		&i.Title,
+		&i.Description,
+		&i.PointsCost,
+		&i.Stock,
+		&i.IsActive,
+		&i.SortOrder,
+		&i.Data,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
 	)
 	return i, err
 }
@@ -992,6 +1065,48 @@ func (q *Queries) ListLoyaltyTransactionsByUser(ctx context.Context, arg ListLoy
 	return items, nil
 }
 
+const softDeleteLoyaltyReward = `-- name: SoftDeleteLoyaltyReward :one
+UPDATE loyalty_rewards
+SET deleted_at = NOW(),
+    is_active = FALSE,
+    updated_at = NOW()
+WHERE id = $1
+  AND deleted_at IS NULL
+RETURNING
+    id,
+    code,
+    title,
+    description,
+    points_cost,
+    stock,
+    is_active,
+    sort_order,
+    data,
+    created_at,
+    updated_at,
+    deleted_at
+`
+
+func (q *Queries) SoftDeleteLoyaltyReward(ctx context.Context, id uuid.UUID) (LoyaltyReward, error) {
+	row := q.db.QueryRow(ctx, softDeleteLoyaltyReward, id)
+	var i LoyaltyReward
+	err := row.Scan(
+		&i.ID,
+		&i.Code,
+		&i.Title,
+		&i.Description,
+		&i.PointsCost,
+		&i.Stock,
+		&i.IsActive,
+		&i.SortOrder,
+		&i.Data,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
 const updateLoyaltyAccountBalances = `-- name: UpdateLoyaltyAccountBalances :one
 UPDATE loyalty_accounts
 SET balance = $2,
@@ -1104,6 +1219,73 @@ func (q *Queries) UpdateLoyaltyCampaign(ctx context.Context, arg UpdateLoyaltyCa
 		&i.BonusPoints,
 		&i.EligibleLevelCodes,
 		&i.IsActive,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
+const updateLoyaltyReward = `-- name: UpdateLoyaltyReward :one
+UPDATE loyalty_rewards
+SET title = $2,
+    description = $3,
+    points_cost = $4,
+    stock = $5,
+    is_active = $6,
+    sort_order = $7,
+    data = $8,
+    updated_at = NOW()
+WHERE id = $1
+  AND deleted_at IS NULL
+RETURNING
+    id,
+    code,
+    title,
+    description,
+    points_cost,
+    stock,
+    is_active,
+    sort_order,
+    data,
+    created_at,
+    updated_at,
+    deleted_at
+`
+
+type UpdateLoyaltyRewardParams struct {
+	ID          uuid.UUID   `json:"id"`
+	Title       string      `json:"title"`
+	Description string      `json:"description"`
+	PointsCost  int32       `json:"points_cost"`
+	Stock       pgtype.Int4 `json:"stock"`
+	IsActive    bool        `json:"is_active"`
+	SortOrder   int32       `json:"sort_order"`
+	Data        []byte      `json:"data"`
+}
+
+func (q *Queries) UpdateLoyaltyReward(ctx context.Context, arg UpdateLoyaltyRewardParams) (LoyaltyReward, error) {
+	row := q.db.QueryRow(ctx, updateLoyaltyReward,
+		arg.ID,
+		arg.Title,
+		arg.Description,
+		arg.PointsCost,
+		arg.Stock,
+		arg.IsActive,
+		arg.SortOrder,
+		arg.Data,
+	)
+	var i LoyaltyReward
+	err := row.Scan(
+		&i.ID,
+		&i.Code,
+		&i.Title,
+		&i.Description,
+		&i.PointsCost,
+		&i.Stock,
+		&i.IsActive,
+		&i.SortOrder,
+		&i.Data,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,

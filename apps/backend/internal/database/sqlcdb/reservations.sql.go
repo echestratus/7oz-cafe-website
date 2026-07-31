@@ -237,6 +237,40 @@ func (q *Queries) CreateReservationHistory(ctx context.Context, arg CreateReserv
 	return err
 }
 
+const getActiveCafeTableByID = `-- name: GetActiveCafeTableByID :one
+SELECT
+    id,
+    code,
+    name,
+    capacity,
+    is_active,
+    sort_order,
+    created_at,
+    updated_at,
+    deleted_at
+FROM cafe_tables
+WHERE id = $1
+  AND deleted_at IS NULL
+  AND is_active = TRUE
+`
+
+func (q *Queries) GetActiveCafeTableByID(ctx context.Context, id uuid.UUID) (CafeTable, error) {
+	row := q.db.QueryRow(ctx, getActiveCafeTableByID, id)
+	var i CafeTable
+	err := row.Scan(
+		&i.ID,
+		&i.Code,
+		&i.Name,
+		&i.Capacity,
+		&i.IsActive,
+		&i.SortOrder,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
 const getReservationByID = `-- name: GetReservationByID :one
 SELECT
     id,

@@ -39,6 +39,7 @@ func RegisterAdminRoutes(router fiber.Router, handler *Handler, authenticate fib
 	admin.Get("/", handler.ListAdmin)
 	admin.Get("/settings", handler.GetSettings)
 	admin.Patch("/settings", handler.UpdateSettings)
+	admin.Get("/tables", handler.ListTables)
 	admin.Get("/:id", handler.GetAdmin)
 	admin.Patch("/:id", handler.AssignTable)
 	admin.Patch("/:id/confirm", handler.Confirm)

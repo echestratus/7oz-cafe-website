@@ -251,6 +251,14 @@ func (h *Handler) GetAdmin(c fiber.Ctx) error {
 	return response.JSON(c, fiber.StatusOK, response.OK("OK", item))
 }
 
+func (h *Handler) ListTables(c fiber.Ctx) error {
+	items, err := h.service.ListTables(c.Context())
+	if err != nil {
+		return err
+	}
+	return response.JSON(c, fiber.StatusOK, response.OK("OK", items))
+}
+
 func (h *Handler) Confirm(c fiber.Ctx) error {
 	return h.runAdminTransition(c, h.service.Confirm, "Reservation confirmed.")
 }

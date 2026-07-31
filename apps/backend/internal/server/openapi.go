@@ -743,6 +743,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/reservations/tables:
+    get:
+      summary: List active cafe tables
+      operationId: listAdminCafeTables
+      tags: [Reservations]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Active cafe tables
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
   /admin/reservations/{id}:
     get:
       summary: Get reservation details

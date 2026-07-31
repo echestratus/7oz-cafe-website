@@ -6,14 +6,17 @@ import { useEffect, useState } from 'react';
 import { PageHeader } from '@/components/layout/page-header';
 import { ApiClientError } from '@/lib/api-client';
 import {
+  assignReservationTable,
   cancelReservation,
   checkInReservation,
   completeReservation,
   confirmReservation,
   getReservationSettings,
+  listCafeTables,
   listReservations,
   markNoShow,
   updateReservationSettings,
+  type CafeTable,
   type DayHours,
   type Reservation,
   type ReservationSettings,
@@ -62,6 +65,14 @@ function nextActions(status: string): Array<'confirm' | 'check_in' | 'complete' 
   }
 }
 
+function canAssignTable(status: string): boolean {
+  return status === 'pending' || status === 'confirmed' || status === 'checked_in';
+}
+
+function tableLabel(table: CafeTable): string {
+  return `${table.code} · ${table.name} (${table.capacity})`;
+}
+
 export function ReservationsManager() {
   const queryClient = useQueryClient();
   const [tab, setTab] = useState<'bookings' | 'settings'>('bookings');
@@ -92,6 +103,12 @@ export function ReservationsManager() {
     queryKey: ['admin-reservation-settings'],
     queryFn: () => getReservationSettings(),
     enabled: tab === 'settings',
+  });
+
+  const tablesQuery = useQuery({
+    queryKey: ['admin-cafe-tables'],
+    queryFn: () => listCafeTables(),
+    enabled: tab === 'bookings',
   });
 
   useEffect(() => {
@@ -171,11 +188,28 @@ export function ReservationsManager() {
     },
   });
 
+  const assignMutation = useMutation({
+    mutationFn: ({ id, tableId }: { id: string; tableId: string }) =>
+      assignReservationTable(id, tableId),
+    onSuccess: async () => {
+      setError(null);
+      setMessage('Table assigned.');
+      await queryClient.invalidateQueries({ queryKey: ['admin-reservations'] });
+    },
+    onError: (err) => {
+      setMessage(null);
+      setError(err instanceof ApiClientError ? err.message : 'Table assignment failed.');
+    },
+  });
+
+  const tables = tablesQuery.data ?? [];
+  const pending = actionMutation.isPending || assignMutation.isPending;
+
   return (
     <div>
       <PageHeader
         title="Reservations"
-        description="Review booking requests and configure booking rules for the cafe."
+        description="Review booking requests, assign tables, and configure booking rules."
       />
 
       <div className="mb-6 flex flex-wrap gap-2">
@@ -264,8 +298,10 @@ export function ReservationsManager() {
               <ReservationRow
                 key={item.id}
                 reservation={item}
-                pending={actionMutation.isPending}
+                tables={tables}
+                pending={pending}
                 onAction={(action) => actionMutation.mutate({ id: item.id, action })}
+                onAssign={(tableId) => assignMutation.mutate({ id: item.id, tableId })}
               />
             ))}
           </div>
@@ -457,14 +493,26 @@ function NumberField({
 
 function ReservationRow({
   reservation,
+  tables,
   pending,
   onAction,
+  onAssign,
 }: {
   reservation: Reservation;
+  tables: CafeTable[];
   pending: boolean;
   onAction: (action: 'confirm' | 'check_in' | 'complete' | 'cancel' | 'no_show') => void;
+  onAssign: (tableId: string) => void;
 }) {
   const actions = nextActions(reservation.status);
+  const assignable = canAssignTable(reservation.status);
+  const currentTable = tables.find((table) => table.id === reservation.tableId);
+  const [selectedTableId, setSelectedTableId] = useState(reservation.tableId ?? '');
+  const suitableTables = tables.filter((table) => table.capacity >= reservation.guestCount);
+
+  useEffect(() => {
+    setSelectedTableId(reservation.tableId ?? '');
+  }, [reservation.tableId]);
 
   return (
     <article className="rounded-[16px] border border-border bg-surface p-4 md:p-5">
@@ -483,26 +531,60 @@ function ReservationRow({
           <p className="text-sm text-text-muted">
             {reservation.guestEmail} · {reservation.guestPhone}
           </p>
+          <p className="text-sm text-text-secondary">
+            Table:{' '}
+            {currentTable ? tableLabel(currentTable) : reservation.tableId ? 'Assigned' : 'Unassigned'}
+          </p>
           {reservation.notes ? (
             <p className="pt-1 text-sm text-text-secondary">{reservation.notes}</p>
           ) : null}
         </div>
 
-        {actions.length > 0 ? (
-          <div className="flex flex-wrap gap-2">
-            {actions.map((action) => (
+        <div className="flex flex-col gap-3">
+          {assignable ? (
+            <div className="flex flex-wrap items-end gap-2">
+              <label className="flex min-w-[12rem] flex-col gap-1 text-sm">
+                <span className="text-text-secondary">Assign table</span>
+                <select
+                  value={selectedTableId}
+                  onChange={(event) => setSelectedTableId(event.target.value)}
+                  className="rounded-[12px] border border-border bg-background px-3 py-2"
+                >
+                  <option value="">Select table</option>
+                  {suitableTables.map((table) => (
+                    <option key={table.id} value={table.id}>
+                      {tableLabel(table)}
+                    </option>
+                  ))}
+                </select>
+              </label>
               <button
-                key={action}
                 type="button"
-                disabled={pending}
-                onClick={() => onAction(action)}
-                className="rounded-[12px] border border-border px-3 py-2 text-sm text-text hover:bg-surface-secondary disabled:opacity-60"
+                disabled={pending || !selectedTableId || selectedTableId === (reservation.tableId ?? '')}
+                onClick={() => onAssign(selectedTableId)}
+                className="rounded-[12px] bg-primary px-3 py-2 text-sm text-white hover:bg-primary-hover disabled:opacity-60"
               >
-                {actionLabel(action)}
+                Assign
               </button>
-            ))}
-          </div>
-        ) : null}
+            </div>
+          ) : null}
+
+          {actions.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {actions.map((action) => (
+                <button
+                  key={action}
+                  type="button"
+                  disabled={pending}
+                  onClick={() => onAction(action)}
+                  className="rounded-[12px] border border-border px-3 py-2 text-sm text-text hover:bg-surface-secondary disabled:opacity-60"
+                >
+                  {actionLabel(action)}
+                </button>
+              ))}
+            </div>
+          ) : null}
+        </div>
       </div>
     </article>
   );

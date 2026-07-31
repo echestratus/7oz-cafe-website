@@ -659,6 +659,90 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/reservations/settings:
+    get:
+      summary: Get reservation booking settings
+      operationId: getAdminReservationSettings
+      tags: [Reservations]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Reservation settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+    patch:
+      summary: Update reservation booking settings
+      operationId: updateAdminReservationSettings
+      tags: [Reservations]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - minGuests
+                - maxGuests
+                - minAdvanceMinutes
+                - maxAdvanceDays
+                - slotIntervalMinutes
+                - durationMinutes
+                - bufferMinutes
+                - cancelCutoffMinutes
+                - timezone
+                - weeklyHours
+              properties:
+                minGuests:
+                  type: integer
+                  minimum: 1
+                maxGuests:
+                  type: integer
+                  minimum: 1
+                minAdvanceMinutes:
+                  type: integer
+                  minimum: 0
+                maxAdvanceDays:
+                  type: integer
+                  minimum: 1
+                slotIntervalMinutes:
+                  type: integer
+                  minimum: 5
+                durationMinutes:
+                  type: integer
+                  minimum: 15
+                bufferMinutes:
+                  type: integer
+                  minimum: 0
+                cancelCutoffMinutes:
+                  type: integer
+                  minimum: 0
+                timezone:
+                  type: string
+                  example: Asia/Tashkent
+                weeklyHours:
+                  type: object
+                  additionalProperties:
+                    type: object
+                    required: [open, close]
+                    properties:
+                      open:
+                        type: string
+                        example: "08:00"
+                      close:
+                        type: string
+                        example: "00:00"
+      responses:
+        "200":
+          description: Reservation settings updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
   /admin/reservations/{id}:
     get:
       summary: Get reservation details

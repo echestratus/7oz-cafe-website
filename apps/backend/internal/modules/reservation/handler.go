@@ -190,6 +190,54 @@ func (h *Handler) ListAdmin(c fiber.Ctx) error {
 	}))
 }
 
+func (h *Handler) GetSettings(c fiber.Ctx) error {
+	item, err := h.service.GetSettings(c.Context())
+	if err != nil {
+		return err
+	}
+	return response.JSON(c, fiber.StatusOK, response.OK("OK", item))
+}
+
+func (h *Handler) UpdateSettings(c fiber.Ctx) error {
+	principal, ok := authctx.PrincipalFromCtx(c)
+	if !ok {
+		return apperr.Unauthorized("Authentication required.")
+	}
+
+	var req struct {
+		MinGuests           int32               `json:"minGuests"`
+		MaxGuests           int32               `json:"maxGuests"`
+		MinAdvanceMinutes   int32               `json:"minAdvanceMinutes"`
+		MaxAdvanceDays      int32               `json:"maxAdvanceDays"`
+		SlotIntervalMinutes int32               `json:"slotIntervalMinutes"`
+		DurationMinutes     int32               `json:"durationMinutes"`
+		BufferMinutes       int32               `json:"bufferMinutes"`
+		CancelCutoffMinutes int32               `json:"cancelCutoffMinutes"`
+		Timezone            string              `json:"timezone"`
+		WeeklyHours         map[string]dayHours `json:"weeklyHours"`
+	}
+	if err := c.Bind().Body(&req); err != nil {
+		return apperr.BadRequest("Invalid JSON body.")
+	}
+
+	item, err := h.service.UpdateSettings(c.Context(), principal.UserID, SettingsInput{
+		MinGuests:           req.MinGuests,
+		MaxGuests:           req.MaxGuests,
+		MinAdvanceMinutes:   req.MinAdvanceMinutes,
+		MaxAdvanceDays:      req.MaxAdvanceDays,
+		SlotIntervalMinutes: req.SlotIntervalMinutes,
+		DurationMinutes:     req.DurationMinutes,
+		BufferMinutes:       req.BufferMinutes,
+		CancelCutoffMinutes: req.CancelCutoffMinutes,
+		Timezone:            req.Timezone,
+		WeeklyHours:         req.WeeklyHours,
+	})
+	if err != nil {
+		return err
+	}
+	return response.JSON(c, fiber.StatusOK, response.OK("Reservation settings updated.", item))
+}
+
 func (h *Handler) GetAdmin(c fiber.Ctx) error {
 	reservationID, err := uuid.Parse(c.Params("id"))
 	if err != nil {

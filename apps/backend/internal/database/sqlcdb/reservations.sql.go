@@ -640,6 +640,83 @@ func (q *Queries) SumActiveTableCapacity(ctx context.Context) (int64, error) {
 	return total_capacity, err
 }
 
+const updateReservationSettings = `-- name: UpdateReservationSettings :one
+UPDATE reservation_settings
+SET min_guests = $2,
+    max_guests = $3,
+    min_advance_minutes = $4,
+    max_advance_days = $5,
+    slot_interval_minutes = $6,
+    duration_minutes = $7,
+    buffer_minutes = $8,
+    cancel_cutoff_minutes = $9,
+    timezone = $10,
+    weekly_hours = $11,
+    updated_at = NOW()
+WHERE id = $1
+RETURNING
+    id,
+    min_guests,
+    max_guests,
+    min_advance_minutes,
+    max_advance_days,
+    slot_interval_minutes,
+    duration_minutes,
+    buffer_minutes,
+    cancel_cutoff_minutes,
+    timezone,
+    weekly_hours,
+    created_at,
+    updated_at
+`
+
+type UpdateReservationSettingsParams struct {
+	ID                  uuid.UUID `json:"id"`
+	MinGuests           int32     `json:"min_guests"`
+	MaxGuests           int32     `json:"max_guests"`
+	MinAdvanceMinutes   int32     `json:"min_advance_minutes"`
+	MaxAdvanceDays      int32     `json:"max_advance_days"`
+	SlotIntervalMinutes int32     `json:"slot_interval_minutes"`
+	DurationMinutes     int32     `json:"duration_minutes"`
+	BufferMinutes       int32     `json:"buffer_minutes"`
+	CancelCutoffMinutes int32     `json:"cancel_cutoff_minutes"`
+	Timezone            string    `json:"timezone"`
+	WeeklyHours         []byte    `json:"weekly_hours"`
+}
+
+func (q *Queries) UpdateReservationSettings(ctx context.Context, arg UpdateReservationSettingsParams) (ReservationSetting, error) {
+	row := q.db.QueryRow(ctx, updateReservationSettings,
+		arg.ID,
+		arg.MinGuests,
+		arg.MaxGuests,
+		arg.MinAdvanceMinutes,
+		arg.MaxAdvanceDays,
+		arg.SlotIntervalMinutes,
+		arg.DurationMinutes,
+		arg.BufferMinutes,
+		arg.CancelCutoffMinutes,
+		arg.Timezone,
+		arg.WeeklyHours,
+	)
+	var i ReservationSetting
+	err := row.Scan(
+		&i.ID,
+		&i.MinGuests,
+		&i.MaxGuests,
+		&i.MinAdvanceMinutes,
+		&i.MaxAdvanceDays,
+		&i.SlotIntervalMinutes,
+		&i.DurationMinutes,
+		&i.BufferMinutes,
+		&i.CancelCutoffMinutes,
+		&i.Timezone,
+		&i.WeeklyHours,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const updateReservationStatus = `-- name: UpdateReservationStatus :one
 UPDATE reservations
 SET status = $2,

@@ -37,6 +37,8 @@ func RegisterAdminRoutes(router fiber.Router, handler *Handler, authenticate fib
 	admin := router.Group("/admin/reservations", authenticate, middleware.RequirePermission("reservation.manage"))
 
 	admin.Get("/", handler.ListAdmin)
+	admin.Get("/settings", handler.GetSettings)
+	admin.Patch("/settings", handler.UpdateSettings)
 	admin.Get("/:id", handler.GetAdmin)
 	admin.Patch("/:id", handler.AssignTable)
 	admin.Patch("/:id/confirm", handler.Confirm)

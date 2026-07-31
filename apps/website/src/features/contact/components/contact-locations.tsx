@@ -5,16 +5,10 @@ import { ArrowUpRight, ExternalLink, MapPin } from 'lucide-react';
 import { Reveal } from '@/components/ui/reveal';
 import {
   getAllLocations,
-  locationStatusLabel,
   locationMapsUrl,
+  locationStatusLabel,
   type CafeLocation,
 } from '@/features/locations/lib/locations';
-
-interface ContactLocationsProps {
-  primaryPhone?: string;
-  primaryEmail?: string;
-  primaryWhatsapp?: string;
-}
 
 function ContactLinks({
   location,
@@ -45,17 +39,7 @@ function ContactLinks({
   );
 }
 
-function FeaturedLocation({
-  location,
-  phone,
-  email,
-  whatsapp,
-}: {
-  location: CafeLocation;
-  phone?: string;
-  email?: string;
-  whatsapp?: string;
-}) {
+function FeaturedLocation({ location }: { location: CafeLocation }) {
   return (
     <article className="overflow-hidden rounded-media border border-border/70 bg-surface shadow-soft">
       <div className="grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
@@ -89,41 +73,6 @@ function FeaturedLocation({
               <span>{location.address}</span>
             </p>
           </div>
-
-          <dl className="space-y-4 border-t border-border/80 pt-8 text-sm">
-            {phone ? (
-              <div className="grid gap-1 sm:grid-cols-[6.5rem_1fr] sm:items-baseline">
-                <dt className="text-eyebrow">Phone</dt>
-                <dd>
-                  <a
-                    className="text-text transition-colors hover:text-primary"
-                    href={`tel:${phone.replace(/\s/g, '')}`}
-                  >
-                    {phone}
-                  </a>
-                </dd>
-              </div>
-            ) : null}
-            {whatsapp ? (
-              <div className="grid gap-1 sm:grid-cols-[6.5rem_1fr] sm:items-baseline">
-                <dt className="text-eyebrow">WhatsApp</dt>
-                <dd className="text-text">{whatsapp}</dd>
-              </div>
-            ) : null}
-            {email ? (
-              <div className="grid gap-1 sm:grid-cols-[6.5rem_1fr] sm:items-baseline">
-                <dt className="text-eyebrow">Email</dt>
-                <dd>
-                  <a
-                    className="text-primary transition-colors hover:text-primary-hover"
-                    href={`mailto:${email}`}
-                  >
-                    {email}
-                  </a>
-                </dd>
-              </div>
-            ) : null}
-          </dl>
 
           <ContactLinks location={location} isOpen />
         </div>
@@ -177,11 +126,7 @@ function ComingSoonCard({ location }: { location: CafeLocation }) {
   );
 }
 
-export function ContactLocations({
-  primaryPhone,
-  primaryEmail,
-  primaryWhatsapp,
-}: ContactLocationsProps) {
+export function ContactLocations() {
   const locations = getAllLocations();
   const open = locations.filter((location) => location.status === 'open');
   const comingSoon = locations.filter((location) => location.status === 'coming_soon');
@@ -190,12 +135,7 @@ export function ContactLocations({
     <div className="space-y-16 md:space-y-20">
       {open.map((location, index) => (
         <Reveal key={location.id} delay={index * 0.04}>
-          <FeaturedLocation
-            location={location}
-            phone={primaryPhone}
-            email={primaryEmail}
-            whatsapp={primaryWhatsapp}
-          />
+          <FeaturedLocation location={location} />
         </Reveal>
       ))}
 

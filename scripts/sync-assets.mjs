@@ -2,10 +2,11 @@
 
 /**
  * Sync selected media from ./assets into application public directories.
+ * Mirrors each category (destination is replaced to drop orphaned files).
  * Idempotent. Safe to re-run. Does not invent missing files.
  */
 
-import { cpSync, existsSync, mkdirSync, readdirSync, statSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readdirSync, rmSync, statSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -36,34 +37,38 @@ function ensureDir(path) {
   }
 }
 
-function copyCategory(category, destinationRoot) {
+function countFiles(dir) {
+  let total = 0;
+  for (const entry of readdirSync(dir)) {
+    const path = join(dir, entry);
+    if (statSync(path).isDirectory()) {
+      total += countFiles(path);
+      continue;
+    }
+    total += 1;
+  }
+  return total;
+}
+
+function syncCategory(category, destinationRoot) {
   const sourceDir = join(sourceRoot, category);
   if (!existsSync(sourceDir) || !statSync(sourceDir).isDirectory()) {
     return 0;
   }
 
   const destinationDir = join(destinationRoot, category);
-  ensureDir(destinationDir);
 
-  let copied = 0;
-  for (const entry of readdirSync(sourceDir)) {
-    const from = join(sourceDir, entry);
-    const to = join(destinationDir, entry);
-
-    if (statSync(from).isDirectory()) {
-      cpSync(from, to, { recursive: true });
-      const count = readdirSync(from).length;
-      copied += count;
-      console.log(`synced ${relative(root, from)}\\ -> ${relative(root, to)}\\ (${count} files)`);
-      continue;
-    }
-
-    cpSync(from, to);
-    copied += 1;
-    console.log(`synced ${relative(root, from)} -> ${relative(root, to)}`);
+  // Replace the category folder so deleted source files do not linger in public/.
+  if (existsSync(destinationDir)) {
+    rmSync(destinationDir, { recursive: true, force: true });
   }
 
-  return copied;
+  cpSync(sourceDir, destinationDir, { recursive: true });
+  const count = countFiles(sourceDir);
+  console.log(
+    `synced ${relative(root, sourceDir)}\\ -> ${relative(root, destinationDir)}\\ (${count} files)`,
+  );
+  return count;
 }
 
 function main() {
@@ -76,7 +81,7 @@ function main() {
   for (const target of targets) {
     ensureDir(target);
     for (const category of includeCategories) {
-      total += copyCategory(category, target);
+      total += syncCategory(category, target);
     }
   }
 

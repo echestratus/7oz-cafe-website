@@ -22,6 +22,39 @@ export type ReservationListResponse = {
   total: number;
 };
 
+export type DayHours = {
+  open: string;
+  close: string;
+};
+
+export type ReservationSettings = {
+  id: string;
+  minGuests: number;
+  maxGuests: number;
+  minAdvanceMinutes: number;
+  maxAdvanceDays: number;
+  slotIntervalMinutes: number;
+  durationMinutes: number;
+  bufferMinutes: number;
+  cancelCutoffMinutes: number;
+  timezone: string;
+  weeklyHours: Record<string, DayHours>;
+  updatedAt: string;
+};
+
+export type ReservationSettingsInput = {
+  minGuests: number;
+  maxGuests: number;
+  minAdvanceMinutes: number;
+  maxAdvanceDays: number;
+  slotIntervalMinutes: number;
+  durationMinutes: number;
+  bufferMinutes: number;
+  cancelCutoffMinutes: number;
+  timezone: string;
+  weeklyHours: Record<string, DayHours>;
+};
+
 export async function listReservations(params: {
   date?: string;
   status?: string;
@@ -35,6 +68,19 @@ export async function listReservations(params: {
   search.set('limit', String(params.limit ?? 20));
 
   return apiRequest<ReservationListResponse>(`/admin/reservations?${search.toString()}`);
+}
+
+export async function getReservationSettings(): Promise<ReservationSettings> {
+  return apiRequest<ReservationSettings>('/admin/reservations/settings');
+}
+
+export async function updateReservationSettings(
+  input: ReservationSettingsInput,
+): Promise<ReservationSettings> {
+  return apiRequest<ReservationSettings>('/admin/reservations/settings', {
+    method: 'PATCH',
+    body: input,
+  });
 }
 
 export async function confirmReservation(id: string): Promise<Reservation> {

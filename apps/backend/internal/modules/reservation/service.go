@@ -67,13 +67,110 @@ type AvailabilitySlot struct {
 	RemainingCapacity int32  `json:"remainingCapacity"`
 }
 
+type SettingsDTO struct {
+	ID                  string              `json:"id"`
+	MinGuests           int32               `json:"minGuests"`
+	MaxGuests           int32               `json:"maxGuests"`
+	MinAdvanceMinutes   int32               `json:"minAdvanceMinutes"`
+	MaxAdvanceDays      int32               `json:"maxAdvanceDays"`
+	SlotIntervalMinutes int32               `json:"slotIntervalMinutes"`
+	DurationMinutes     int32               `json:"durationMinutes"`
+	BufferMinutes       int32               `json:"bufferMinutes"`
+	CancelCutoffMinutes int32               `json:"cancelCutoffMinutes"`
+	Timezone            string              `json:"timezone"`
+	WeeklyHours         map[string]dayHours `json:"weeklyHours"`
+	UpdatedAt           string              `json:"updatedAt"`
+}
+
+type SettingsInput struct {
+	MinGuests           int32
+	MaxGuests           int32
+	MinAdvanceMinutes   int32
+	MaxAdvanceDays      int32
+	SlotIntervalMinutes int32
+	DurationMinutes     int32
+	BufferMinutes       int32
+	CancelCutoffMinutes int32
+	Timezone            string
+	WeeklyHours         map[string]dayHours
+}
+
 type dayHours struct {
 	Open  string `json:"open"`
 	Close string `json:"close"`
 }
 
+var weekdayKeys = []string{
+	"monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday",
+}
+
 func NewService(db *database.Postgres, notifier *mailer.Notifier) *Service {
 	return &Service{db: db, notifier: notifier}
+}
+
+func (s *Service) GetSettings(ctx context.Context) (*SettingsDTO, error) {
+	if err := s.requireDB(); err != nil {
+		return nil, err
+	}
+	settings, err := s.db.Queries.GetReservationSettings(ctx)
+	if err != nil {
+		return nil, apperr.Wrap(apperr.Internal("Failed to load reservation settings."), err)
+	}
+	dto, err := toSettingsDTO(settings)
+	if err != nil {
+		return nil, err
+	}
+	return &dto, nil
+}
+
+func (s *Service) UpdateSettings(ctx context.Context, actor uuid.UUID, input SettingsInput) (*SettingsDTO, error) {
+	if err := s.requireDB(); err != nil {
+		return nil, err
+	}
+	if err := validateSettingsInput(input); err != nil {
+		return nil, err
+	}
+
+	existing, err := s.db.Queries.GetReservationSettings(ctx)
+	if err != nil {
+		return nil, apperr.Wrap(apperr.Internal("Failed to load reservation settings."), err)
+	}
+
+	weeklyJSON, err := json.Marshal(input.WeeklyHours)
+	if err != nil {
+		return nil, apperr.BadRequest("Invalid weekly hours.")
+	}
+
+	updated, err := s.db.Queries.UpdateReservationSettings(ctx, sqlcdb.UpdateReservationSettingsParams{
+		ID:                  existing.ID,
+		MinGuests:           input.MinGuests,
+		MaxGuests:           input.MaxGuests,
+		MinAdvanceMinutes:   input.MinAdvanceMinutes,
+		MaxAdvanceDays:      input.MaxAdvanceDays,
+		SlotIntervalMinutes: input.SlotIntervalMinutes,
+		DurationMinutes:     input.DurationMinutes,
+		BufferMinutes:       input.BufferMinutes,
+		CancelCutoffMinutes: input.CancelCutoffMinutes,
+		Timezone:            strings.TrimSpace(input.Timezone),
+		WeeklyHours:         weeklyJSON,
+	})
+	if err != nil {
+		return nil, apperr.Wrap(apperr.Internal("Failed to update reservation settings."), err)
+	}
+
+	_ = s.writeAudit(ctx, &actor, "reservation.settings_updated", updated.ID.String(), map[string]any{
+		"timezone":            updated.Timezone,
+		"minGuests":           updated.MinGuests,
+		"maxGuests":           updated.MaxGuests,
+		"slotIntervalMinutes": updated.SlotIntervalMinutes,
+		"durationMinutes":     updated.DurationMinutes,
+	})
+
+	dto, err := toSettingsDTO(updated)
+	if err != nil {
+		return nil, err
+	}
+	return &dto, nil
 }
 
 func (s *Service) GetAvailability(ctx context.Context, dateStr string, guestCount int) ([]AvailabilitySlot, error) {
@@ -136,9 +233,10 @@ func (s *Service) GetAvailability(ctx context.Context, dateStr string, guestCoun
 	interval := time.Duration(settings.SlotIntervalMinutes) * time.Minute
 	duration := time.Duration(settings.DurationMinutes) * time.Minute
 	buffer := time.Duration(settings.BufferMinutes) * time.Minute
-	closeAt := combine(date, closeClock, loc)
+	openAt := combine(date, openClock, loc)
+	closeAt := closingAt(date, openClock, closeClock, loc)
 
-	for cursor := combine(date, openClock, loc); !cursor.Add(duration).After(closeAt); cursor = cursor.Add(interval) {
+	for cursor := openAt; !cursor.Add(duration).After(closeAt); cursor = cursor.Add(interval) {
 		label := cursor.Format("15:04")
 		if cursor.Before(minStart) {
 			slots = append(slots, AvailabilitySlot{Time: label, Available: false, RemainingCapacity: 0})
@@ -222,7 +320,9 @@ func (s *Service) Create(ctx context.Context, input CreateInput) (*ReservationDT
 	openClock, _ := parseClock(hours.Open)
 	closeClock, _ := parseClock(hours.Close)
 	duration := time.Duration(settings.DurationMinutes) * time.Minute
-	if start.Before(combine(date, openClock, loc)) || start.Add(duration).After(combine(date, closeClock, loc)) {
+	openAt := combine(date, openClock, loc)
+	closeAt := closingAt(date, openClock, closeClock, loc)
+	if start.Before(openAt) || start.Add(duration).After(closeAt) {
 		return nil, apperr.BadRequest("Reservation time is outside business hours.")
 	}
 
@@ -603,10 +703,21 @@ func combine(date, clock time.Time, loc *time.Location) time.Time {
 	return time.Date(date.Year(), date.Month(), date.Day(), clock.Hour(), clock.Minute(), clock.Second(), 0, loc)
 }
 
+// closingAt returns the absolute close time for a service day.
+// When close is at/before open (e.g. 08:00–00:00), close is treated as next calendar day.
+func closingAt(date, openClock, closeClock time.Time, loc *time.Location) time.Time {
+	openAt := combine(date, openClock, loc)
+	closeAt := combine(date, closeClock, loc)
+	if !closeAt.After(openAt) {
+		return closeAt.AddDate(0, 0, 1)
+	}
+	return closeAt
+}
+
 func loadLocation(name string) *time.Location {
 	loc, err := time.LoadLocation(name)
 	if err != nil {
-		return time.FixedZone("WIB", 7*3600)
+		return time.FixedZone("UZT", 5*3600)
 	}
 	return loc
 }
@@ -625,6 +736,88 @@ func mapDTOs(items []sqlcdb.Reservation) []ReservationDTO {
 		result = append(result, toDTO(item))
 	}
 	return result
+}
+
+func toSettingsDTO(settings sqlcdb.ReservationSetting) (SettingsDTO, error) {
+	weekly := map[string]dayHours{}
+	if len(settings.WeeklyHours) > 0 {
+		if err := json.Unmarshal(settings.WeeklyHours, &weekly); err != nil {
+			return SettingsDTO{}, apperr.Wrap(apperr.Internal("Invalid weekly hours configuration."), err)
+		}
+	}
+	return SettingsDTO{
+		ID:                  settings.ID.String(),
+		MinGuests:           settings.MinGuests,
+		MaxGuests:           settings.MaxGuests,
+		MinAdvanceMinutes:   settings.MinAdvanceMinutes,
+		MaxAdvanceDays:      settings.MaxAdvanceDays,
+		SlotIntervalMinutes: settings.SlotIntervalMinutes,
+		DurationMinutes:     settings.DurationMinutes,
+		BufferMinutes:       settings.BufferMinutes,
+		CancelCutoffMinutes: settings.CancelCutoffMinutes,
+		Timezone:            settings.Timezone,
+		WeeklyHours:         weekly,
+		UpdatedAt:           settings.UpdatedAt.UTC().Format(time.RFC3339),
+	}, nil
+}
+
+func validateSettingsInput(input SettingsInput) error {
+	if input.MinGuests < 1 {
+		return apperr.Validation("Invalid min guests.", response.FieldError{Field: "minGuests", Message: "must be >= 1"})
+	}
+	if input.MaxGuests < input.MinGuests {
+		return apperr.Validation("Invalid max guests.", response.FieldError{Field: "maxGuests", Message: "must be >= minGuests"})
+	}
+	if input.MinAdvanceMinutes < 0 {
+		return apperr.Validation("Invalid min advance minutes.", response.FieldError{Field: "minAdvanceMinutes", Message: "must be >= 0"})
+	}
+	if input.MaxAdvanceDays < 1 {
+		return apperr.Validation("Invalid max advance days.", response.FieldError{Field: "maxAdvanceDays", Message: "must be >= 1"})
+	}
+	if input.SlotIntervalMinutes < 5 {
+		return apperr.Validation("Invalid slot interval.", response.FieldError{Field: "slotIntervalMinutes", Message: "must be >= 5"})
+	}
+	if input.DurationMinutes < 15 {
+		return apperr.Validation("Invalid duration.", response.FieldError{Field: "durationMinutes", Message: "must be >= 15"})
+	}
+	if input.BufferMinutes < 0 {
+		return apperr.Validation("Invalid buffer minutes.", response.FieldError{Field: "bufferMinutes", Message: "must be >= 0"})
+	}
+	if input.CancelCutoffMinutes < 0 {
+		return apperr.Validation("Invalid cancel cutoff.", response.FieldError{Field: "cancelCutoffMinutes", Message: "must be >= 0"})
+	}
+	tz := strings.TrimSpace(input.Timezone)
+	if tz == "" {
+		return apperr.Validation("Timezone is required.", response.FieldError{Field: "timezone", Message: "is required"})
+	}
+	if _, err := time.LoadLocation(tz); err != nil {
+		return apperr.Validation("Invalid timezone.", response.FieldError{Field: "timezone", Message: "must be a valid IANA timezone"})
+	}
+	if input.WeeklyHours == nil {
+		return apperr.Validation("Weekly hours are required.", response.FieldError{Field: "weeklyHours", Message: "is required"})
+	}
+	for _, day := range weekdayKeys {
+		hours, ok := input.WeeklyHours[day]
+		if !ok {
+			return apperr.Validation("Weekly hours incomplete.", response.FieldError{
+				Field:   "weeklyHours." + day,
+				Message: "is required",
+			})
+		}
+		if _, err := parseClock(hours.Open); err != nil {
+			return apperr.Validation("Invalid open time.", response.FieldError{
+				Field:   "weeklyHours." + day + ".open",
+				Message: "must be HH:MM",
+			})
+		}
+		if _, err := parseClock(hours.Close); err != nil {
+			return apperr.Validation("Invalid close time.", response.FieldError{
+				Field:   "weeklyHours." + day + ".close",
+				Message: "must be HH:MM",
+			})
+		}
+	}
+	return nil
 }
 
 func toDTO(item sqlcdb.Reservation) ReservationDTO {

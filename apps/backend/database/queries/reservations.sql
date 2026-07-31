@@ -17,6 +17,35 @@ FROM reservation_settings
 ORDER BY created_at
 LIMIT 1;
 
+-- name: UpdateReservationSettings :one
+UPDATE reservation_settings
+SET min_guests = $2,
+    max_guests = $3,
+    min_advance_minutes = $4,
+    max_advance_days = $5,
+    slot_interval_minutes = $6,
+    duration_minutes = $7,
+    buffer_minutes = $8,
+    cancel_cutoff_minutes = $9,
+    timezone = $10,
+    weekly_hours = $11,
+    updated_at = NOW()
+WHERE id = $1
+RETURNING
+    id,
+    min_guests,
+    max_guests,
+    min_advance_minutes,
+    max_advance_days,
+    slot_interval_minutes,
+    duration_minutes,
+    buffer_minutes,
+    cancel_cutoff_minutes,
+    timezone,
+    weekly_hours,
+    created_at,
+    updated_at;
+
 -- name: ListActiveCafeTables :many
 SELECT
     id,

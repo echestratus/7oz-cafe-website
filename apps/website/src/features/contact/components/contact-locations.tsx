@@ -6,7 +6,7 @@ import { Reveal } from '@/components/ui/reveal';
 import {
   getAllLocations,
   locationStatusLabel,
-  mapsSearchUrl,
+  locationMapsUrl,
   type CafeLocation,
 } from '@/features/locations/lib/locations';
 
@@ -26,7 +26,7 @@ function ContactLinks({
   return (
     <div className="flex flex-wrap gap-x-6 gap-y-3">
       <a
-        href={mapsSearchUrl(location.address)}
+        href={locationMapsUrl(location)}
         target="_blank"
         rel="noopener noreferrer"
         className="text-link-quiet inline-flex items-center gap-2"

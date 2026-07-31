@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
 import { Reveal } from '@/components/ui/reveal';
 import type { CafeLocation } from '@/features/locations/lib/locations';
-import { getAllLocations, mapsSearchUrl } from '@/features/locations/lib/locations';
+import { getAllLocations, locationMapsUrl } from '@/features/locations/lib/locations';
 
 interface ComingSoonLocationViewProps {
   location: CafeLocation;
@@ -53,7 +53,7 @@ export function ComingSoonLocationView({ location }: ComingSoonLocationViewProps
                 All locations
               </Button>
               <Button
-                href={mapsSearchUrl(location.address)}
+                href={locationMapsUrl(location)}
                 variant="onDark"
                 target="_blank"
                 rel="noopener noreferrer"

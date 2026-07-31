@@ -1,6 +1,7 @@
 import { BrandLogo } from '@/components/brand/brand-logo';
 import { Button } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
+import { HeroVideo } from '@/features/home/components/hero-video';
 import { asCta, asString } from '@/services/cms';
 
 interface HeroSectionProps {
@@ -17,26 +18,15 @@ export function HeroSection({ data }: HeroSectionProps) {
 
   return (
     <section className="relative isolate min-h-[100svh] overflow-hidden text-white">
-      <video
-        className="absolute inset-0 h-full w-full object-cover"
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="metadata"
-        poster="/assets/gallery/7oz-1.jpeg"
-        aria-hidden="true"
-      >
-        <source src="/assets/home/hero-page-video.mp4" type="video/mp4" />
-      </video>
+      <HeroVideo />
 
       {/* Bottom-weighted veil: keeps video open at the top, readable CTA zone at the bottom. */}
       <div
-        className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"
+        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"
         aria-hidden="true"
       />
       <div
-        className="absolute inset-x-0 bottom-0 h-[55%] bg-gradient-to-t from-black/55 to-transparent"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-[55%] bg-gradient-to-t from-black/55 to-transparent"
         aria-hidden="true"
       />
 

@@ -13,6 +13,8 @@ export interface CafeLocation {
   imageAlt: string;
   /** Public gallery folder for open locations; coming soon branches have none yet. */
   hasGallery: boolean;
+  /** Canonical Google Maps short link when available. */
+  mapsUrl?: string;
 }
 
 export const CAFE_LOCATIONS: readonly CafeLocation[] = [
@@ -28,6 +30,7 @@ export const CAFE_LOCATIONS: readonly CafeLocation[] = [
     imageSrc: '/assets/locations/7Oz-current.jpeg',
     imageAlt: '7Oz Espresso Cafe at City Park, Tashkent',
     hasGallery: true,
+    mapsUrl: 'https://maps.app.goo.gl/QJqbNtSMLS2YTwtB6',
   },
   {
     id: 'mecca-hotel',
@@ -95,6 +98,7 @@ export const CAFE_LOCATIONS: readonly CafeLocation[] = [
     imageSrc: '/assets/locations/7Oz-dharmawangsa-temp.jpeg',
     imageAlt: 'Upcoming 7Oz location at Dharmawangsa, Jakarta',
     hasGallery: false,
+    mapsUrl: 'https://maps.app.goo.gl/T8Pciwd3C56qyqxX9',
   },
 ] as const;
 
@@ -124,6 +128,10 @@ export function getPrimaryLocation(): CafeLocation {
 
 export function mapsSearchUrl(address: string): string {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+}
+
+export function locationMapsUrl(location: CafeLocation): string {
+  return location.mapsUrl ?? mapsSearchUrl(location.address);
 }
 
 export function locationStatusLabel(status: LocationStatus): string {

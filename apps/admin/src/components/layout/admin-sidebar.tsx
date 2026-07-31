@@ -52,7 +52,7 @@ export function AdminSidebar() {
     <aside className="flex h-full w-64 flex-col border-r border-border bg-surface">
       <div className="flex items-center gap-3 border-b border-border px-5 py-5">
         <Image
-          src="/assets/logo/logo-7-oz-espresso-scaled.png"
+          src="/assets/logo/logo-7-oz-espresso-scaled.webp"
           alt=""
           width={32}
           height={32}

@@ -69,7 +69,7 @@ The stop showcased the cafe's warm hospitality, inviting atmosphere, and commitm
 
 It became a memorable moment that reflects the growing friendship between Malaysia and Uzbekistan — and the role of 7oz as a welcoming space for conversation over carefully crafted coffee.`,
     kind: 'news',
-    coverUrl: '/assets/news/minister-visit-uzbekistan.jpg',
+    coverUrl: '/assets/news/minister-visit-uzbekistan.webp',
     status: 'published',
     publishedAt: '2026-05-25T07:00:00Z',
     createdAt: '2026-05-25T07:00:00Z',
@@ -97,7 +97,7 @@ The facade and interior blend modern industrial aesthetics with warm Nusantara h
 
 On inauguration day, locals and the Indonesian diaspora filled the cafe. The program included coffee cupping, latte art demonstrations by a head barista from Jakarta, and freshly baked pastries from the EGI Food kitchen — a strong start for international F&B operations.`,
     kind: 'event',
-    coverUrl: '/assets/news/grand-opening-tashkent.jpg',
+    coverUrl: '/assets/news/grand-opening-tashkent.webp',
     status: 'published',
     publishedAt: '2026-04-15T10:00:00Z',
     createdAt: '2026-04-15T10:00:00Z',

@@ -35,9 +35,11 @@ const COFFEE_SLUGS = new Set([
   'hazelnut-latte',
   'hot-americano',
   'hot-latte',
+  'mango-latte',
   'mont-blanc',
   'raf-coffee',
   'raspberry-raf',
+  'spanish-latte',
 ]);
 
 const NON_COFFEE_SLUGS = new Set([
@@ -45,6 +47,7 @@ const NON_COFFEE_SLUGS = new Set([
   'hot-chocolate',
   'ice-chocolate',
   'pink-lemonade',
+  'strawberry-manuka',
   'strawberry-mojito',
 ]);
 

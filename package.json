@@ -13,6 +13,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "sync:assets": "node scripts/sync-assets.mjs",
+    "assets:webp": "node scripts/convert-assets-to-webp.mjs",
     "db:migrate": "node scripts/db-migrate.mjs up",
     "db:migrate:down": "node scripts/db-migrate.mjs down 1",
     "backend:dev": "pnpm --filter @7oz/backend dev",
@@ -23,6 +24,7 @@
     "@7oz/eslint-config": "workspace:*",
     "@7oz/prettier-config": "workspace:*",
     "prettier": "^3.6.2",
+    "sharp": "0.34.2",
     "turbo": "^2.5.4",
     "typescript": "^5.8.3"
   },

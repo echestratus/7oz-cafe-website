@@ -6,6 +6,7 @@ import { Reveal } from '@/components/ui/reveal';
 import { SectionIntro } from '@/components/ui/section-intro';
 import { ContactForm } from '@/features/contact/components/contact-form';
 import { ContactLocations } from '@/features/contact/components/contact-locations';
+import { MasterContactInfo } from '@/features/contact/components/master-contact-info';
 import { getPrimaryLocation } from '@/features/locations/lib/locations';
 import { metadataFromSeo } from '@/lib/seo';
 import { asString, getPublishedCmsPage, getSection } from '@/services/cms';
@@ -42,10 +43,16 @@ export default async function ContactPage() {
               <SectionIntro
                 eyebrow="Contact"
                 title="Visit 7Oz"
-                description="Find every address, check open hours at City Park, or write to us for reservations and private gatherings."
+                description="One shared line for every 7Oz room — find each address below, check City Park hours, or write to us."
                 titleAs="h1"
               />
             </Reveal>
+          </Container>
+        </section>
+
+        <section className="pb-16 md:pb-20">
+          <Container>
+            <MasterContactInfo email={email} phone={phone} whatsapp={whatsapp} />
           </Container>
         </section>
 
@@ -66,11 +73,7 @@ export default async function ContactPage() {
               </div>
             </Reveal>
 
-            <ContactLocations
-              primaryEmail={email}
-              primaryPhone={phone}
-              primaryWhatsapp={whatsapp}
-            />
+            <ContactLocations />
           </Container>
         </section>
 

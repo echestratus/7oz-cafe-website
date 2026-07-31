@@ -1,11 +1,47 @@
 'use client';
 
 import { Volume2, VolumeX } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export function HeroVideo() {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) {
+      return;
+    }
+
+    let cancelled = false;
+
+    async function startWithSound(player: HTMLVideoElement) {
+      player.muted = false;
+      try {
+        await player.play();
+        if (!cancelled) {
+          setIsMuted(false);
+        }
+      } catch {
+        // Browsers often block unmuted autoplay — keep video playing muted.
+        player.muted = true;
+        if (!cancelled) {
+          setIsMuted(true);
+        }
+        try {
+          await player.play();
+        } catch {
+          // Ignore if even muted playback is blocked until interaction.
+        }
+      }
+    }
+
+    void startWithSound(video);
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function toggleSound() {
     const video = videoRef.current;
@@ -14,13 +50,14 @@ export function HeroVideo() {
     }
 
     const nextMuted = !isMuted;
+    video.muted = nextMuted;
     setIsMuted(nextMuted);
 
     if (!nextMuted) {
       try {
         await video.play();
       } catch {
-        // Browsers may block unmuted playback; fall back to muted.
+        video.muted = true;
         setIsMuted(true);
       }
     }

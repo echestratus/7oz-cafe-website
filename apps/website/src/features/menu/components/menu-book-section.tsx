@@ -7,7 +7,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ImageLightbox, type LightboxImage } from '@/components/ui/image-lightbox';
 
 const MENU_BOOK_PAGES: LightboxImage[] = [1, 2, 3, 4, 5, 6, 7].map((page) => ({
-  src: `/assets/menu/menu-book-7oz/${page}.jpg`,
+  src: `/assets/menu/menu-book-7oz/${page}.webp`,
   alt: `7Oz Cafe menu book, page ${page}`,
   caption: `Menu book · page ${page}`,
 }));

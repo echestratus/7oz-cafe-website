@@ -1,8 +1,8 @@
 import Image from 'next/image';
 
 const logoSrc = {
-  mark: '/assets/logo/logo-7oz.png',
-  full: '/assets/logo/logo-7-oz-espresso-scaled.png',
+  mark: '/assets/logo/logo-7oz.webp',
+  full: '/assets/logo/logo-7-oz-espresso-scaled.webp',
 } as const;
 
 const sizeMap = {

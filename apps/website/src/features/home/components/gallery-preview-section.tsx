@@ -9,12 +9,12 @@ import { getPrimaryLocation } from '@/features/locations/lib/locations';
 import { asString } from '@/services/cms';
 
 const previewImages = [
-  '/assets/gallery/7oz-5.jpeg',
-  '/assets/gallery/7oz-9.jpeg',
-  '/assets/gallery/7oz-2.jpeg',
-  '/assets/gallery/7oz-7.jpeg',
-  '/assets/gallery/7oz-6.jpeg',
-  '/assets/gallery/7oz-13.jpeg',
+  '/assets/gallery/7oz-5.webp',
+  '/assets/gallery/7oz-9.webp',
+  '/assets/gallery/7oz-2.webp',
+  '/assets/gallery/7oz-7.webp',
+  '/assets/gallery/7oz-6.webp',
+  '/assets/gallery/7oz-13.webp',
 ] as const;
 
 interface GalleryPreviewSectionProps {

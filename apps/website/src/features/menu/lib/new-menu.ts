@@ -1,8 +1,11 @@
 import type { MenuCatalog, MenuItem } from '@/features/menu/lib/menu-catalog';
 
 /**
- * Temporary “New Menu” campaign. Visible from startsAt for durationMonths.
- * Update slugs / startsAt when launching the next wave of new items.
+ * Temporary New Menu spotlight.
+ * Items stay in the full menu catalog after the window ends —
+ * they only leave this section (and lose the New badge).
+ * When no items are active, the section is hidden.
+ * Update slugs / startsAt for the next wave.
  */
 export const NEW_MENU_CAMPAIGN = {
   startsAt: '2026-07-31T00:00:00+07:00',

@@ -61,7 +61,7 @@ export function NewMenuSection({
             <SectionIntro
               eyebrow="The seasonal edit"
               title="Meet the new menu"
-              description="Fresh signatures, bright fruit, and familiar coffee reimagined — discover this limited three-month menu while it is at the bar."
+              description="Fresh signatures, bright fruit, and familiar coffee reimagined — spotlighted here for three months before they settle into the regular menu."
               titleAs={titleAs}
               tone="dark"
             />
@@ -72,7 +72,7 @@ export function NewMenuSection({
               </span>
               <div className="space-y-1">
                 <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-white/45">
-                  Limited menu
+                  Featured window
                 </p>
                 <p className="text-sm text-white/80">{formatCampaignWindow()}</p>
               </div>
@@ -104,7 +104,7 @@ export function NewMenuSection({
 
         <Reveal className="mt-14 flex flex-col gap-6 border-t border-white/15 pt-8 sm:flex-row sm:items-center sm:justify-between md:mt-16">
           <p className="max-w-lg text-sm leading-relaxed text-white/55">
-            Available for a limited time at 7Oz. Visit early to find your new favorite.
+            Spotlighted for three months — after that, these drinks remain on the regular menu.
           </p>
           {showBrowseLink ? (
             <Link

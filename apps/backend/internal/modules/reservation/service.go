@@ -67,6 +67,13 @@ type AvailabilitySlot struct {
 	RemainingCapacity int32  `json:"remainingCapacity"`
 }
 
+type CafeTableDTO struct {
+	ID       string `json:"id"`
+	Code     string `json:"code"`
+	Name     string `json:"name"`
+	Capacity int32  `json:"capacity"`
+}
+
 type SettingsDTO struct {
 	ID                  string              `json:"id"`
 	MinGuests           int32               `json:"minGuests"`
@@ -546,10 +553,58 @@ func (s *Service) NoShow(ctx context.Context, reservationID, actorID uuid.UUID) 
 	return s.adminTransition(ctx, reservationID, actorID, "no_show", "")
 }
 
+func (s *Service) ListTables(ctx context.Context) ([]CafeTableDTO, error) {
+	if err := s.requireDB(); err != nil {
+		return nil, err
+	}
+	items, err := s.db.Queries.ListActiveCafeTables(ctx)
+	if err != nil {
+		return nil, apperr.Wrap(apperr.Internal("Failed to load cafe tables."), err)
+	}
+	result := make([]CafeTableDTO, 0, len(items))
+	for _, item := range items {
+		result = append(result, CafeTableDTO{
+			ID:       item.ID.String(),
+			Code:     item.Code,
+			Name:     item.Name,
+			Capacity: item.Capacity,
+		})
+	}
+	return result, nil
+}
+
 func (s *Service) AssignTable(ctx context.Context, reservationID, tableID, actorID uuid.UUID) (*ReservationDTO, error) {
 	if err := s.requireDB(); err != nil {
 		return nil, err
 	}
+
+	reservation, err := s.db.Queries.GetReservationByID(ctx, reservationID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, apperr.NotFound("Reservation not found.")
+		}
+		return nil, apperr.Wrap(apperr.Internal("Failed to load reservation."), err)
+	}
+
+	switch reservation.Status {
+	case "cancelled", "completed", "no_show":
+		return nil, apperr.Conflict("Cannot assign a table to a closed reservation.")
+	}
+
+	table, err := s.db.Queries.GetActiveCafeTableByID(ctx, tableID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, apperr.NotFound("Cafe table not found.")
+		}
+		return nil, apperr.Wrap(apperr.Internal("Failed to load cafe table."), err)
+	}
+	if table.Capacity < reservation.GuestCount {
+		return nil, apperr.Validation("Table capacity is too small for this party.", response.FieldError{
+			Field:   "tableId",
+			Message: fmt.Sprintf("capacity %d is less than %d guests", table.Capacity, reservation.GuestCount),
+		})
+	}
+
 	item, err := s.db.Queries.AssignReservationTable(ctx, sqlcdb.AssignReservationTableParams{
 		ID:      reservationID,
 		TableID: &tableID,
@@ -561,7 +616,8 @@ func (s *Service) AssignTable(ctx context.Context, reservationID, tableID, actor
 		return nil, apperr.Wrap(apperr.Internal("Failed to assign table."), err)
 	}
 	_ = s.writeAudit(ctx, &actorID, "reservation.table_assigned", item.ID.String(), map[string]any{
-		"tableId": tableID.String(),
+		"tableId":   tableID.String(),
+		"tableCode": table.Code,
 	})
 	dto := toDTO(item)
 	return &dto, nil

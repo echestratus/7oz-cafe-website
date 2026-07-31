@@ -62,6 +62,22 @@ WHERE deleted_at IS NULL
   AND is_active = TRUE
 ORDER BY sort_order, code;
 
+-- name: GetActiveCafeTableByID :one
+SELECT
+    id,
+    code,
+    name,
+    capacity,
+    is_active,
+    sort_order,
+    created_at,
+    updated_at,
+    deleted_at
+FROM cafe_tables
+WHERE id = $1
+  AND deleted_at IS NULL
+  AND is_active = TRUE;
+
 -- name: SumActiveTableCapacity :one
 SELECT COALESCE(SUM(capacity), 0)::bigint AS total_capacity
 FROM cafe_tables

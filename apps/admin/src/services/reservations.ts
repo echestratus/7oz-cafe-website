@@ -22,6 +22,13 @@ export type ReservationListResponse = {
   total: number;
 };
 
+export type CafeTable = {
+  id: string;
+  code: string;
+  name: string;
+  capacity: number;
+};
+
 export type DayHours = {
   open: string;
   close: string;
@@ -68,6 +75,17 @@ export async function listReservations(params: {
   search.set('limit', String(params.limit ?? 20));
 
   return apiRequest<ReservationListResponse>(`/admin/reservations?${search.toString()}`);
+}
+
+export async function listCafeTables(): Promise<CafeTable[]> {
+  return apiRequest<CafeTable[]>('/admin/reservations/tables');
+}
+
+export async function assignReservationTable(id: string, tableId: string): Promise<Reservation> {
+  return apiRequest<Reservation>(`/admin/reservations/${id}`, {
+    method: 'PATCH',
+    body: { tableId },
+  });
 }
 
 export async function getReservationSettings(): Promise<ReservationSettings> {

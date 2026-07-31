@@ -6,6 +6,7 @@ import { useMemo, useState } from 'react';
 import { ImageLightbox, type LightboxImage } from '@/components/ui/image-lightbox';
 import { Reveal } from '@/components/ui/reveal';
 import type { MenuCategory, MenuItem } from '@/features/menu/lib/menu-catalog';
+import { isNewMenuItem } from '@/features/menu/lib/new-menu';
 
 interface MenuCategorySectionsProps {
   categories: MenuCategory[];
@@ -91,6 +92,7 @@ export function MenuCategorySections({ categories }: MenuCategorySectionsProps) 
                   <MenuItemCard
                     key={item.id}
                     item={item}
+                    isNew={isNewMenuItem(item)}
                     delay={(index % 6) * 0.04}
                     onOpen={() => setPreviewIndex(indexById.get(item.id) ?? 0)}
                   />
@@ -113,10 +115,12 @@ export function MenuCategorySections({ categories }: MenuCategorySectionsProps) 
 
 function MenuItemCard({
   item,
+  isNew,
   delay,
   onOpen,
 }: {
   item: MenuItem;
+  isNew: boolean;
   delay: number;
   onOpen: () => void;
 }) {
@@ -136,6 +140,11 @@ function MenuItemCard({
             className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
+          {isNew ? (
+            <span className="absolute left-4 top-4 rounded-full bg-white px-3 py-1 text-[0.625rem] font-semibold uppercase tracking-[0.16em] text-primary">
+              New
+            </span>
+          ) : null}
           <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
           <span className="pointer-events-none absolute inset-x-0 bottom-0 p-5 text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100">
             View photo

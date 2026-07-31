@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { SiteShell } from '@/components/layout/site-shell';
 import { HomePageView } from '@/features/home/components/home-page-view';
 import { getMenuCatalog, pickFeaturedMenuItems } from '@/features/menu/lib/menu-catalog';
+import { pickNewMenuItems } from '@/features/menu/lib/new-menu';
 import { metadataFromSeo } from '@/lib/seo';
 import { fallbackBlogPosts, listPublishedBlogs } from '@/services/blog';
 import { getPublishedCmsPage } from '@/services/cms';
@@ -30,10 +31,16 @@ export default async function HomePage() {
   ]);
 
   const featuredMenu = pickFeaturedMenuItems(catalog);
+  const newMenuItems = pickNewMenuItems(catalog);
 
   return (
     <SiteShell footer={footer} headerTone="overlay">
-      <HomePageView homepage={homepage} blogPosts={blogs.items} featuredMenu={featuredMenu} />
+      <HomePageView
+        homepage={homepage}
+        blogPosts={blogs.items}
+        featuredMenu={featuredMenu}
+        newMenuItems={newMenuItems}
+      />
     </SiteShell>
   );
 }

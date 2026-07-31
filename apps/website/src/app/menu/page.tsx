@@ -6,7 +6,9 @@ import { Reveal } from '@/components/ui/reveal';
 import { SectionIntro } from '@/components/ui/section-intro';
 import { MenuBookSection } from '@/features/menu/components/menu-book-section';
 import { MenuCategorySections } from '@/features/menu/components/menu-category-sections';
+import { NewMenuSection } from '@/features/menu/components/new-menu-section';
 import { getMenuCatalog } from '@/features/menu/lib/menu-catalog';
+import { pickNewMenuItems } from '@/features/menu/lib/new-menu';
 import { getPublishedCmsPage } from '@/services/cms';
 
 export const metadata: Metadata = {
@@ -17,6 +19,7 @@ export const metadata: Metadata = {
 
 export default async function MenuPage() {
   const [footer, catalog] = await Promise.all([getPublishedCmsPage('footer'), getMenuCatalog()]);
+  const newMenuItems = pickNewMenuItems(catalog);
 
   return (
     <SiteShell footer={footer}>
@@ -35,6 +38,12 @@ export default async function MenuPage() {
             <MenuBookSection />
           </Reveal>
         </Container>
+
+        {newMenuItems.length > 0 ? (
+          <div id="new-menu" className="mt-24 scroll-mt-28 md:mt-32">
+            <NewMenuSection items={newMenuItems} showBrowseLink={false} />
+          </div>
+        ) : null}
 
         <Container className="mt-24 md:mt-32">
           <Reveal className="mb-10">

@@ -31,6 +31,7 @@ const IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.avif']);
 const COFFEE_SLUGS = new Set([
   'berrypresso',
   'bumble-coffee',
+  'dirty-latte',
   'espresso',
   'hazelnut-latte',
   'hot-americano',

@@ -111,8 +111,9 @@ With real SMTP configured:
 
 1. [ ] Submit a **guest reservation** on the public site → guest receives “request received” email
 2. [ ] Admin **Confirm** that reservation → guest receives “confirmed” email
-3. [ ] Submit the **contact form** → cafe inbox (`CONTACT_TO_EMAIL`) receives the message
-4. [ ] (Optional) Register / forgot-password → verification / reset links use `WEBSITE_URL`
+3. [ ] Admin or customer **Cancel** a reservation → guest receives “cancelled” email
+4. [ ] Submit the **contact form** → cafe inbox (`CONTACT_TO_EMAIL`) receives the message
+5. [ ] (Optional) Register / forgot-password → verification / reset links use `WEBSITE_URL`
 
 If any send fails, check API logs (`failed to send email`) and SMTP credentials/port/TLS.
 

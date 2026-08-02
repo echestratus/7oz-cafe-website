@@ -253,13 +253,13 @@ Confirmed — email (staff confirmed)
 
 Reminder
 
-Cancelled
+Cancelled — email (guest or staff cancel)
 
 Completed
 
 Implemented channels:
 
-Email (Created, Confirmed)
+Email (Created, Confirmed, Cancelled)
 
 Future:
 
@@ -269,7 +269,7 @@ WhatsApp
 
 Push Notification
 
-Reminder / Cancelled / Completed emails
+Reminder / Completed emails
 
 ---
 

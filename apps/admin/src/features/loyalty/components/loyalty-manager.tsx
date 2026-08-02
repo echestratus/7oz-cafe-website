@@ -94,6 +94,9 @@ export function LoyaltyManager() {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [userId, setUserId] = useState('');
+  const [adjustTargetLabel, setAdjustTargetLabel] = useState<string | null>(null);
+  const [historyUserId, setHistoryUserId] = useState('');
+  const [historyTargetLabel, setHistoryTargetLabel] = useState<string | null>(null);
   const [points, setPoints] = useState(50);
   const [reason, setReason] = useState('');
   const [editingRewardId, setEditingRewardId] = useState<string | null>(null);
@@ -111,8 +114,8 @@ export function LoyaltyManager() {
     enabled: tab === 'accounts',
   });
   const historyQuery = useQuery({
-    queryKey: ['admin-loyalty-history'],
-    queryFn: () => listLoyaltyHistory(1, 40),
+    queryKey: ['admin-loyalty-history', historyUserId],
+    queryFn: () => listLoyaltyHistory(1, 40, historyUserId || undefined),
     enabled: tab === 'history',
   });
   const campaignsQuery = useQuery({
@@ -285,6 +288,38 @@ export function LoyaltyManager() {
     },
   });
 
+  function accountLabel(account: {
+    userFullName?: string;
+    userEmail?: string;
+    userId: string;
+  }): string {
+    return account.userFullName || account.userEmail || account.userId;
+  }
+
+  function prepareAdjust(account: {
+    userId: string;
+    userFullName?: string;
+    userEmail?: string;
+  }) {
+    setTab('accounts');
+    setUserId(account.userId);
+    setAdjustTargetLabel(accountLabel(account));
+    setMessage(`Ready to adjust points for ${accountLabel(account)}.`);
+    setError(null);
+  }
+
+  function viewHistory(account: {
+    userId: string;
+    userFullName?: string;
+    userEmail?: string;
+  }) {
+    setHistoryUserId(account.userId);
+    setHistoryTargetLabel(accountLabel(account));
+    setTab('history');
+    setError(null);
+    setMessage(null);
+  }
+
   function startEdit(reward: LoyaltyReward) {
     setEditingRewardId(reward.id);
     setRewardForm({
@@ -363,21 +398,30 @@ export function LoyaltyManager() {
       {tab === 'accounts' ? (
         <div className="space-y-6">
           <form
+            id="loyalty-adjust-form"
             className="grid gap-3 rounded-[16px] border border-border bg-surface p-4 md:grid-cols-4"
             onSubmit={(event) => {
               event.preventDefault();
               adjustMutation.mutate();
             }}
           >
-            <label className="space-y-1 text-sm md:col-span-2">
-              <span className="text-text-secondary">Customer user ID</span>
-              <input
-                required
-                value={userId}
-                onChange={(event) => setUserId(event.target.value)}
-                className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
-              />
-            </label>
+            <div className="space-y-1 text-sm md:col-span-2">
+              <label className="block space-y-1">
+                <span className="text-text-secondary">Customer user ID</span>
+                <input
+                  required
+                  value={userId}
+                  onChange={(event) => {
+                    setUserId(event.target.value);
+                    setAdjustTargetLabel(null);
+                  }}
+                  className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+                />
+              </label>
+              {adjustTargetLabel ? (
+                <p className="text-xs text-text-muted">Selected: {adjustTargetLabel}</p>
+              ) : null}
+            </div>
             <label className="space-y-1 text-sm">
               <span className="text-text-secondary">Points (+/-)</span>
               <input
@@ -407,9 +451,17 @@ export function LoyaltyManager() {
           </form>
 
           {accountsQuery.isLoading ? <p className="text-sm text-text-secondary">Loading accounts…</p> : null}
+          {!accountsQuery.isLoading && (accountsQuery.data?.items.length ?? 0) === 0 ? (
+            <p className="text-sm text-text-secondary">No loyalty accounts found.</p>
+          ) : null}
           <div className="space-y-3">
             {(accountsQuery.data?.items ?? []).map((account) => (
-              <article key={account.id} className="rounded-[16px] border border-border bg-surface p-4">
+              <article
+                key={account.id}
+                className={`rounded-[16px] border bg-surface p-4 ${
+                  userId === account.userId ? 'border-primary' : 'border-border'
+                }`}
+              >
                 <p className="font-medium text-text">
                   {account.userFullName || 'Customer'}{' '}
                   <span className="text-sm font-normal text-text-secondary">· {account.balance} pts</span>
@@ -418,7 +470,28 @@ export function LoyaltyManager() {
                 <p className="text-sm text-text-muted">
                   Earned {account.lifetimeEarned} · Redeemed {account.lifetimeRedeemed}
                 </p>
-                <p className="mt-1 text-xs text-text-muted">{account.userId}</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      prepareAdjust(account);
+                      document.getElementById('loyalty-adjust-form')?.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start',
+                      });
+                    }}
+                    className="rounded-[12px] border border-border px-3 py-2 text-sm hover:bg-surface-secondary"
+                  >
+                    Adjust
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => viewHistory(account)}
+                    className="rounded-[12px] border border-border px-3 py-2 text-sm hover:bg-surface-secondary"
+                  >
+                    View history
+                  </button>
+                </div>
               </article>
             ))}
           </div>
@@ -426,20 +499,44 @@ export function LoyaltyManager() {
       ) : null}
 
       {tab === 'history' ? (
-        <div className="space-y-3">
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-[16px] border border-border bg-surface p-4">
+            <p className="text-sm text-text-secondary">
+              {historyUserId
+                ? `Showing history for ${historyTargetLabel || historyUserId}`
+                : 'Showing all loyalty transactions'}
+            </p>
+            {historyUserId ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setHistoryUserId('');
+                  setHistoryTargetLabel(null);
+                }}
+                className="rounded-[12px] border border-border px-3 py-2 text-sm hover:bg-surface-secondary"
+              >
+                Clear filter
+              </button>
+            ) : null}
+          </div>
           {historyQuery.isLoading ? <p className="text-sm text-text-secondary">Loading history…</p> : null}
-          {(historyQuery.data?.items ?? []).map((item) => (
-            <article key={item.id} className="rounded-[16px] border border-border bg-surface p-4">
-              <p className="font-medium capitalize text-text">
-                {item.type} · {item.points > 0 ? '+' : ''}
-                {item.points}
-              </p>
-              <p className="text-sm text-text-secondary">
-                {item.userFullName || item.userEmail} · {item.description}
-              </p>
-              <p className="text-xs text-text-muted">{new Date(item.createdAt).toLocaleString()}</p>
-            </article>
-          ))}
+          {!historyQuery.isLoading && (historyQuery.data?.items.length ?? 0) === 0 ? (
+            <p className="text-sm text-text-secondary">No loyalty history found.</p>
+          ) : null}
+          <div className="space-y-3">
+            {(historyQuery.data?.items ?? []).map((item) => (
+              <article key={item.id} className="rounded-[16px] border border-border bg-surface p-4">
+                <p className="font-medium capitalize text-text">
+                  {item.type} · {item.points > 0 ? '+' : ''}
+                  {item.points}
+                </p>
+                <p className="text-sm text-text-secondary">
+                  {item.userFullName || item.userEmail} · {item.description}
+                </p>
+                <p className="text-xs text-text-muted">{new Date(item.createdAt).toLocaleString()}</p>
+              </article>
+            ))}
+          </div>
         </div>
       ) : null}
 

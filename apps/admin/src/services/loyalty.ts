@@ -109,8 +109,21 @@ export async function updateLoyaltySettings(
   });
 }
 
-export async function listLoyaltyHistory(page = 1, limit = 30): Promise<Paginated<LoyaltyTransaction>> {
-  return apiRequest<Paginated<LoyaltyTransaction>>(`/admin/loyalty/history?page=${page}&limit=${limit}`);
+export async function listLoyaltyHistory(
+  page = 1,
+  limit = 30,
+  userId?: string,
+): Promise<Paginated<LoyaltyTransaction>> {
+  const search = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+  });
+  if (userId) {
+    search.set('userId', userId);
+  }
+  return apiRequest<Paginated<LoyaltyTransaction>>(
+    `/admin/loyalty/history?${search.toString()}`,
+  );
 }
 
 export async function adjustLoyalty(input: {

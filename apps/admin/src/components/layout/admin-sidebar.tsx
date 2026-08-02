@@ -8,6 +8,7 @@ import {
   CalendarDays,
   FileImage,
   Gift,
+  Images,
   Inbox,
   LayoutDashboard,
   LogOut,
@@ -27,6 +28,7 @@ const links = [
   { href: '/membership', label: 'Membership', icon: Sparkles, permission: 'membership.manage' },
   { href: '/loyalty', label: 'Loyalty', icon: Gift, permission: 'loyalty.manage' },
   { href: '/blogs', label: 'Blogs', icon: BookOpenText, permission: 'blog.manage' },
+  { href: '/gallery', label: 'Gallery', icon: Images, permission: 'gallery.manage' },
   { href: '/cms', label: 'CMS', icon: Newspaper, permission: 'cms.manage' },
   { href: '/media', label: 'Media', icon: FileImage, permission: 'cms.manage' },
 ] as const;

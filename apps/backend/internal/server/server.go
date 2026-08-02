@@ -9,6 +9,7 @@ import (
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/cms"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/contact"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/customer"
+	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/gallery"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/health"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/loyalty"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/media"
@@ -29,6 +30,7 @@ type Dependencies struct {
 	AuthService        *authentication.Service
 	CMSService         *cms.Service
 	BlogService        *blog.Service
+	GalleryService     *gallery.Service
 	MediaService       *media.Service
 	ReservationService *reservation.Service
 	MembershipService  *membership.Service
@@ -66,6 +68,7 @@ func New(deps Dependencies) *fiber.App {
 	authHandler := authentication.NewHandler(deps.AuthService, deps.Config)
 	cmsHandler := cms.NewHandler(deps.CMSService)
 	blogHandler := blog.NewHandler(deps.BlogService)
+	galleryHandler := gallery.NewHandler(deps.GalleryService)
 	mediaHandler := media.NewHandler(deps.MediaService)
 	reservationHandler := reservation.NewHandler(deps.ReservationService)
 	membershipHandler := membership.NewHandler(deps.MembershipService)
@@ -89,6 +92,8 @@ func New(deps Dependencies) *fiber.App {
 	cms.RegisterAdminRoutes(api, cmsHandler, authenticate)
 	blog.RegisterPublicRoutes(api, blogHandler)
 	blog.RegisterAdminRoutes(api, blogHandler, authenticate)
+	gallery.RegisterPublicRoutes(api, galleryHandler)
+	gallery.RegisterAdminRoutes(api, galleryHandler, authenticate)
 	media.RegisterAdminRoutes(api, mediaHandler, authenticate)
 	reservation.RegisterPublicRoutes(api, reservationHandler, optionalAuth)
 	reservation.RegisterCustomerRoutes(api, reservationHandler, authenticate)

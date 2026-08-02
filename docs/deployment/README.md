@@ -34,13 +34,20 @@ pnpm db:migrate
 
 ```bash
 cp .env.staging.example .env.staging
-# fill secrets
+# fill secrets (SMTP defaults to compose Mailpit)
 
 chmod +x scripts/*.sh
 ./scripts/deploy.sh staging staging
 ```
 
-Gateway defaults to `http://localhost:8088`.
+On a VPS with host Nginx/Certbot in front, keep `HTTP_PORT=127.0.0.1:8088` and proxy the public hostname to that port.
+
+Compose notes:
+
+- Website/admin image builds use `network: host` so `next/font` can download Google Fonts during build.
+- Mailpit provides SMTP for `APP_ENV=staging` (`SMTP_HOST=mailpit`, `SMTP_PORT=1025`).
+
+Gateway defaults to `http://localhost:8088` (or the host proxy URL).
 
 Routes:
 
@@ -48,6 +55,15 @@ Routes:
 - `/admin/` → admin
 - `/api/` → backend
 - `/health` and `/health/ready` → API probes
+
+Update an existing staging checkout after merges to `develop`:
+
+```bash
+cd /opt/7oz/compose   # or your checkout path
+git checkout develop
+git pull origin develop
+./scripts/deploy.sh staging staging
+```
 
 ## Production (VPS)
 

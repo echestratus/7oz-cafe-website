@@ -57,7 +57,7 @@ docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" --profile migrate run -
 
 echo "==> Starting application stack"
 if [[ "$ENVIRONMENT" == "staging" ]]; then
-  docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" up -d --build backend website admin nginx postgres redis
+  docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" up -d --build backend website admin nginx postgres redis mailpit
 else
   docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" up -d backend website admin nginx postgres redis
 fi

@@ -534,7 +534,22 @@ func (s *Service) ListAdmin(ctx context.Context, dateStr, status string, page, l
 }
 
 func (s *Service) Confirm(ctx context.Context, reservationID, actorID uuid.UUID) (*ReservationDTO, error) {
-	return s.adminTransition(ctx, reservationID, actorID, "confirmed", "")
+	dto, err := s.adminTransition(ctx, reservationID, actorID, "confirmed", "")
+	if err != nil {
+		return nil, err
+	}
+	if s.notifier != nil {
+		_ = s.notifier.SendReservationConfirmed(ctx, mailer.ReservationConfirmation{
+			GuestFullName:     dto.GuestFullName,
+			GuestEmail:        dto.GuestEmail,
+			ReservationNumber: dto.ReservationNumber,
+			Date:              dto.Date,
+			Time:              dto.Time,
+			GuestCount:        dto.GuestCount,
+			Status:            dto.Status,
+		})
+	}
+	return dto, nil
 }
 
 func (s *Service) CheckIn(ctx context.Context, reservationID, actorID uuid.UUID) (*ReservationDTO, error) {

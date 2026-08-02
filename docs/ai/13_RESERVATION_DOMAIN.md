@@ -247,9 +247,9 @@ Configurable.
 
 Reservation events:
 
-Created
+Created — email (request received)
 
-Confirmed
+Confirmed — email (staff confirmed)
 
 Reminder
 
@@ -257,15 +257,19 @@ Cancelled
 
 Completed
 
-Future:
+Implemented channels:
 
-Email
+Email (Created, Confirmed)
+
+Future:
 
 SMS
 
 WhatsApp
 
 Push Notification
+
+Reminder / Cancelled / Completed emails
 
 ---
 

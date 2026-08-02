@@ -25,6 +25,53 @@ Production
 
 ---
 
+# Promotion path
+
+Every change developed in the local environment must follow Continuous Delivery with human gates for staging and production.
+
+Flow:
+
+Local work
+
+↓
+
+Feature branch
+
+↓
+
+Commit + open PR into `develop` (automatic — do not ask)
+
+↓
+
+Product owner reviews / merges the PR on GitHub
+
+↓
+
+Product owner confirms merge → agent deploys staging (`https://stage.7oz-espresso.com`)
+
+↓
+
+Product owner reviews staging and confirms OK
+
+↓
+
+Product owner opens PR `develop` → `main`
+
+↓
+
+After that PR is merged → agent deploys production (`https://7oz-espresso.com` / `www`) when instructed
+
+Rules:
+
+- Never skip staging for app, API, migration, or Compose changes.
+- Do not deploy staging until the product owner confirms the PR is merged into `develop`.
+- Do not deploy production until staging is confirmed OK and `main` has the release (product owner owns the `develop` → `main` PR).
+- Never deploy production without an explicit instruction after the production release is on `main`.
+- Staging and production must use separate secrets, databases, and Compose projects.
+- Prefer hotfixes through `develop` → staging → `main`. Deploy a production-only hotfix only when the product owner explicitly instructs it for a critical outage.
+
+---
+
 # Configuration
 
 Never hardcode environment values.

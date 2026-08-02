@@ -63,6 +63,11 @@ else
   docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" up -d --build backend website admin nginx postgres redis
 fi
 
+# Compose Nginx resolves upstream hostnames at process start. Restart so it
+# picks up recreated website/admin/backend container IPs (avoids stale 502).
+echo "==> Refreshing gateway DNS"
+docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" restart nginx
+
 echo "==> Waiting for API readiness"
 for _ in $(seq 1 30); do
   if docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" exec -T backend curl -fsS http://127.0.0.1:8080/health/ready >/dev/null 2>&1; then

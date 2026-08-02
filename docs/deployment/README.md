@@ -2,6 +2,8 @@
 
 Version: Phase 11 foundation
 
+**Promotion policy:** local work → commit + PR into `develop` (automatic) → product owner merges → confirm merge → deploy **staging** (`https://stage.7oz-espresso.com`) → product owner confirms staging OK → product owner opens PR `develop` → `main` → deploy **production** (`https://7oz-espresso.com`) when instructed. Never skip staging for app/API/migration/Compose changes. Never deploy staging or production without the matching confirmation.
+
 **Production go-live:** follow [PRODUCTION_CUTOVER.md](./PRODUCTION_CUTOVER.md) end-to-end before announcing launch.
 
 Menu catalog for MVP remains filesystem-backed — see [ADR 0002](../adr/0002-mvp-static-menu-catalog.md).

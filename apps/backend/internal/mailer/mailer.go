@@ -133,6 +133,7 @@ func (n *Notifier) SendPasswordReset(ctx context.Context, toEmail, fullName, raw
 	return n.send(ctx, toEmail, subject, text, html, "")
 }
 
+// SendReservationConfirmation notifies the guest that a booking request was received (pending).
 func (n *Notifier) SendReservationConfirmation(ctx context.Context, reservation ReservationConfirmation) error {
 	to := strings.TrimSpace(reservation.GuestEmail)
 	if to == "" {
@@ -157,6 +158,33 @@ func (n *Notifier) SendReservationConfirmation(ctx context.Context, reservation 
 		escapeHTML(reservation.Time),
 		reservation.GuestCount,
 		escapeHTML(reservation.Status),
+	)
+	return n.send(ctx, to, subject, text, html, "")
+}
+
+// SendReservationConfirmed notifies the guest that staff confirmed their reservation.
+func (n *Notifier) SendReservationConfirmed(ctx context.Context, reservation ReservationConfirmation) error {
+	to := strings.TrimSpace(reservation.GuestEmail)
+	if to == "" {
+		return nil
+	}
+
+	subject := fmt.Sprintf("Reservation %s confirmed", reservation.ReservationNumber)
+	text := fmt.Sprintf(
+		"Hello %s,\n\nYour table reservation at 7Oz Espresso Cafe is confirmed.\n\nReservation: %s\nDate: %s\nTime: %s\nGuests: %d\nStatus: confirmed\n\nWe look forward to welcoming you.\n\n— 7Oz Espresso Cafe\n",
+		displayName(reservation.GuestFullName),
+		reservation.ReservationNumber,
+		reservation.Date,
+		reservation.Time,
+		reservation.GuestCount,
+	)
+	html := fmt.Sprintf(
+		`<p>Hello %s,</p><p>Your table reservation at 7Oz Espresso Cafe is confirmed.</p><ul><li><strong>Reservation:</strong> %s</li><li><strong>Date:</strong> %s</li><li><strong>Time:</strong> %s</li><li><strong>Guests:</strong> %d</li><li><strong>Status:</strong> confirmed</li></ul><p>We look forward to welcoming you.</p><p>— 7Oz Espresso Cafe</p>`,
+		escapeHTML(displayName(reservation.GuestFullName)),
+		escapeHTML(reservation.ReservationNumber),
+		escapeHTML(reservation.Date),
+		escapeHTML(reservation.Time),
+		reservation.GuestCount,
 	)
 	return n.send(ctx, to, subject, text, html, "")
 }

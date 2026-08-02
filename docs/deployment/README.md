@@ -71,23 +71,34 @@ Suggested layout:
 
 ```text
 /opt/7oz/
-  compose/          # repository checkout or release bundle
-  env/.env.production
+  compose/          # repository checkout (main) or release bundle
   backups/
   uploads/
   logs/
-  scripts/
 ```
 
-Deploy a tagged release:
+On a VPS that already runs staging (`127.0.0.1:8088`), keep production on a separate compose project and port:
+
+| Stack | Compose project | Host bind | Public host |
+| --- | --- | --- | --- |
+| Staging | `sevenoz-staging` | `127.0.0.1:8088` | `stage.7oz-espresso.com` |
+| Production | `sevenoz-prod` | `127.0.0.1:8089` | `7oz-espresso.com` / `www` |
+
+Deploy from `main` (builds images on the VPS when GHCR is not pre-populated):
 
 ```bash
+cd /opt/7oz/compose
+git checkout main
+git pull origin main
 cp .env.production.example .env.production
-# fill secrets and set IMAGE_TAG=<git-sha-or-semver>
+# fill secrets, real SMTP (not Mailpit), IMAGE_TAG=<git-sha>
 # complete docs/deployment/PRODUCTION_CUTOVER.md
 
-./scripts/deploy.sh production <image-tag>
+IMAGE_TAG="$(git rev-parse --short HEAD)"
+./scripts/deploy.sh production "$IMAGE_TAG"
 ```
+
+Point host Nginx at `127.0.0.1:8089`, then issue TLS with Certbot for `7oz-espresso.com` and `www.7oz-espresso.com`.
 
 Rollback:
 

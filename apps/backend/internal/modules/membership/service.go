@@ -419,7 +419,15 @@ func (s *Service) GetAdmin(ctx context.Context, membershipID uuid.UUID) (*Member
 		}
 		return nil, apperr.Wrap(apperr.Internal("Failed to load membership."), err)
 	}
-	return s.buildMembershipDTO(ctx, raw.UserID)
+	dto, err := s.buildMembershipDTO(ctx, raw.UserID)
+	if err != nil {
+		return nil, err
+	}
+	if user, userErr := s.db.Queries.GetUserByID(ctx, raw.UserID); userErr == nil {
+		dto.UserEmail = user.Email
+		dto.UserFullName = user.FullName
+	}
+	return dto, nil
 }
 
 func (s *Service) UpdateStatus(ctx context.Context, membershipID, actorID uuid.UUID, status, reason string) (*MembershipDTO, error) {

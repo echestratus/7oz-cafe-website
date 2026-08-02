@@ -1176,6 +1176,27 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/memberships/{id}/history:
+    get:
+      summary: Get membership upgrade and status history
+      operationId: getAdminMembershipHistory
+      tags: [Membership]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Membership history
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
   /admin/membership-levels:
     get:
       summary: List membership levels

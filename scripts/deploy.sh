@@ -59,6 +59,7 @@ echo "==> Starting application stack"
 if [[ "$ENVIRONMENT" == "staging" ]]; then
   docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" up -d --build backend website admin nginx postgres redis mailpit
 else
+  # Self-host VPS builds from source when GHCR images are not pre-pushed.
   docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" up -d --build backend website admin nginx postgres redis
 fi
 

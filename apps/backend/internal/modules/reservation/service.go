@@ -484,7 +484,12 @@ func (s *Service) CancelCustomer(ctx context.Context, userID, reservationID uuid
 		return nil, apperr.BadRequest("Cancellation window has closed for this reservation.")
 	}
 
-	return s.transition(ctx, raw, "cancelled", &userID, strings.TrimSpace(reason))
+	dto, err := s.transition(ctx, raw, "cancelled", &userID, strings.TrimSpace(reason))
+	if err != nil {
+		return nil, err
+	}
+	s.notifyCancelled(ctx, dto)
+	return dto, nil
 }
 
 func (s *Service) ListAdmin(ctx context.Context, dateStr, status string, page, limit int) ([]ReservationDTO, int64, error) {
@@ -561,7 +566,27 @@ func (s *Service) Complete(ctx context.Context, reservationID, actorID uuid.UUID
 }
 
 func (s *Service) CancelAdmin(ctx context.Context, reservationID, actorID uuid.UUID, reason string) (*ReservationDTO, error) {
-	return s.adminTransition(ctx, reservationID, actorID, "cancelled", reason)
+	dto, err := s.adminTransition(ctx, reservationID, actorID, "cancelled", reason)
+	if err != nil {
+		return nil, err
+	}
+	s.notifyCancelled(ctx, dto)
+	return dto, nil
+}
+
+func (s *Service) notifyCancelled(ctx context.Context, dto *ReservationDTO) {
+	if s.notifier == nil || dto == nil {
+		return
+	}
+	_ = s.notifier.SendReservationCancelled(ctx, mailer.ReservationConfirmation{
+		GuestFullName:     dto.GuestFullName,
+		GuestEmail:        dto.GuestEmail,
+		ReservationNumber: dto.ReservationNumber,
+		Date:              dto.Date,
+		Time:              dto.Time,
+		GuestCount:        dto.GuestCount,
+		Status:            dto.Status,
+	})
 }
 
 func (s *Service) NoShow(ctx context.Context, reservationID, actorID uuid.UUID) (*ReservationDTO, error) {

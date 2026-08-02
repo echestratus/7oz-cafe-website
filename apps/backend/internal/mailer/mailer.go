@@ -189,6 +189,33 @@ func (n *Notifier) SendReservationConfirmed(ctx context.Context, reservation Res
 	return n.send(ctx, to, subject, text, html, "")
 }
 
+// SendReservationCancelled notifies the guest that their reservation was cancelled.
+func (n *Notifier) SendReservationCancelled(ctx context.Context, reservation ReservationConfirmation) error {
+	to := strings.TrimSpace(reservation.GuestEmail)
+	if to == "" {
+		return nil
+	}
+
+	subject := fmt.Sprintf("Reservation %s cancelled", reservation.ReservationNumber)
+	text := fmt.Sprintf(
+		"Hello %s,\n\nYour table reservation at 7Oz Espresso Cafe has been cancelled.\n\nReservation: %s\nDate: %s\nTime: %s\nGuests: %d\nStatus: cancelled\n\nIf this was unexpected, reply to this email or contact the cafe.\n\n— 7Oz Espresso Cafe\n",
+		displayName(reservation.GuestFullName),
+		reservation.ReservationNumber,
+		reservation.Date,
+		reservation.Time,
+		reservation.GuestCount,
+	)
+	html := fmt.Sprintf(
+		`<p>Hello %s,</p><p>Your table reservation at 7Oz Espresso Cafe has been cancelled.</p><ul><li><strong>Reservation:</strong> %s</li><li><strong>Date:</strong> %s</li><li><strong>Time:</strong> %s</li><li><strong>Guests:</strong> %d</li><li><strong>Status:</strong> cancelled</li></ul><p>If this was unexpected, reply to this email or contact the cafe.</p><p>— 7Oz Espresso Cafe</p>`,
+		escapeHTML(displayName(reservation.GuestFullName)),
+		escapeHTML(reservation.ReservationNumber),
+		escapeHTML(reservation.Date),
+		escapeHTML(reservation.Time),
+		reservation.GuestCount,
+	)
+	return n.send(ctx, to, subject, text, html, "")
+}
+
 func (n *Notifier) SendContactMessage(ctx context.Context, inquiry ContactInquiry) error {
 	to := strings.TrimSpace(n.contactToEmail)
 	if to == "" {

@@ -119,6 +119,21 @@ type ContactMessage struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+type GalleryItem struct {
+	ID           uuid.UUID  `json:"id"`
+	ImageUrl     string     `json:"image_url"`
+	MediaID      *uuid.UUID `json:"media_id"`
+	LocationSlug string     `json:"location_slug"`
+	Category     string     `json:"category"`
+	AltText      string     `json:"alt_text"`
+	Caption      string     `json:"caption"`
+	SortOrder    int32      `json:"sort_order"`
+	IsVisible    bool       `json:"is_visible"`
+	CreatedAt    time.Time  `json:"created_at"`
+	UpdatedAt    time.Time  `json:"updated_at"`
+	DeletedAt    *time.Time `json:"deleted_at"`
+}
+
 type LoyaltyAccount struct {
 	ID               uuid.UUID  `json:"id"`
 	UserID           uuid.UUID  `json:"user_id"`

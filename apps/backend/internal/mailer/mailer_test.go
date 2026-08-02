@@ -71,3 +71,32 @@ func TestSendReservationConfirmedUsesLogSender(t *testing.T) {
 		t.Fatalf("expected confirmed reservation email to succeed, got: %v", err)
 	}
 }
+
+func TestSendReservationCancelledUsesLogSender(t *testing.T) {
+	cfg := &config.Config{
+		Env:        "development",
+		WebsiteURL: "http://localhost:3000",
+		SMTP: config.SMTPConfig{
+			FromEmail: "noreply@7oz.local",
+			FromName:  "7Oz",
+		},
+	}
+
+	notifier, err := mailer.NewFromConfig(cfg, zap.NewNop())
+	if err != nil {
+		t.Fatalf("expected notifier, got error: %v", err)
+	}
+
+	err = notifier.SendReservationCancelled(context.Background(), mailer.ReservationConfirmation{
+		GuestFullName:     "Guest",
+		GuestEmail:        "guest@example.com",
+		ReservationNumber: "7OZ-20260802-ABCD",
+		Date:              "2026-08-10",
+		Time:              "18:00",
+		GuestCount:        2,
+		Status:            "cancelled",
+	})
+	if err != nil {
+		t.Fatalf("expected cancelled reservation email to succeed, got: %v", err)
+	}
+}

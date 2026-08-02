@@ -142,7 +142,7 @@ Each flow must have E2E coverage.
 
 Test:
 
-Controllers
+Handlers
 
 Services
 

@@ -19,8 +19,8 @@ Referenced By   :
 - 04_MONOREPO_STRUCTURE.md
 - 05_ENGINEERING_STANDARDS.md
 - 06_DESIGN_SYSTEM.md
-- 07_BACKEND_ARCHITECTURE.md
-- 08_FRONTEND_ARCHITECTURE.md
+- 07_FRONTEND_ARCHITECTURE.md
+- 08_BACKEND_ARCHITECTURE.md
 - 09_DATABASE_ARCHITECTURE.md
 - 10_API_STANDARDS.md
 - 11_SECURITY_STANDARDS.md
@@ -35,6 +35,7 @@ Referenced By   :
 - 20_CODE_REVIEW_CHECKLIST.md
 - 21_AI_WORKFLOW.md
 - 22_DEFINITION_OF_DONE.md
+- ../adr/0001-phase-0-architecture-decisions.md
 
 ---
 
@@ -46,7 +47,15 @@ It defines the universal engineering principles that apply across the entire rep
 
 Every document inside `./docs/ai` extends this document.
 
-If two documents appear to conflict, this document takes precedence unless a newer version explicitly supersedes it.
+Accepted Architecture Decision Records under `./docs/adr` refine irreversible technical choices.
+
+If two documents appear to conflict, resolve in this order:
+
+1. Accepted ADRs under `./docs/adr`
+2. This master prompt and other FINAL documents under `./docs/ai`
+3. Cursor rules under `./.cursor/rules`
+
+Cursor rules must mirror `./docs/ai` and accepted ADRs. Never invent an alternate stack in rules.
 
 ---
 

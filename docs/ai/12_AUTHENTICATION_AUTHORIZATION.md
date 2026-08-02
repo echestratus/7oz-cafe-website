@@ -41,11 +41,21 @@ The authentication system must:
 
 # 3. User Roles
 
-The platform initially supports:
+The platform MVP supports these persisted roles:
 
 - Customer
 - Admin
 - Super Admin
+
+Visitor describes an unauthenticated actor and is not stored as a role.
+
+Deferred roles (POS / multi-branch):
+
+- Cafe Manager
+- Cashier
+- Kitchen
+- Barista
+- Branch Manager
 
 Future roles may be added without redesigning the authentication system.
 
@@ -123,15 +133,20 @@ Access Token:
 
 - JWT
 - Lifetime: 15 minutes
+- Sent via Authorization Bearer header
 - Stored in memory on frontend
+- Never stored in localStorage
 
 Refresh Token:
 
-- Opaque or JWT (implementation choice)
+- Opaque preferred (JWT acceptable if justified)
 - Lifetime: 30 days
 - Stored in HTTP-only Secure Cookie
+- SameSite configured for CSRF mitigation
 
 Refresh tokens are rotated after each successful refresh.
+
+CSRF defenses are required for cookie-based refresh endpoints.
 
 ---
 
@@ -176,6 +191,9 @@ Verification links:
 
 - Single use.
 - Expire after 24 hours.
+
+Delivery uses the backend mailer (`SMTP_*` + `WEBSITE_URL`).
+In development, tokens may also be returned in the API response when SMTP is not configured.
 
 Support resend verification email.
 
@@ -253,10 +271,12 @@ Public:
 - About
 - Menu
 - Gallery
+- Contact
+- Create Reservation (guest booking allowed)
 
 Authenticated:
 
-- Reservations
+- Reservation history linked to account
 - Loyalty
 - Membership
 - Profile
@@ -264,6 +284,8 @@ Authenticated:
 Admin
 
 All routes require authentication.
+
+Admin role required for operational modules.
 
 Sensitive routes additionally require Super Admin.
 

@@ -264,13 +264,15 @@ GET /api/v1/admin/memberships
 
 GET /api/v1/admin/memberships/{id}
 
+GET /api/v1/admin/memberships/{id}/history
+
 PATCH /api/v1/admin/memberships/{id}
 
 PATCH /api/v1/admin/memberships/{id}/status
 
 GET /api/v1/admin/membership-levels
 
-PATCH /api/v1/admin/membership-levels
+PATCH /api/v1/admin/membership-levels/{id}
 
 ---
 

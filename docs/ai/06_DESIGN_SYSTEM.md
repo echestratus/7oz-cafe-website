@@ -151,39 +151,49 @@ Info
 
 # 5. Typography
 
-Primary Font
+Warm editorial serif paired with a clean grotesque.
 
-Manrope
+Primary Font (body / UI)
 
-Secondary Font
+Inter
 
-Instrument Serif
+Secondary Font (headings / display)
+
+Fraunces
 
 Fallback
 
-system-ui
+system-ui / Georgia
 
 Usage
 
 Headings
 
-Instrument Serif
+Fraunces, sentence case, weight 500, tight tracking
 
 Body
 
-Manrope
+Inter
 
 Buttons
 
-Manrope
+Inter, uppercase, tracked, pill shape
 
 Forms
 
-Manrope
+Inter
 
 Navigation
 
-Manrope
+Inter, uppercase, tracked
+
+Eyebrows / small labels
+
+Inter, uppercase, wide tracking, coffee accent color
+
+Quotes / taglines
+
+Fraunces italic
 
 ---
 

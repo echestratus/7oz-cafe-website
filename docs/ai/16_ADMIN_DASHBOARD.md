@@ -230,21 +230,29 @@ Banner Scheduling
 
 # 12. Customer Management
 
+Implemented in admin under `/customers` (permission `customer.read`).
+
 Customer List
 
-Profile
+Search by name or email
 
-Reservations
+Status filter
 
-Membership
+Profile summary
 
-Loyalty
+Membership summary
+
+Loyalty summary
+
+Account Status (activate / suspend via `user.manage`)
+
+Future:
+
+Reservations timeline
 
 Activity Timeline
 
 Session History
-
-Account Status
 
 ---
 
@@ -370,6 +378,8 @@ Admins
 
 Super Admins
 
+Customers (read / support actions)
+
 Status
 
 Roles
@@ -379,6 +389,20 @@ Permissions
 Sessions
 
 Password Reset
+
+MVP persisted roles:
+
+- Customer
+- Admin
+- Super Admin
+
+Deferred roles until POS / multi-branch:
+
+- Cafe Manager
+- Cashier
+- Kitchen
+- Barista
+- Branch Manager
 
 ---
 

@@ -161,9 +161,15 @@ Future versions:
 
 Single PostgreSQL database.
 
+Query access via sqlc + pgx.
+
+Migrations via golang-migrate.
+
 Redis for cache.
 
 MinIO for object storage (future).
+
+Local `./assets` synced into app public directories during development and build.
 
 ---
 

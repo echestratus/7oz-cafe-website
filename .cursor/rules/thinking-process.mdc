@@ -211,7 +211,7 @@ Business logic belongs in the Service Layer.
 
 Never place business rules inside:
 
-- Controllers
+- Handlers / Controllers
 - React Components
 - Pages
 - Routes

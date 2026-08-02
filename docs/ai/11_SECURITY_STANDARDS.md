@@ -69,6 +69,16 @@ Initial Roles:
 - Admin
 - Super Admin
 
+Visitor is an unauthenticated actor, not a persisted role.
+
+Deferred roles until POS / multi-branch:
+
+- Cafe Manager
+- Cashier
+- Kitchen
+- Barista
+- Branch Manager
+
 Permissions are evaluated server-side.
 
 Frontend authorization is for UX only.
@@ -148,12 +158,15 @@ Do not render arbitrary HTML without sanitization.
 
 # 10. CSRF
 
-If cookie-based authentication is introduced:
+Refresh tokens are stored in HTTP-only Secure Cookies.
 
-- Enable CSRF protection.
-- Validate Origin/Referer.
+Therefore CSRF defenses are mandatory for refresh and other cookie-authenticated endpoints:
 
-JWT Authorization Header does not require traditional CSRF tokens.
+- SameSite cookie attributes
+- Validate Origin / Referer
+- Trusted CORS origins only
+
+Access tokens sent via the Authorization Bearer header do not remove the need for CSRF controls on cookie-based refresh flows.
 
 ---
 

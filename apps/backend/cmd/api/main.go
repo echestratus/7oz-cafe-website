@@ -18,6 +18,7 @@ import (
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/cms"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/contact"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/customer"
+	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/gallery"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/health"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/loyalty"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/media"
@@ -87,6 +88,7 @@ func main() {
 	authService := authentication.NewService(cfg, postgres, emailNotifier)
 	cmsService := cms.NewService(postgres)
 	blogService := blog.NewService(postgres)
+	galleryService := gallery.NewService(postgres)
 	mediaService := media.NewService(cfg, postgres)
 	reservationService := reservation.NewService(postgres, emailNotifier)
 	membershipService := membership.NewService(postgres)
@@ -106,6 +108,7 @@ func main() {
 		AuthService:        authService,
 		CMSService:         cmsService,
 		BlogService:        blogService,
+		GalleryService:     galleryService,
 		MediaService:       mediaService,
 		ReservationService: reservationService,
 		MembershipService:  membershipService,

@@ -1526,6 +1526,153 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessEnvelope"
+  /public/gallery:
+    get:
+      summary: List visible gallery items for a location
+      operationId: listPublicGallery
+      tags: [Gallery]
+      parameters:
+        - name: locationSlug
+          in: query
+          required: true
+          schema:
+            type: string
+            example: city-park
+      responses:
+        "200":
+          description: Visible gallery items
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/gallery:
+    get:
+      summary: List gallery items for admin
+      operationId: listAdminGallery
+      tags: [Gallery]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: locationSlug
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Gallery items
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+    post:
+      summary: Create a gallery item
+      operationId: createGalleryItem
+      tags: [Gallery]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [imageUrl, locationSlug]
+              properties:
+                imageUrl:
+                  type: string
+                mediaId:
+                  type: string
+                  format: uuid
+                  nullable: true
+                locationSlug:
+                  type: string
+                category:
+                  type: string
+                  enum: [atmosphere, interior, exterior, coffee, food, events]
+                altText:
+                  type: string
+                caption:
+                  type: string
+                sortOrder:
+                  type: integer
+                isVisible:
+                  type: boolean
+      responses:
+        "201":
+          description: Gallery item created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/gallery/{id}:
+    get:
+      summary: Get gallery item by id
+      operationId: getAdminGalleryItem
+      tags: [Gallery]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Gallery item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+    patch:
+      summary: Update a gallery item
+      operationId: updateGalleryItem
+      tags: [Gallery]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Gallery item updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+    delete:
+      summary: Soft-delete a gallery item
+      operationId: deleteGalleryItem
+      tags: [Gallery]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Gallery item deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
   /public/blogs:
     get:
       summary: List published blog posts

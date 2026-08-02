@@ -10,6 +10,7 @@ import {
   getLocationBySlug,
 } from '@/features/locations/lib/locations';
 import { getPublishedCmsPage } from '@/services/cms';
+import { listPublicGallery, toLightboxImages } from '@/services/gallery';
 
 interface GalleryLocationPageProps {
   params: Promise<{ slug: string }>;
@@ -55,7 +56,15 @@ export default async function GalleryLocationPage({ params }: GalleryLocationPag
     );
   }
 
-  const images = await listGalleryImages(location.name);
+  let images = await listGalleryImages(location.name);
+  try {
+    const remote = await listPublicGallery(location.slug);
+    if (remote.length > 0) {
+      images = toLightboxImages(remote, location.name);
+    }
+  } catch {
+    // Keep filesystem gallery if the API is unavailable or empty.
+  }
 
   return (
     <SiteShell footer={footer}>

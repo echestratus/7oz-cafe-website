@@ -42,13 +42,26 @@ docs/api-specification
 3. Branch model:
 
 - `main` — production-ready releases only
-- `develop` — integration branch
+- `develop` — integration branch (feeds staging)
 - Never use `master` for new work
 
 Never work directly on:
 
 - develop
 - main
+
+Release / environment promotion:
+
+- `develop` = integration branch and staging source of truth
+- `main` = production-only releases
+- When local work on a feature branch is complete, **automatically commit and open a PR into `develop`**. Do not ask whether to commit or open the PR.
+- Mistakes are caught in PR review or can be rolled back after merge — that is intentional.
+- Do **not** merge the PR into `develop` yourself unless the product owner explicitly asks.
+- Do **not** deploy staging until the product owner confirms the PR is merged into `develop`.
+- After staging deploy, wait for the product owner to confirm staging is OK.
+- The product owner opens the PR from `develop` → `main`. Do not open that release PR unless asked.
+- Deploy production only when instructed after the release is on `main`.
+- For large cutovers, follow `docs/deployment/PRODUCTION_CUTOVER.md`
 
 4. Make small and meaningful commits.
 
@@ -101,7 +114,7 @@ Example:
 git push -u origin feature/reservation-system
 ```
 
-8. Merge into `develop` only after code review or explicit user approval.
+8. Open a PR into `develop` automatically when the change is ready. The product owner reviews and merges on GitHub. Do not wait for a chat prompt to create the commit or the PR.
 
 9. Never rewrite public Git history unless explicitly instructed.
 

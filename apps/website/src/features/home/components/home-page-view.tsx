@@ -10,6 +10,7 @@ import { LocationsSection } from '@/features/home/components/locations-section';
 import { TestimonialsSection } from '@/features/home/components/testimonials-section';
 import { BlogsPreviewSection } from '@/features/blogs/components/blogs-preview-section';
 import { NewMenuSection } from '@/features/menu/components/new-menu-section';
+import type { GalleryPreviewImage } from '@/features/home/lib/gallery-preview';
 import type { MenuItem } from '@/features/menu/lib/menu-catalog';
 import type { BlogPost } from '@/services/blog';
 
@@ -73,6 +74,7 @@ const fallbackReservation = {
 interface HomePageViewProps {
   homepage: CmsPageSnapshot | null;
   blogPosts?: BlogPost[];
+  galleryPreviewImages?: GalleryPreviewImage[];
   featuredMenu?: {
     coffee: MenuItem[];
     nonCoffee: MenuItem[];
@@ -84,6 +86,7 @@ interface HomePageViewProps {
 export function HomePageView({
   homepage,
   blogPosts = [],
+  galleryPreviewImages = [],
   featuredMenu = { coffee: [], nonCoffee: [], pastries: [] },
   newMenuItems = [],
 }: HomePageViewProps) {
@@ -116,7 +119,7 @@ export function HomePageView({
         {renderFeaturedMenu(fallbackFeaturedMenu, 'featured-menu-fallback')}
         <AboutPreviewSection data={fallbackAbout} />
         <LocationsSection />
-        <GalleryPreviewSection data={fallbackGallery} />
+        <GalleryPreviewSection data={fallbackGallery} images={galleryPreviewImages} />
         <BlogsPreviewSection data={fallbackBlogs} posts={blogPosts} />
         <TestimonialsSection data={fallbackTestimonials} />
         <CtaBandSection data={fallbackMembership} tone="accent" />
@@ -162,7 +165,13 @@ export function HomePageView({
         rendered.push(<LocationsSection key={section.id} />);
         break;
       case 'gallery_preview':
-        rendered.push(<GalleryPreviewSection key={section.id} data={section.data} />);
+        rendered.push(
+          <GalleryPreviewSection
+            key={section.id}
+            data={section.data}
+            images={galleryPreviewImages}
+          />,
+        );
         break;
       case 'blogs_preview':
         rendered.push(

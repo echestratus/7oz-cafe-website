@@ -42,16 +42,16 @@ export function NewMenuSection({
   return (
     <section
       className={cx(
-        'section-pad relative isolate overflow-hidden bg-ink text-white',
+        'section-pad relative isolate overflow-hidden bg-surface-highlight text-text',
         className,
       )}
     >
       <div
-        className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-primary/25 blur-3xl"
+        className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-primary/10 blur-3xl"
         aria-hidden="true"
       />
       <div
-        className="pointer-events-none absolute -bottom-32 -left-24 h-96 w-96 rounded-full bg-accent/20 blur-3xl"
+        className="pointer-events-none absolute -bottom-32 -left-24 h-96 w-96 rounded-full bg-accent/10 blur-3xl"
         aria-hidden="true"
       />
 
@@ -63,18 +63,17 @@ export function NewMenuSection({
               title="Meet the new menu"
               description="Fresh signatures, bright fruit, and familiar coffee reimagined — spotlighted here for three months before they settle into the regular menu."
               titleAs={titleAs}
-              tone="dark"
             />
 
-            <div className="flex items-center gap-4 border-l border-white/15 pl-5 lg:max-w-xs">
-              <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/10 text-white">
+            <div className="flex items-center gap-4 border-l border-border pl-5 lg:max-w-xs">
+              <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
                 <Sparkles className="h-4 w-4" aria-hidden="true" />
               </span>
               <div className="space-y-1">
-                <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-white/45">
+                <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-text-muted">
                   Featured window
                 </p>
-                <p className="text-sm text-white/80">{formatCampaignWindow()}</p>
+                <p className="text-sm text-text-secondary">{formatCampaignWindow()}</p>
               </div>
             </div>
           </div>
@@ -102,14 +101,14 @@ export function NewMenuSection({
           ))}
         </div>
 
-        <Reveal className="mt-14 flex flex-col gap-6 border-t border-white/15 pt-8 sm:flex-row sm:items-center sm:justify-between md:mt-16">
-          <p className="max-w-lg text-sm leading-relaxed text-white/55">
+        <Reveal className="mt-14 flex flex-col gap-6 border-t border-border pt-8 sm:flex-row sm:items-center sm:justify-between md:mt-16">
+          <p className="max-w-lg text-sm leading-relaxed text-text-secondary">
             Spotlighted for three months — after that, these drinks remain on the regular menu.
           </p>
           {showBrowseLink ? (
             <Link
               href="/menu#new-menu"
-              className="group inline-flex min-h-12 items-center justify-center gap-3 rounded-full bg-white px-7 text-[0.75rem] font-semibold uppercase tracking-[0.14em] text-primary transition-colors hover:bg-white/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="group inline-flex min-h-12 items-center justify-center gap-3 rounded-full bg-primary px-7 text-[0.75rem] font-semibold uppercase tracking-[0.14em] text-inverse transition-colors hover:bg-primary-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             >
               Explore new menu
               <ArrowRight
@@ -120,7 +119,7 @@ export function NewMenuSection({
           ) : (
             <a
               href="#coffee"
-              className="inline-flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-[0.14em] text-white/75 transition-colors hover:text-white"
+              className="inline-flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-[0.14em] text-text-secondary transition-colors hover:text-text"
             >
               Continue to all drinks
               <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
@@ -200,14 +199,14 @@ function NewMenuCard({ item, index }: { item: MenuItem; index: number }) {
           New
         </span>
       </div>
-      <div className="flex items-start justify-between gap-4 border-t border-white/15 pt-4">
+      <div className="flex items-start justify-between gap-4 border-t border-border pt-4">
         <div className="space-y-1">
-          <p className="text-[0.625rem] font-semibold uppercase tracking-[0.16em] text-white/40">
+          <p className="text-[0.625rem] font-semibold uppercase tracking-[0.16em] text-text-muted">
             {item.category === 'coffee' ? 'Coffee' : 'Non-coffee'}
           </p>
-          <h3 className="font-heading text-xl text-white md:text-2xl">{item.caption}</h3>
+          <h3 className="font-heading text-xl text-text md:text-2xl">{item.caption}</h3>
         </div>
-        <span className="pt-1 text-[0.625rem] font-semibold tracking-[0.16em] text-white/35">
+        <span className="pt-1 text-[0.625rem] font-semibold tracking-[0.16em] text-text-muted">
           {String(index + 1).padStart(2, '0')}
         </span>
       </div>

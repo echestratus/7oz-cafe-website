@@ -314,6 +314,97 @@ func (h *Handler) ListTables(c fiber.Ctx) error {
 	return response.JSON(c, fiber.StatusOK, response.OK("OK", items))
 }
 
+func (h *Handler) CreateTable(c fiber.Ctx) error {
+	principal, ok := authctx.PrincipalFromCtx(c)
+	if !ok {
+		return apperr.Unauthorized("Authentication required.")
+	}
+
+	input, err := bindCafeTable(c, true)
+	if err != nil {
+		return err
+	}
+
+	item, err := h.service.CreateTable(c.Context(), principal.UserID, input)
+	if err != nil {
+		return err
+	}
+	return response.JSON(c, fiber.StatusCreated, response.OK("Cafe table created.", item))
+}
+
+func (h *Handler) UpdateTable(c fiber.Ctx) error {
+	principal, ok := authctx.PrincipalFromCtx(c)
+	if !ok {
+		return apperr.Unauthorized("Authentication required.")
+	}
+
+	tableID, err := uuid.Parse(c.Params("id"))
+	if err != nil {
+		return apperr.BadRequest("Invalid table id.")
+	}
+
+	input, err := bindCafeTable(c, false)
+	if err != nil {
+		return err
+	}
+
+	item, err := h.service.UpdateTable(c.Context(), tableID, principal.UserID, input)
+	if err != nil {
+		return err
+	}
+	return response.JSON(c, fiber.StatusOK, response.OK("Cafe table updated.", item))
+}
+
+func (h *Handler) DeleteTable(c fiber.Ctx) error {
+	principal, ok := authctx.PrincipalFromCtx(c)
+	if !ok {
+		return apperr.Unauthorized("Authentication required.")
+	}
+
+	tableID, err := uuid.Parse(c.Params("id"))
+	if err != nil {
+		return apperr.BadRequest("Invalid table id.")
+	}
+
+	if err := h.service.DeleteTable(c.Context(), tableID, principal.UserID); err != nil {
+		return err
+	}
+	return response.JSON(c, fiber.StatusOK, response.OK("Cafe table deleted.", map[string]any{}))
+}
+
+func bindCafeTable(c fiber.Ctx, requireCode bool) (CafeTableInput, error) {
+	var req struct {
+		Code      string `json:"code"`
+		Name      string `json:"name"`
+		Capacity  int32  `json:"capacity"`
+		IsActive  *bool  `json:"isActive"`
+		SortOrder int32  `json:"sortOrder"`
+	}
+	if err := c.Bind().Body(&req); err != nil {
+		return CafeTableInput{}, apperr.BadRequest("Invalid JSON body.")
+	}
+
+	isActive := true
+	if req.IsActive != nil {
+		isActive = *req.IsActive
+	}
+
+	input := CafeTableInput{
+		Code:      req.Code,
+		Name:      req.Name,
+		Capacity:  req.Capacity,
+		IsActive:  isActive,
+		SortOrder: req.SortOrder,
+	}
+	if requireCode && strings.TrimSpace(input.Code) == "" {
+		return CafeTableInput{}, apperr.Validation("Invalid cafe table payload.", response.FieldError{
+			Field:   "code",
+			Message: "is required",
+		})
+	}
+	return input, nil
+}
+
 func (h *Handler) Confirm(c fiber.Ctx) error {
 	return h.runAdminTransition(c, h.service.Confirm, "Reservation confirmed.")
 }

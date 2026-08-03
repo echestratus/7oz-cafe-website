@@ -764,14 +764,80 @@ paths:
                 $ref: "#/components/schemas/SuccessEnvelope"
   /admin/reservations/tables:
     get:
-      summary: List active cafe tables
+      summary: List cafe tables for operations staff
       operationId: listAdminCafeTables
       tags: [Reservations]
       security:
         - bearerAuth: []
       responses:
         "200":
-          description: Active cafe tables
+          description: Cafe tables (active and inactive, excluding soft-deleted)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+    post:
+      summary: Create a cafe table
+      operationId: createAdminCafeTable
+      tags: [Reservations]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CafeTableRequest"
+      responses:
+        "201":
+          description: Cafe table created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/reservations/tables/{id}:
+    patch:
+      summary: Update a cafe table
+      operationId: updateAdminCafeTable
+      tags: [Reservations]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CafeTableRequest"
+      responses:
+        "200":
+          description: Cafe table updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+    delete:
+      summary: Soft-delete a cafe table
+      operationId: deleteAdminCafeTable
+      tags: [Reservations]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Cafe table deleted
           content:
             application/json:
               schema:
@@ -1988,6 +2054,25 @@ components:
         notifyGuest:
           type: boolean
           description: Defaults to true; confirmed bookings send confirmed mail only
+    CafeTableRequest:
+      type: object
+      required: [name, capacity]
+      properties:
+        code:
+          type: string
+          description: Required on create; ignored on update
+          example: T6
+        name:
+          type: string
+          example: Patio Two
+        capacity:
+          type: integer
+          minimum: 1
+        isActive:
+          type: boolean
+          description: Defaults to true
+        sortOrder:
+          type: integer
     CreateContactMessageRequest:
       type: object
       required: [fullName, email, message]

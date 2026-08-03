@@ -111,6 +111,63 @@ func (q *Queries) CountReservationsAdmin(ctx context.Context, arg CountReservati
 	return count, err
 }
 
+const createCafeTable = `-- name: CreateCafeTable :one
+INSERT INTO cafe_tables (
+    id,
+    code,
+    name,
+    capacity,
+    is_active,
+    sort_order,
+    created_at,
+    updated_at
+) VALUES (
+    $1, $2, $3, $4, $5, $6, NOW(), NOW()
+) RETURNING
+    id,
+    code,
+    name,
+    capacity,
+    is_active,
+    sort_order,
+    created_at,
+    updated_at,
+    deleted_at
+`
+
+type CreateCafeTableParams struct {
+	ID        uuid.UUID `json:"id"`
+	Code      string    `json:"code"`
+	Name      string    `json:"name"`
+	Capacity  int32     `json:"capacity"`
+	IsActive  bool      `json:"is_active"`
+	SortOrder int32     `json:"sort_order"`
+}
+
+func (q *Queries) CreateCafeTable(ctx context.Context, arg CreateCafeTableParams) (CafeTable, error) {
+	row := q.db.QueryRow(ctx, createCafeTable,
+		arg.ID,
+		arg.Code,
+		arg.Name,
+		arg.Capacity,
+		arg.IsActive,
+		arg.SortOrder,
+	)
+	var i CafeTable
+	err := row.Scan(
+		&i.ID,
+		&i.Code,
+		&i.Name,
+		&i.Capacity,
+		&i.IsActive,
+		&i.SortOrder,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
 const createReservation = `-- name: CreateReservation :one
 INSERT INTO reservations (
     id,
@@ -256,6 +313,39 @@ WHERE id = $1
 
 func (q *Queries) GetActiveCafeTableByID(ctx context.Context, id uuid.UUID) (CafeTable, error) {
 	row := q.db.QueryRow(ctx, getActiveCafeTableByID, id)
+	var i CafeTable
+	err := row.Scan(
+		&i.ID,
+		&i.Code,
+		&i.Name,
+		&i.Capacity,
+		&i.IsActive,
+		&i.SortOrder,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
+const getCafeTableByID = `-- name: GetCafeTableByID :one
+SELECT
+    id,
+    code,
+    name,
+    capacity,
+    is_active,
+    sort_order,
+    created_at,
+    updated_at,
+    deleted_at
+FROM cafe_tables
+WHERE id = $1
+  AND deleted_at IS NULL
+`
+
+func (q *Queries) GetCafeTableByID(ctx context.Context, id uuid.UUID) (CafeTable, error) {
+	row := q.db.QueryRow(ctx, getCafeTableByID, id)
 	var i CafeTable
 	err := row.Scan(
 		&i.ID,
@@ -520,6 +610,52 @@ func (q *Queries) ListActiveReservationsForDate(ctx context.Context, reservation
 	return items, nil
 }
 
+const listCafeTablesAdmin = `-- name: ListCafeTablesAdmin :many
+SELECT
+    id,
+    code,
+    name,
+    capacity,
+    is_active,
+    sort_order,
+    created_at,
+    updated_at,
+    deleted_at
+FROM cafe_tables
+WHERE deleted_at IS NULL
+ORDER BY sort_order, code
+`
+
+func (q *Queries) ListCafeTablesAdmin(ctx context.Context) ([]CafeTable, error) {
+	rows, err := q.db.Query(ctx, listCafeTablesAdmin)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []CafeTable{}
+	for rows.Next() {
+		var i CafeTable
+		if err := rows.Scan(
+			&i.ID,
+			&i.Code,
+			&i.Name,
+			&i.Capacity,
+			&i.IsActive,
+			&i.SortOrder,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listReservationsAdmin = `-- name: ListReservationsAdmin :many
 SELECT
     id,
@@ -660,6 +796,42 @@ func (q *Queries) ListReservationsByCustomer(ctx context.Context, customerUserID
 	return items, nil
 }
 
+const softDeleteCafeTable = `-- name: SoftDeleteCafeTable :one
+UPDATE cafe_tables
+SET deleted_at = NOW(),
+    is_active = FALSE,
+    updated_at = NOW()
+WHERE id = $1
+  AND deleted_at IS NULL
+RETURNING
+    id,
+    code,
+    name,
+    capacity,
+    is_active,
+    sort_order,
+    created_at,
+    updated_at,
+    deleted_at
+`
+
+func (q *Queries) SoftDeleteCafeTable(ctx context.Context, id uuid.UUID) (CafeTable, error) {
+	row := q.db.QueryRow(ctx, softDeleteCafeTable, id)
+	var i CafeTable
+	err := row.Scan(
+		&i.ID,
+		&i.Code,
+		&i.Name,
+		&i.Capacity,
+		&i.IsActive,
+		&i.SortOrder,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
 const sumActiveTableCapacity = `-- name: SumActiveTableCapacity :one
 SELECT COALESCE(SUM(capacity), 0)::bigint AS total_capacity
 FROM cafe_tables
@@ -672,6 +844,58 @@ func (q *Queries) SumActiveTableCapacity(ctx context.Context) (int64, error) {
 	var total_capacity int64
 	err := row.Scan(&total_capacity)
 	return total_capacity, err
+}
+
+const updateCafeTable = `-- name: UpdateCafeTable :one
+UPDATE cafe_tables
+SET name = $2,
+    capacity = $3,
+    is_active = $4,
+    sort_order = $5,
+    updated_at = NOW()
+WHERE id = $1
+  AND deleted_at IS NULL
+RETURNING
+    id,
+    code,
+    name,
+    capacity,
+    is_active,
+    sort_order,
+    created_at,
+    updated_at,
+    deleted_at
+`
+
+type UpdateCafeTableParams struct {
+	ID        uuid.UUID `json:"id"`
+	Name      string    `json:"name"`
+	Capacity  int32     `json:"capacity"`
+	IsActive  bool      `json:"is_active"`
+	SortOrder int32     `json:"sort_order"`
+}
+
+func (q *Queries) UpdateCafeTable(ctx context.Context, arg UpdateCafeTableParams) (CafeTable, error) {
+	row := q.db.QueryRow(ctx, updateCafeTable,
+		arg.ID,
+		arg.Name,
+		arg.Capacity,
+		arg.IsActive,
+		arg.SortOrder,
+	)
+	var i CafeTable
+	err := row.Scan(
+		&i.ID,
+		&i.Code,
+		&i.Name,
+		&i.Capacity,
+		&i.IsActive,
+		&i.SortOrder,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
 }
 
 const updateReservationSettings = `-- name: UpdateReservationSettings :one

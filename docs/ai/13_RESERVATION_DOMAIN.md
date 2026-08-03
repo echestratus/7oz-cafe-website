@@ -194,9 +194,9 @@ Values configurable.
 
 Reservations are allowed only during business hours.
 
-Business hours are configurable through CMS.
+Weekly hours for booking live in `reservation_settings` (admin Settings), not CMS display hours.
 
-Special holiday schedules override default hours.
+Full-day closures live in `reservation_closed_days` (admin Holidays). A closed date returns no availability slots and rejects create.
 
 ---
 
@@ -406,6 +406,16 @@ PATCH  /api/v1/admin/reservations/tables/{id}
 DELETE /api/v1/admin/reservations/tables/{id}
 
 Cafe table CRUD for ops. List returns non-deleted tables (active + inactive). Soft-delete sets `deleted_at` and `is_active = false`. Active tables drive bookable capacity.
+
+GET    /api/v1/admin/reservations/holidays
+
+POST   /api/v1/admin/reservations/holidays
+
+PATCH  /api/v1/admin/reservations/holidays/{id}
+
+DELETE /api/v1/admin/reservations/holidays/{id}
+
+Full-day closures. Checked in availability and create validation (public, customer, and admin).
 
 PATCH  /api/v1/admin/reservations/{id}
 

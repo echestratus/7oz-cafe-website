@@ -41,6 +41,21 @@ export type CafeTableInput = {
   sortOrder: number;
 };
 
+export type ClosedDay = {
+  id: string;
+  closedDate: string;
+  label: string;
+  note: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ClosedDayInput = {
+  closedDate: string;
+  label?: string;
+  note?: string;
+};
+
 export type DayHours = {
   open: string;
   close: string;
@@ -129,6 +144,30 @@ export async function updateCafeTable(id: string, input: CafeTableInput): Promis
 
 export async function deleteCafeTable(id: string): Promise<void> {
   await apiRequest(`/admin/reservations/tables/${id}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function listClosedDays(): Promise<ClosedDay[]> {
+  return apiRequest<ClosedDay[]>('/admin/reservations/holidays');
+}
+
+export async function createClosedDay(input: ClosedDayInput): Promise<ClosedDay> {
+  return apiRequest<ClosedDay>('/admin/reservations/holidays', {
+    method: 'POST',
+    body: input,
+  });
+}
+
+export async function updateClosedDay(id: string, input: ClosedDayInput): Promise<ClosedDay> {
+  return apiRequest<ClosedDay>(`/admin/reservations/holidays/${id}`, {
+    method: 'PATCH',
+    body: input,
+  });
+}
+
+export async function deleteClosedDay(id: string): Promise<void> {
+  await apiRequest(`/admin/reservations/holidays/${id}`, {
     method: 'DELETE',
   });
 }

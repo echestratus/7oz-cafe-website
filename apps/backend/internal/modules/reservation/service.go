@@ -111,6 +111,21 @@ type CafeTableInput struct {
 	SortOrder int32
 }
 
+type ClosedDayDTO struct {
+	ID         string `json:"id"`
+	ClosedDate string `json:"closedDate"`
+	Label      string `json:"label"`
+	Note       string `json:"note"`
+	CreatedAt  string `json:"createdAt"`
+	UpdatedAt  string `json:"updatedAt"`
+}
+
+type ClosedDayInput struct {
+	ClosedDate string
+	Label      string
+	Note       string
+}
+
 type SettingsDTO struct {
 	ID                  string              `json:"id"`
 	MinGuests           int32               `json:"minGuests"`
@@ -240,8 +255,11 @@ func (s *Service) GetAvailability(ctx context.Context, dateStr string, guestCoun
 		})
 	}
 
-	hours, err := hoursForDate(settings.WeeklyHours, date)
-	if err != nil || hours == nil {
+	hours, err := s.resolveDayHours(ctx, settings.WeeklyHours, date)
+	if err != nil {
+		return nil, err
+	}
+	if hours == nil {
 		return []AvailabilitySlot{}, nil
 	}
 
@@ -551,8 +569,11 @@ func (s *Service) prepareCreate(
 		return nil, apperr.BadRequest("Reservation date is outside the booking window.")
 	}
 
-	hours, err := hoursForDate(settings.WeeklyHours, date)
-	if err != nil || hours == nil {
+	hours, err := s.resolveDayHours(ctx, settings.WeeklyHours, date)
+	if err != nil {
+		return nil, err
+	}
+	if hours == nil {
 		return nil, apperr.BadRequest("Cafe is closed on the selected date.")
 	}
 	openClock, _ := parseClock(hours.Open)
@@ -866,6 +887,100 @@ func (s *Service) DeleteTable(ctx context.Context, tableID, actorID uuid.UUID) e
 	return nil
 }
 
+func (s *Service) ListClosedDays(ctx context.Context) ([]ClosedDayDTO, error) {
+	if err := s.requireDB(); err != nil {
+		return nil, err
+	}
+	items, err := s.db.Queries.ListReservationClosedDays(ctx)
+	if err != nil {
+		return nil, apperr.Wrap(apperr.Internal("Failed to list closed days."), err)
+	}
+	result := make([]ClosedDayDTO, 0, len(items))
+	for _, item := range items {
+		result = append(result, toClosedDayDTO(item))
+	}
+	return result, nil
+}
+
+func (s *Service) CreateClosedDay(ctx context.Context, actorID uuid.UUID, input ClosedDayInput) (*ClosedDayDTO, error) {
+	if err := s.requireDB(); err != nil {
+		return nil, err
+	}
+	prepared, err := validateClosedDayInput(input)
+	if err != nil {
+		return nil, err
+	}
+
+	created, err := s.db.Queries.CreateReservationClosedDay(ctx, sqlcdb.CreateReservationClosedDayParams{
+		ID:         uuid.New(),
+		ClosedDate: prepared.closedDate,
+		Label:      prepared.label,
+		Note:       prepared.note,
+	})
+	if err != nil {
+		if isUniqueViolation(err) {
+			return nil, apperr.Conflict("A closed day already exists for this date.")
+		}
+		return nil, apperr.Wrap(apperr.Internal("Failed to create closed day."), err)
+	}
+
+	_ = s.writeAudit(ctx, &actorID, "reservation.holiday_created", created.ID.String(), map[string]any{
+		"closedDate": created.ClosedDate.Format("2006-01-02"),
+		"label":      created.Label,
+	})
+	dto := toClosedDayDTO(created)
+	return &dto, nil
+}
+
+func (s *Service) UpdateClosedDay(ctx context.Context, closedDayID, actorID uuid.UUID, input ClosedDayInput) (*ClosedDayDTO, error) {
+	if err := s.requireDB(); err != nil {
+		return nil, err
+	}
+	prepared, err := validateClosedDayInput(input)
+	if err != nil {
+		return nil, err
+	}
+
+	updated, err := s.db.Queries.UpdateReservationClosedDay(ctx, sqlcdb.UpdateReservationClosedDayParams{
+		ID:         closedDayID,
+		ClosedDate: prepared.closedDate,
+		Label:      prepared.label,
+		Note:       prepared.note,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, apperr.NotFound("Closed day not found.")
+		}
+		if isUniqueViolation(err) {
+			return nil, apperr.Conflict("A closed day already exists for this date.")
+		}
+		return nil, apperr.Wrap(apperr.Internal("Failed to update closed day."), err)
+	}
+
+	_ = s.writeAudit(ctx, &actorID, "reservation.holiday_updated", updated.ID.String(), map[string]any{
+		"closedDate": updated.ClosedDate.Format("2006-01-02"),
+	})
+	dto := toClosedDayDTO(updated)
+	return &dto, nil
+}
+
+func (s *Service) DeleteClosedDay(ctx context.Context, closedDayID, actorID uuid.UUID) error {
+	if err := s.requireDB(); err != nil {
+		return err
+	}
+	deleted, err := s.db.Queries.DeleteReservationClosedDay(ctx, closedDayID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return apperr.NotFound("Closed day not found.")
+		}
+		return apperr.Wrap(apperr.Internal("Failed to delete closed day."), err)
+	}
+	_ = s.writeAudit(ctx, &actorID, "reservation.holiday_deleted", deleted.ID.String(), map[string]any{
+		"closedDate": deleted.ClosedDate.Format("2006-01-02"),
+	})
+	return nil
+}
+
 func (s *Service) AssignTable(ctx context.Context, reservationID, tableID, actorID uuid.UUID) (*ReservationDTO, error) {
 	if err := s.requireDB(); err != nil {
 		return nil, err
@@ -1035,6 +1150,62 @@ func hoursForDate(raw []byte, date time.Time) (*dayHours, error) {
 		return nil, nil
 	}
 	return &hours, nil
+}
+
+func (s *Service) resolveDayHours(ctx context.Context, weeklyHours []byte, date time.Time) (*dayHours, error) {
+	_, err := s.db.Queries.GetReservationClosedDayByDate(ctx, date)
+	if err == nil {
+		return nil, nil
+	}
+	if !errors.Is(err, pgx.ErrNoRows) {
+		return nil, apperr.Wrap(apperr.Internal("Failed to check closed days."), err)
+	}
+	hours, err := hoursForDate(weeklyHours, date)
+	if err != nil {
+		return nil, apperr.Wrap(apperr.Internal("Failed to parse weekly hours."), err)
+	}
+	return hours, nil
+}
+
+func toClosedDayDTO(item sqlcdb.ReservationClosedDay) ClosedDayDTO {
+	return ClosedDayDTO{
+		ID:         item.ID.String(),
+		ClosedDate: item.ClosedDate.Format("2006-01-02"),
+		Label:      item.Label,
+		Note:       item.Note,
+		CreatedAt:  item.CreatedAt.UTC().Format(time.RFC3339),
+		UpdatedAt:  item.UpdatedAt.UTC().Format(time.RFC3339),
+	}
+}
+
+type preparedClosedDay struct {
+	closedDate time.Time
+	label      string
+	note       string
+}
+
+func validateClosedDayInput(input ClosedDayInput) (*preparedClosedDay, error) {
+	label := strings.TrimSpace(input.Label)
+	note := strings.TrimSpace(input.Note)
+	dateRaw := strings.TrimSpace(input.ClosedDate)
+	if dateRaw == "" {
+		return nil, apperr.Validation("Invalid closed day payload.", response.FieldError{
+			Field:   "closedDate",
+			Message: "is required",
+		})
+	}
+	closedDate, err := time.Parse("2006-01-02", dateRaw)
+	if err != nil {
+		return nil, apperr.Validation("Invalid closed day payload.", response.FieldError{
+			Field:   "closedDate",
+			Message: "must be YYYY-MM-DD",
+		})
+	}
+	return &preparedClosedDay{
+		closedDate: closedDate,
+		label:      label,
+		note:       note,
+	}, nil
 }
 
 func parseClock(value string) (time.Time, error) {

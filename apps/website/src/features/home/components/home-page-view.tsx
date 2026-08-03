@@ -49,12 +49,12 @@ const fallbackTestimonials = {
   heading: 'Guest Voices',
   items: [
     {
-      name: 'Maya',
-      review: 'Quiet, precise, and worth the pause. The espresso tastes intentional.',
-    },
-    {
-      name: 'Arif',
-      review: 'A calm room with cups that feel crafted. I keep coming back for the latte.',
+      name: 'Dr. Zulkifli Hasan',
+      role: 'Minister in the Prime Minister’s Department (Religious Affairs), Malaysia',
+      review:
+        "I'm a coffee enthusiast, and I rarely return to the same café two days in a row. After trying the coffee yesterday, I came back again today—it really is that good.",
+      avatarSrc: '/assets/reviews/dr-zulkifli-hasan.webp',
+      videoSrc: '/assets/reviews/dr-zulkifli-hasan.mp4',
     },
   ],
 };

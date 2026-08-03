@@ -196,6 +196,80 @@ func (q *Queries) GetMembershipByID(ctx context.Context, id uuid.UUID) (Membersh
 	return i, err
 }
 
+const getMembershipByMembershipNumber = `-- name: GetMembershipByMembershipNumber :one
+SELECT
+    id,
+    user_id,
+    membership_number,
+    level_id,
+    status,
+    qr_token,
+    joined_at,
+    expires_at,
+    created_at,
+    updated_at,
+    deleted_at
+FROM memberships
+WHERE lower(membership_number) = lower($1)
+  AND deleted_at IS NULL
+`
+
+func (q *Queries) GetMembershipByMembershipNumber(ctx context.Context, membershipNumber string) (Membership, error) {
+	row := q.db.QueryRow(ctx, getMembershipByMembershipNumber, membershipNumber)
+	var i Membership
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.MembershipNumber,
+		&i.LevelID,
+		&i.Status,
+		&i.QrToken,
+		&i.JoinedAt,
+		&i.ExpiresAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
+const getMembershipByQrToken = `-- name: GetMembershipByQrToken :one
+SELECT
+    id,
+    user_id,
+    membership_number,
+    level_id,
+    status,
+    qr_token,
+    joined_at,
+    expires_at,
+    created_at,
+    updated_at,
+    deleted_at
+FROM memberships
+WHERE qr_token = $1
+  AND deleted_at IS NULL
+`
+
+func (q *Queries) GetMembershipByQrToken(ctx context.Context, qrToken string) (Membership, error) {
+	row := q.db.QueryRow(ctx, getMembershipByQrToken, qrToken)
+	var i Membership
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.MembershipNumber,
+		&i.LevelID,
+		&i.Status,
+		&i.QrToken,
+		&i.JoinedAt,
+		&i.ExpiresAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
 const getMembershipByUserID = `-- name: GetMembershipByUserID :one
 SELECT
     id,

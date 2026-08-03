@@ -659,6 +659,25 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessEnvelope"
+    post:
+      summary: Create a walk-in or phone reservation
+      operationId: createAdminReservation
+      tags: [Reservations]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminCreateReservationRequest"
+      responses:
+        "201":
+          description: Reservation created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
   /admin/reservations/settings:
     get:
       summary: Get reservation booking settings
@@ -1936,6 +1955,39 @@ components:
           minimum: 1
         notes:
           type: string
+    AdminCreateReservationRequest:
+      type: object
+      required: [fullName, email, phone, date, time, guestCount]
+      properties:
+        fullName:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        date:
+          type: string
+          format: date
+        time:
+          type: string
+          description: HH:MM in cafe timezone
+        guestCount:
+          type: integer
+          minimum: 1
+        notes:
+          type: string
+        tableId:
+          type: string
+          format: uuid
+          description: Optional cafe table assignment
+        status:
+          type: string
+          enum: [pending, confirmed]
+          description: Defaults to confirmed for staff bookings
+        notifyGuest:
+          type: boolean
+          description: Defaults to true; confirmed bookings send confirmed mail only
     CreateContactMessageRequest:
       type: object
       required: [fullName, email, message]

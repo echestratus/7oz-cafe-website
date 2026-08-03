@@ -62,6 +62,19 @@ export type ReservationSettingsInput = {
   weeklyHours: Record<string, DayHours>;
 };
 
+export type CreateReservationInput = {
+  fullName: string;
+  email: string;
+  phone: string;
+  date: string;
+  time: string;
+  guestCount: number;
+  notes?: string;
+  tableId?: string;
+  status?: 'pending' | 'confirmed';
+  notifyGuest?: boolean;
+};
+
 export async function listReservations(params: {
   date?: string;
   status?: string;
@@ -75,6 +88,13 @@ export async function listReservations(params: {
   search.set('limit', String(params.limit ?? 20));
 
   return apiRequest<ReservationListResponse>(`/admin/reservations?${search.toString()}`);
+}
+
+export async function createReservation(input: CreateReservationInput): Promise<Reservation> {
+  return apiRequest<Reservation>('/admin/reservations', {
+    method: 'POST',
+    body: input,
+  });
 }
 
 export async function listCafeTables(): Promise<CafeTable[]> {

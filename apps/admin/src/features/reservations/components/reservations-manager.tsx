@@ -11,6 +11,7 @@ import {
   checkInReservation,
   completeReservation,
   confirmReservation,
+  createReservation,
   getReservationSettings,
   listCafeTables,
   listReservations,
@@ -52,6 +53,34 @@ function todayISODate(): string {
   return local.toISOString().slice(0, 10);
 }
 
+type NewBookingFormState = {
+  fullName: string;
+  email: string;
+  phone: string;
+  date: string;
+  time: string;
+  guestCount: number;
+  notes: string;
+  tableId: string;
+  status: 'pending' | 'confirmed';
+  notifyGuest: boolean;
+};
+
+function emptyNewBookingForm(): NewBookingFormState {
+  return {
+    fullName: '',
+    email: '',
+    phone: '',
+    date: todayISODate(),
+    time: '',
+    guestCount: 2,
+    notes: '',
+    tableId: '',
+    status: 'confirmed',
+    notifyGuest: true,
+  };
+}
+
 function nextActions(status: string): Array<'confirm' | 'check_in' | 'complete' | 'cancel' | 'no_show'> {
   switch (status) {
     case 'pending':
@@ -81,6 +110,8 @@ export function ReservationsManager() {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [settingsHydrated, setSettingsHydrated] = useState(false);
+  const [showNewBooking, setShowNewBooking] = useState(false);
+  const [newBooking, setNewBooking] = useState<NewBookingFormState>(emptyNewBookingForm);
 
   const [minGuests, setMinGuests] = useState(1);
   const [maxGuests, setMaxGuests] = useState(10);
@@ -202,8 +233,37 @@ export function ReservationsManager() {
     },
   });
 
+  const createMutation = useMutation({
+    mutationFn: () =>
+      createReservation({
+        fullName: newBooking.fullName.trim(),
+        email: newBooking.email.trim(),
+        phone: newBooking.phone.trim(),
+        date: newBooking.date,
+        time: newBooking.time,
+        guestCount: newBooking.guestCount,
+        notes: newBooking.notes.trim() || undefined,
+        tableId: newBooking.tableId || undefined,
+        status: newBooking.status,
+        notifyGuest: newBooking.notifyGuest,
+      }),
+    onSuccess: async (created) => {
+      setError(null);
+      setMessage(`Booking ${created.reservationNumber} created.`);
+      setShowNewBooking(false);
+      setNewBooking(emptyNewBookingForm());
+      setDate(created.date);
+      await queryClient.invalidateQueries({ queryKey: ['admin-reservations'] });
+    },
+    onError: (err) => {
+      setMessage(null);
+      setError(err instanceof ApiClientError ? err.message : 'Unable to create booking.');
+    },
+  });
+
   const tables = tablesQuery.data ?? [];
-  const pending = actionMutation.isPending || assignMutation.isPending;
+  const pending = actionMutation.isPending || assignMutation.isPending || createMutation.isPending;
+  const suitableNewBookingTables = tables.filter((table) => table.capacity >= newBooking.guestCount);
 
   return (
     <div>
@@ -254,7 +314,7 @@ export function ReservationsManager() {
 
       {tab === 'bookings' ? (
         <>
-          <div className="mb-6 flex flex-col gap-3 sm:flex-row">
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
             <label className="flex flex-col gap-1 text-sm">
               <span className="text-text-secondary">Date</span>
               <input
@@ -278,7 +338,188 @@ export function ReservationsManager() {
                 ))}
               </select>
             </label>
+            <button
+              type="button"
+              onClick={() => {
+                setShowNewBooking((open) => !open);
+                setError(null);
+                if (!showNewBooking) {
+                  setNewBooking(emptyNewBookingForm());
+                }
+              }}
+              className="rounded-[12px] bg-primary px-4 py-2 text-sm text-white hover:bg-primary-hover"
+            >
+              {showNewBooking ? 'Close form' : 'New booking'}
+            </button>
           </div>
+
+          {showNewBooking ? (
+            <form
+              className="mb-6 grid max-w-3xl gap-4 rounded-[16px] border border-border bg-surface p-4"
+              onSubmit={(event) => {
+                event.preventDefault();
+                createMutation.mutate();
+              }}
+            >
+              <p className="text-sm font-medium text-text">New booking</p>
+              <p className="text-xs text-text-muted">
+                Walk-in or phone reservation. Min-advance is skipped so “now” is allowed.
+              </p>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="space-y-1 text-sm sm:col-span-2">
+                  <span className="text-text-secondary">Full name</span>
+                  <input
+                    required
+                    value={newBooking.fullName}
+                    onChange={(event) =>
+                      setNewBooking((prev) => ({ ...prev, fullName: event.target.value }))
+                    }
+                    className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+                  />
+                </label>
+                <label className="space-y-1 text-sm">
+                  <span className="text-text-secondary">Email</span>
+                  <input
+                    type="email"
+                    required
+                    value={newBooking.email}
+                    onChange={(event) =>
+                      setNewBooking((prev) => ({ ...prev, email: event.target.value }))
+                    }
+                    className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+                  />
+                </label>
+                <label className="space-y-1 text-sm">
+                  <span className="text-text-secondary">Phone</span>
+                  <input
+                    required
+                    value={newBooking.phone}
+                    onChange={(event) =>
+                      setNewBooking((prev) => ({ ...prev, phone: event.target.value }))
+                    }
+                    className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+                  />
+                </label>
+                <label className="space-y-1 text-sm">
+                  <span className="text-text-secondary">Date</span>
+                  <input
+                    type="date"
+                    required
+                    value={newBooking.date}
+                    onChange={(event) =>
+                      setNewBooking((prev) => ({ ...prev, date: event.target.value }))
+                    }
+                    className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+                  />
+                </label>
+                <label className="space-y-1 text-sm">
+                  <span className="text-text-secondary">Time (HH:MM)</span>
+                  <input
+                    type="time"
+                    required
+                    value={newBooking.time}
+                    onChange={(event) =>
+                      setNewBooking((prev) => ({ ...prev, time: event.target.value }))
+                    }
+                    className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+                  />
+                </label>
+                <label className="space-y-1 text-sm">
+                  <span className="text-text-secondary">Guests</span>
+                  <input
+                    type="number"
+                    min={1}
+                    required
+                    value={newBooking.guestCount}
+                    onChange={(event) =>
+                      setNewBooking((prev) => ({
+                        ...prev,
+                        guestCount: Number(event.target.value) || 1,
+                        tableId: '',
+                      }))
+                    }
+                    className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+                  />
+                </label>
+                <label className="space-y-1 text-sm">
+                  <span className="text-text-secondary">Status</span>
+                  <select
+                    value={newBooking.status}
+                    onChange={(event) =>
+                      setNewBooking((prev) => ({
+                        ...prev,
+                        status: event.target.value as 'pending' | 'confirmed',
+                      }))
+                    }
+                    className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+                  >
+                    <option value="confirmed">Confirmed</option>
+                    <option value="pending">Pending</option>
+                  </select>
+                </label>
+                <label className="space-y-1 text-sm sm:col-span-2">
+                  <span className="text-text-secondary">Table (optional)</span>
+                  <select
+                    value={newBooking.tableId}
+                    onChange={(event) =>
+                      setNewBooking((prev) => ({ ...prev, tableId: event.target.value }))
+                    }
+                    className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+                  >
+                    <option value="">No table assigned</option>
+                    {suitableNewBookingTables.map((table) => (
+                      <option key={table.id} value={table.id}>
+                        {tableLabel(table)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="space-y-1 text-sm sm:col-span-2">
+                  <span className="text-text-secondary">Notes</span>
+                  <textarea
+                    rows={2}
+                    value={newBooking.notes}
+                    onChange={(event) =>
+                      setNewBooking((prev) => ({ ...prev, notes: event.target.value }))
+                    }
+                    className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+                  />
+                </label>
+                <label className="flex items-center gap-2 text-sm sm:col-span-2">
+                  <input
+                    type="checkbox"
+                    checked={newBooking.notifyGuest}
+                    onChange={(event) =>
+                      setNewBooking((prev) => ({ ...prev, notifyGuest: event.target.checked }))
+                    }
+                    className="size-4 rounded border-border"
+                  />
+                  <span className="text-text-secondary">Email guest</span>
+                </label>
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="submit"
+                  disabled={createMutation.isPending}
+                  className="rounded-[12px] bg-primary px-4 py-2 text-sm text-white hover:bg-primary-hover disabled:opacity-60"
+                >
+                  {createMutation.isPending ? 'Creating…' : 'Create booking'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowNewBooking(false);
+                    setNewBooking(emptyNewBookingForm());
+                  }}
+                  className="rounded-[12px] border border-border bg-surface px-4 py-2 text-sm text-text hover:bg-surface-secondary"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          ) : null}
 
           {listQuery.isLoading ? <p className="text-sm text-text-secondary">Loading reservations…</p> : null}
           {listQuery.isError ? (

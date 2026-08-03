@@ -397,6 +397,16 @@ POST   /api/v1/admin/reservations
 
 Staff walk-in / phone create. Defaults to `confirmed`, skips min-advance, keeps hours/capacity/max-advance/duplicate checks. Optional `tableId` and `notifyGuest` (confirmed mail when status is confirmed).
 
+GET    /api/v1/admin/reservations/tables
+
+POST   /api/v1/admin/reservations/tables
+
+PATCH  /api/v1/admin/reservations/tables/{id}
+
+DELETE /api/v1/admin/reservations/tables/{id}
+
+Cafe table CRUD for ops. List returns non-deleted tables (active + inactive). Soft-delete sets `deleted_at` and `is_active = false`. Active tables drive bookable capacity.
+
 PATCH  /api/v1/admin/reservations/{id}
 
 PATCH  /api/v1/admin/reservations/{id}/confirm

@@ -93,10 +93,22 @@ type AvailabilitySlot struct {
 }
 
 type CafeTableDTO struct {
-	ID       string `json:"id"`
-	Code     string `json:"code"`
-	Name     string `json:"name"`
-	Capacity int32  `json:"capacity"`
+	ID        string `json:"id"`
+	Code      string `json:"code"`
+	Name      string `json:"name"`
+	Capacity  int32  `json:"capacity"`
+	IsActive  bool   `json:"isActive"`
+	SortOrder int32  `json:"sortOrder"`
+	CreatedAt string `json:"createdAt"`
+	UpdatedAt string `json:"updatedAt"`
+}
+
+type CafeTableInput struct {
+	Code      string
+	Name      string
+	Capacity  int32
+	IsActive  bool
+	SortOrder int32
 }
 
 type SettingsDTO struct {
@@ -763,20 +775,95 @@ func (s *Service) ListTables(ctx context.Context) ([]CafeTableDTO, error) {
 	if err := s.requireDB(); err != nil {
 		return nil, err
 	}
-	items, err := s.db.Queries.ListActiveCafeTables(ctx)
+	items, err := s.db.Queries.ListCafeTablesAdmin(ctx)
 	if err != nil {
 		return nil, apperr.Wrap(apperr.Internal("Failed to load cafe tables."), err)
 	}
 	result := make([]CafeTableDTO, 0, len(items))
 	for _, item := range items {
-		result = append(result, CafeTableDTO{
-			ID:       item.ID.String(),
-			Code:     item.Code,
-			Name:     item.Name,
-			Capacity: item.Capacity,
-		})
+		result = append(result, toCafeTableDTO(item))
 	}
 	return result, nil
+}
+
+func (s *Service) CreateTable(ctx context.Context, actorID uuid.UUID, input CafeTableInput) (*CafeTableDTO, error) {
+	if err := s.requireDB(); err != nil {
+		return nil, err
+	}
+	prepared, err := validateCafeTableInput(input, true)
+	if err != nil {
+		return nil, err
+	}
+
+	created, err := s.db.Queries.CreateCafeTable(ctx, sqlcdb.CreateCafeTableParams{
+		ID:        uuid.New(),
+		Code:      prepared.code,
+		Name:      prepared.name,
+		Capacity:  prepared.capacity,
+		IsActive:  prepared.isActive,
+		SortOrder: prepared.sortOrder,
+	})
+	if err != nil {
+		if isUniqueViolation(err) {
+			return nil, apperr.Conflict("A cafe table with this code already exists.")
+		}
+		return nil, apperr.Wrap(apperr.Internal("Failed to create cafe table."), err)
+	}
+
+	_ = s.writeAudit(ctx, &actorID, "reservation.table_created", created.ID.String(), map[string]any{
+		"code":     created.Code,
+		"capacity": created.Capacity,
+	})
+	dto := toCafeTableDTO(created)
+	return &dto, nil
+}
+
+func (s *Service) UpdateTable(ctx context.Context, tableID, actorID uuid.UUID, input CafeTableInput) (*CafeTableDTO, error) {
+	if err := s.requireDB(); err != nil {
+		return nil, err
+	}
+	prepared, err := validateCafeTableInput(input, false)
+	if err != nil {
+		return nil, err
+	}
+
+	updated, err := s.db.Queries.UpdateCafeTable(ctx, sqlcdb.UpdateCafeTableParams{
+		ID:        tableID,
+		Name:      prepared.name,
+		Capacity:  prepared.capacity,
+		IsActive:  prepared.isActive,
+		SortOrder: prepared.sortOrder,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, apperr.NotFound("Cafe table not found.")
+		}
+		return nil, apperr.Wrap(apperr.Internal("Failed to update cafe table."), err)
+	}
+
+	_ = s.writeAudit(ctx, &actorID, "reservation.table_updated", updated.ID.String(), map[string]any{
+		"code":     updated.Code,
+		"isActive": updated.IsActive,
+	})
+	dto := toCafeTableDTO(updated)
+	return &dto, nil
+}
+
+func (s *Service) DeleteTable(ctx context.Context, tableID, actorID uuid.UUID) error {
+	if err := s.requireDB(); err != nil {
+		return err
+	}
+	deleted, err := s.db.Queries.SoftDeleteCafeTable(ctx, tableID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return apperr.NotFound("Cafe table not found.")
+		}
+		return apperr.Wrap(apperr.Internal("Failed to delete cafe table."), err)
+	}
+	_ = s.writeAudit(ctx, &actorID, "reservation.table_deleted", deleted.ID.String(), map[string]any{
+		"code": deleted.Code,
+	})
+	return nil
 }
 
 func (s *Service) AssignTable(ctx context.Context, reservationID, tableID, actorID uuid.UUID) (*ReservationDTO, error) {
@@ -1080,6 +1167,58 @@ func validateSettingsInput(input SettingsInput) error {
 		}
 	}
 	return nil
+}
+
+func toCafeTableDTO(item sqlcdb.CafeTable) CafeTableDTO {
+	return CafeTableDTO{
+		ID:        item.ID.String(),
+		Code:      item.Code,
+		Name:      item.Name,
+		Capacity:  item.Capacity,
+		IsActive:  item.IsActive,
+		SortOrder: item.SortOrder,
+		CreatedAt: item.CreatedAt.UTC().Format(time.RFC3339),
+		UpdatedAt: item.UpdatedAt.UTC().Format(time.RFC3339),
+	}
+}
+
+type preparedCafeTable struct {
+	code      string
+	name      string
+	capacity  int32
+	isActive  bool
+	sortOrder int32
+}
+
+func validateCafeTableInput(input CafeTableInput, requireCode bool) (*preparedCafeTable, error) {
+	code := strings.TrimSpace(strings.ToUpper(input.Code))
+	name := strings.TrimSpace(input.Name)
+
+	var fieldErrors []response.FieldError
+	if requireCode && code == "" {
+		fieldErrors = append(fieldErrors, response.FieldError{Field: "code", Message: "is required"})
+	}
+	if name == "" {
+		fieldErrors = append(fieldErrors, response.FieldError{Field: "name", Message: "is required"})
+	}
+	if input.Capacity < 1 {
+		fieldErrors = append(fieldErrors, response.FieldError{Field: "capacity", Message: "must be at least 1"})
+	}
+	if len(fieldErrors) > 0 {
+		return nil, apperr.Validation("Invalid cafe table payload.", fieldErrors...)
+	}
+
+	return &preparedCafeTable{
+		code:      code,
+		name:      name,
+		capacity:  input.Capacity,
+		isActive:  input.IsActive,
+		sortOrder: input.SortOrder,
+	}, nil
+}
+
+func isUniqueViolation(err error) bool {
+	return err != nil && strings.Contains(err.Error(), "duplicate key")
 }
 
 func toDTO(item sqlcdb.Reservation) ReservationDTO {

@@ -11,11 +11,14 @@ import {
   checkInReservation,
   completeReservation,
   confirmReservation,
+  createCafeTable,
   createReservation,
+  deleteCafeTable,
   getReservationSettings,
   listCafeTables,
   listReservations,
   markNoShow,
+  updateCafeTable,
   updateReservationSettings,
   type CafeTable,
   type DayHours,
@@ -81,6 +84,24 @@ function emptyNewBookingForm(): NewBookingFormState {
   };
 }
 
+type TableFormState = {
+  code: string;
+  name: string;
+  capacity: number;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+function emptyTableForm(): TableFormState {
+  return {
+    code: '',
+    name: '',
+    capacity: 2,
+    sortOrder: 0,
+    isActive: true,
+  };
+}
+
 function nextActions(status: string): Array<'confirm' | 'check_in' | 'complete' | 'cancel' | 'no_show'> {
   switch (status) {
     case 'pending':
@@ -104,7 +125,7 @@ function tableLabel(table: CafeTable): string {
 
 export function ReservationsManager() {
   const queryClient = useQueryClient();
-  const [tab, setTab] = useState<'bookings' | 'settings'>('bookings');
+  const [tab, setTab] = useState<'bookings' | 'tables' | 'settings'>('bookings');
   const [date, setDate] = useState(todayISODate());
   const [status, setStatus] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -112,6 +133,8 @@ export function ReservationsManager() {
   const [settingsHydrated, setSettingsHydrated] = useState(false);
   const [showNewBooking, setShowNewBooking] = useState(false);
   const [newBooking, setNewBooking] = useState<NewBookingFormState>(emptyNewBookingForm);
+  const [editingTableId, setEditingTableId] = useState<string | null>(null);
+  const [tableForm, setTableForm] = useState<TableFormState>(emptyTableForm);
 
   const [minGuests, setMinGuests] = useState(1);
   const [maxGuests, setMaxGuests] = useState(10);
@@ -139,7 +162,7 @@ export function ReservationsManager() {
   const tablesQuery = useQuery({
     queryKey: ['admin-cafe-tables'],
     queryFn: () => listCafeTables(),
-    enabled: tab === 'bookings',
+    enabled: tab === 'bookings' || tab === 'tables',
   });
 
   useEffect(() => {
@@ -261,21 +284,76 @@ export function ReservationsManager() {
     },
   });
 
+  const tableMutation = useMutation({
+    mutationFn: async () => {
+      const payload = {
+        name: tableForm.name.trim(),
+        capacity: tableForm.capacity,
+        sortOrder: tableForm.sortOrder,
+        isActive: tableForm.isActive,
+      };
+      if (editingTableId) {
+        return updateCafeTable(editingTableId, payload);
+      }
+      return createCafeTable({
+        ...payload,
+        code: tableForm.code.trim(),
+      });
+    },
+    onSuccess: async () => {
+      setError(null);
+      setMessage(editingTableId ? 'Table updated.' : 'Table created.');
+      setEditingTableId(null);
+      setTableForm(emptyTableForm());
+      await queryClient.invalidateQueries({ queryKey: ['admin-cafe-tables'] });
+    },
+    onError: (err) => {
+      setMessage(null);
+      setError(err instanceof ApiClientError ? err.message : 'Unable to save table.');
+    },
+  });
+
+  const deleteTableMutation = useMutation({
+    mutationFn: (id: string) => deleteCafeTable(id),
+    onSuccess: async () => {
+      setError(null);
+      setMessage('Table deleted.');
+      if (editingTableId) {
+        setEditingTableId(null);
+        setTableForm(emptyTableForm());
+      }
+      await queryClient.invalidateQueries({ queryKey: ['admin-cafe-tables'] });
+    },
+    onError: (err) => {
+      setMessage(null);
+      setError(err instanceof ApiClientError ? err.message : 'Unable to delete table.');
+    },
+  });
+
   const tables = tablesQuery.data ?? [];
-  const pending = actionMutation.isPending || assignMutation.isPending || createMutation.isPending;
-  const suitableNewBookingTables = tables.filter((table) => table.capacity >= newBooking.guestCount);
+  const activeTables = tables.filter((table) => table.isActive);
+  const pending =
+    actionMutation.isPending ||
+    assignMutation.isPending ||
+    createMutation.isPending ||
+    tableMutation.isPending ||
+    deleteTableMutation.isPending;
+  const suitableNewBookingTables = activeTables.filter(
+    (table) => table.capacity >= newBooking.guestCount,
+  );
 
   return (
     <div>
       <PageHeader
         title="Reservations"
-        description="Review booking requests, assign tables, and configure booking rules."
+        description="Review bookings, manage cafe tables, and configure booking rules."
       />
 
       <div className="mb-6 flex flex-wrap gap-2">
         {(
           [
             ['bookings', 'Bookings'],
+            ['tables', 'Tables'],
             ['settings', 'Settings'],
           ] as const
         ).map(([value, label]) => (
@@ -549,6 +627,169 @@ export function ReservationsManager() {
         </>
       ) : null}
 
+      {tab === 'tables' ? (
+        <div className="space-y-6">
+          <form
+            className="grid max-w-3xl gap-4 rounded-[16px] border border-border bg-surface p-4 md:grid-cols-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              tableMutation.mutate();
+            }}
+          >
+            <p className="text-sm font-medium text-text md:col-span-2">
+              {editingTableId ? 'Edit table' : 'Create table'}
+            </p>
+            <p className="text-xs text-text-muted md:col-span-2">
+              Active tables add to bookable capacity. Deactivate to hide from assignment without deleting.
+            </p>
+            <label className="space-y-1 text-sm">
+              <span className="text-text-secondary">Code</span>
+              <input
+                required={!editingTableId}
+                disabled={Boolean(editingTableId)}
+                value={tableForm.code}
+                onChange={(event) => setTableForm((prev) => ({ ...prev, code: event.target.value }))}
+                placeholder="T6"
+                className="w-full rounded-[12px] border border-border bg-background px-3 py-2 disabled:opacity-60"
+              />
+            </label>
+            <label className="space-y-1 text-sm">
+              <span className="text-text-secondary">Name</span>
+              <input
+                required
+                value={tableForm.name}
+                onChange={(event) => setTableForm((prev) => ({ ...prev, name: event.target.value }))}
+                className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+              />
+            </label>
+            <label className="space-y-1 text-sm">
+              <span className="text-text-secondary">Capacity</span>
+              <input
+                type="number"
+                min={1}
+                required
+                value={tableForm.capacity}
+                onChange={(event) =>
+                  setTableForm((prev) => ({ ...prev, capacity: Number(event.target.value) || 1 }))
+                }
+                className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+              />
+            </label>
+            <label className="space-y-1 text-sm">
+              <span className="text-text-secondary">Sort order</span>
+              <input
+                type="number"
+                value={tableForm.sortOrder}
+                onChange={(event) =>
+                  setTableForm((prev) => ({ ...prev, sortOrder: Number(event.target.value) || 0 }))
+                }
+                className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+              />
+            </label>
+            <label className="flex items-center gap-2 text-sm md:col-span-2">
+              <input
+                type="checkbox"
+                checked={tableForm.isActive}
+                onChange={(event) =>
+                  setTableForm((prev) => ({ ...prev, isActive: event.target.checked }))
+                }
+                className="size-4 rounded border-border"
+              />
+              <span className="text-text-secondary">Active (counts toward capacity & assignment)</span>
+            </label>
+            <div className="flex flex-wrap gap-3 md:col-span-2">
+              <button
+                type="submit"
+                disabled={tableMutation.isPending}
+                className="rounded-[12px] bg-primary px-4 py-2 text-sm text-white hover:bg-primary-hover disabled:opacity-60"
+              >
+                {editingTableId
+                  ? tableMutation.isPending
+                    ? 'Saving…'
+                    : 'Save table'
+                  : tableMutation.isPending
+                    ? 'Creating…'
+                    : 'Create table'}
+              </button>
+              {editingTableId ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingTableId(null);
+                    setTableForm(emptyTableForm());
+                  }}
+                  className="rounded-[12px] border border-border bg-surface px-4 py-2 text-sm text-text hover:bg-surface-secondary"
+                >
+                  Cancel edit
+                </button>
+              ) : null}
+            </div>
+          </form>
+
+          {tablesQuery.isLoading ? <p className="text-sm text-text-secondary">Loading tables…</p> : null}
+          {tablesQuery.isError ? (
+            <p className="text-sm text-red-700" role="alert">
+              {tablesQuery.error instanceof ApiClientError
+                ? tablesQuery.error.message
+                : 'Unable to load tables.'}
+            </p>
+          ) : null}
+          {!tablesQuery.isLoading && tables.length === 0 ? (
+            <p className="text-sm text-text-secondary">No cafe tables yet.</p>
+          ) : null}
+
+          <div className="space-y-3">
+            {tables.map((table) => (
+              <article
+                key={table.id}
+                className="flex flex-col gap-3 rounded-[16px] border border-border bg-surface p-4 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div>
+                  <p className="font-medium text-text">
+                    {table.code} · {table.name}
+                  </p>
+                  <p className="text-sm text-text-secondary">
+                    Capacity {table.capacity} · sort {table.sortOrder} ·{' '}
+                    {table.isActive ? 'Active' : 'Inactive'}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    disabled={pending}
+                    onClick={() => {
+                      setEditingTableId(table.id);
+                      setTableForm({
+                        code: table.code,
+                        name: table.name,
+                        capacity: table.capacity,
+                        sortOrder: table.sortOrder,
+                        isActive: table.isActive,
+                      });
+                    }}
+                    className="rounded-[12px] border border-border px-3 py-2 text-sm text-text hover:bg-surface-secondary disabled:opacity-60"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    disabled={pending}
+                    onClick={() => {
+                      if (window.confirm(`Delete table ${table.code}? This cannot be undone in the UI.`)) {
+                        deleteTableMutation.mutate(table.id);
+                      }
+                    }}
+                    className="rounded-[12px] border border-red-200 px-3 py-2 text-sm text-red-700 hover:bg-red-50 disabled:opacity-60"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
       {tab === 'settings' ? (
         <div className="space-y-6">
           {settingsQuery.isLoading ? (
@@ -749,7 +990,9 @@ function ReservationRow({
   const assignable = canAssignTable(reservation.status);
   const currentTable = tables.find((table) => table.id === reservation.tableId);
   const [selectedTableId, setSelectedTableId] = useState(reservation.tableId ?? '');
-  const suitableTables = tables.filter((table) => table.capacity >= reservation.guestCount);
+  const suitableTables = tables.filter(
+    (table) => table.isActive && table.capacity >= reservation.guestCount,
+  );
 
   useEffect(() => {
     setSelectedTableId(reservation.tableId ?? '');

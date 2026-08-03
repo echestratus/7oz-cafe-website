@@ -78,6 +78,97 @@ WHERE id = $1
   AND deleted_at IS NULL
   AND is_active = TRUE;
 
+-- name: ListCafeTablesAdmin :many
+SELECT
+    id,
+    code,
+    name,
+    capacity,
+    is_active,
+    sort_order,
+    created_at,
+    updated_at,
+    deleted_at
+FROM cafe_tables
+WHERE deleted_at IS NULL
+ORDER BY sort_order, code;
+
+-- name: GetCafeTableByID :one
+SELECT
+    id,
+    code,
+    name,
+    capacity,
+    is_active,
+    sort_order,
+    created_at,
+    updated_at,
+    deleted_at
+FROM cafe_tables
+WHERE id = $1
+  AND deleted_at IS NULL;
+
+-- name: CreateCafeTable :one
+INSERT INTO cafe_tables (
+    id,
+    code,
+    name,
+    capacity,
+    is_active,
+    sort_order,
+    created_at,
+    updated_at
+) VALUES (
+    $1, $2, $3, $4, $5, $6, NOW(), NOW()
+) RETURNING
+    id,
+    code,
+    name,
+    capacity,
+    is_active,
+    sort_order,
+    created_at,
+    updated_at,
+    deleted_at;
+
+-- name: UpdateCafeTable :one
+UPDATE cafe_tables
+SET name = $2,
+    capacity = $3,
+    is_active = $4,
+    sort_order = $5,
+    updated_at = NOW()
+WHERE id = $1
+  AND deleted_at IS NULL
+RETURNING
+    id,
+    code,
+    name,
+    capacity,
+    is_active,
+    sort_order,
+    created_at,
+    updated_at,
+    deleted_at;
+
+-- name: SoftDeleteCafeTable :one
+UPDATE cafe_tables
+SET deleted_at = NOW(),
+    is_active = FALSE,
+    updated_at = NOW()
+WHERE id = $1
+  AND deleted_at IS NULL
+RETURNING
+    id,
+    code,
+    name,
+    capacity,
+    is_active,
+    sort_order,
+    created_at,
+    updated_at,
+    deleted_at;
+
 -- name: SumActiveTableCapacity :one
 SELECT COALESCE(SUM(capacity), 0)::bigint AS total_capacity
 FROM cafe_tables

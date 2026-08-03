@@ -27,6 +27,18 @@ export type CafeTable = {
   code: string;
   name: string;
   capacity: number;
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CafeTableInput = {
+  code?: string;
+  name: string;
+  capacity: number;
+  isActive: boolean;
+  sortOrder: number;
 };
 
 export type DayHours = {
@@ -99,6 +111,26 @@ export async function createReservation(input: CreateReservationInput): Promise<
 
 export async function listCafeTables(): Promise<CafeTable[]> {
   return apiRequest<CafeTable[]>('/admin/reservations/tables');
+}
+
+export async function createCafeTable(input: CafeTableInput): Promise<CafeTable> {
+  return apiRequest<CafeTable>('/admin/reservations/tables', {
+    method: 'POST',
+    body: input,
+  });
+}
+
+export async function updateCafeTable(id: string, input: CafeTableInput): Promise<CafeTable> {
+  return apiRequest<CafeTable>(`/admin/reservations/tables/${id}`, {
+    method: 'PATCH',
+    body: input,
+  });
+}
+
+export async function deleteCafeTable(id: string): Promise<void> {
+  await apiRequest(`/admin/reservations/tables/${id}`, {
+    method: 'DELETE',
+  });
 }
 
 export async function assignReservationTable(id: string, tableId: string): Promise<Reservation> {

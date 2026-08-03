@@ -26,6 +26,19 @@ type createRequest struct {
 	Notes      string `json:"notes"`
 }
 
+type adminCreateRequest struct {
+	FullName    string  `json:"fullName"`
+	Email       string  `json:"email"`
+	Phone       string  `json:"phone"`
+	Date        string  `json:"date"`
+	Time        string  `json:"time"`
+	GuestCount  int     `json:"guestCount"`
+	Notes       string  `json:"notes"`
+	TableID     *string `json:"tableId"`
+	Status      string  `json:"status"`
+	NotifyGuest *bool   `json:"notifyGuest"`
+}
+
 func NewHandler(service *Service) *Handler {
 	return &Handler{service: service}
 }
@@ -188,6 +201,48 @@ func (h *Handler) ListAdmin(c fiber.Ctx) error {
 		"limit": limit,
 		"total": total,
 	}))
+}
+
+func (h *Handler) CreateAdmin(c fiber.Ctx) error {
+	principal, ok := authctx.PrincipalFromCtx(c)
+	if !ok {
+		return apperr.Unauthorized("Authentication required.")
+	}
+
+	var req adminCreateRequest
+	if err := c.Bind().Body(&req); err != nil {
+		return apperr.BadRequest("Invalid JSON body.")
+	}
+
+	var tableID *uuid.UUID
+	if req.TableID != nil {
+		raw := strings.TrimSpace(*req.TableID)
+		if raw != "" {
+			parsed, err := uuid.Parse(raw)
+			if err != nil {
+				return apperr.Validation("Invalid table id.", response.FieldError{Field: "tableId", Message: "must be a UUID"})
+			}
+			tableID = &parsed
+		}
+	}
+
+	item, err := h.service.CreateAdmin(c.Context(), AdminCreateInput{
+		FullName:    req.FullName,
+		Email:       req.Email,
+		Phone:       req.Phone,
+		Date:        req.Date,
+		Time:        req.Time,
+		GuestCount:  req.GuestCount,
+		Notes:       req.Notes,
+		TableID:     tableID,
+		Status:      req.Status,
+		NotifyGuest: req.NotifyGuest,
+		ActorUserID: principal.UserID,
+	})
+	if err != nil {
+		return err
+	}
+	return response.JSON(c, fiber.StatusCreated, response.OK("Reservation created.", item))
 }
 
 func (h *Handler) GetSettings(c fiber.Ctx) error {

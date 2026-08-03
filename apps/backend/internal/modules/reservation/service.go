@@ -46,6 +46,31 @@ type CreateInput struct {
 	CustomerUserID *uuid.UUID
 }
 
+// AdminCreateInput is used by staff walk-in / phone bookings.
+type AdminCreateInput struct {
+	FullName    string
+	Email       string
+	Phone       string
+	Date        string
+	Time        string
+	GuestCount  int
+	Notes       string
+	TableID     *uuid.UUID
+	Status      string // pending | confirmed; empty defaults to confirmed
+	NotifyGuest *bool  // nil defaults to true
+	ActorUserID uuid.UUID
+}
+
+type preparedCreate struct {
+	fullName   string
+	email      string
+	phone      string
+	notes      string
+	date       time.Time
+	clock      time.Time
+	guestCount int32
+}
+
 type ReservationDTO struct {
 	ID                string  `json:"id"`
 	ReservationNumber string  `json:"reservationNumber"`
@@ -270,96 +295,12 @@ func (s *Service) Create(ctx context.Context, input CreateInput) (*ReservationDT
 		return nil, err
 	}
 
-	settings, err := s.db.Queries.GetReservationSettings(ctx)
+	prepared, err := s.prepareCreate(ctx, input.FullName, input.Email, input.Phone, input.Date, input.Time, input.Notes, input.GuestCount, false)
 	if err != nil {
-		return nil, apperr.Wrap(apperr.Internal("Failed to load reservation settings."), err)
+		return nil, err
 	}
 
-	fullName := strings.TrimSpace(input.FullName)
-	email := strings.TrimSpace(strings.ToLower(input.Email))
-	phone := strings.TrimSpace(input.Phone)
-	notes := strings.TrimSpace(input.Notes)
-
-	var fieldErrors []response.FieldError
-	if fullName == "" {
-		fieldErrors = append(fieldErrors, response.FieldError{Field: "fullName", Message: "is required"})
-	}
-	if !emailPattern.MatchString(email) {
-		fieldErrors = append(fieldErrors, response.FieldError{Field: "email", Message: "is invalid"})
-	}
-	if !phonePattern.MatchString(phone) {
-		fieldErrors = append(fieldErrors, response.FieldError{Field: "phone", Message: "is invalid"})
-	}
-	if input.GuestCount < int(settings.MinGuests) || input.GuestCount > int(settings.MaxGuests) {
-		fieldErrors = append(fieldErrors, response.FieldError{
-			Field:   "guestCount",
-			Message: fmt.Sprintf("must be between %d and %d", settings.MinGuests, settings.MaxGuests),
-		})
-	}
-	if len(fieldErrors) > 0 {
-		return nil, apperr.Validation("Invalid reservation payload.", fieldErrors...)
-	}
-
-	loc := loadLocation(settings.Timezone)
-	date, err := time.ParseInLocation("2006-01-02", strings.TrimSpace(input.Date), loc)
-	if err != nil {
-		return nil, apperr.Validation("Invalid date.", response.FieldError{Field: "date", Message: "must be YYYY-MM-DD"})
-	}
-	clock, err := parseClock(strings.TrimSpace(input.Time))
-	if err != nil {
-		return nil, apperr.Validation("Invalid time.", response.FieldError{Field: "time", Message: "must be HH:MM"})
-	}
-
-	start := combine(date, clock, loc)
-	now := time.Now().In(loc)
-	if start.Before(now.Add(time.Duration(settings.MinAdvanceMinutes) * time.Minute)) {
-		return nil, apperr.BadRequest("Reservation time is too soon.")
-	}
-	maxDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, loc).AddDate(0, 0, int(settings.MaxAdvanceDays))
-	if date.After(maxDate) {
-		return nil, apperr.BadRequest("Reservation date is outside the booking window.")
-	}
-
-	hours, err := hoursForDate(settings.WeeklyHours, date)
-	if err != nil || hours == nil {
-		return nil, apperr.BadRequest("Cafe is closed on the selected date.")
-	}
-	openClock, _ := parseClock(hours.Open)
-	closeClock, _ := parseClock(hours.Close)
-	duration := time.Duration(settings.DurationMinutes) * time.Minute
-	openAt := combine(date, openClock, loc)
-	closeAt := closingAt(date, openClock, closeClock, loc)
-	if start.Before(openAt) || start.Add(duration).After(closeAt) {
-		return nil, apperr.BadRequest("Reservation time is outside business hours.")
-	}
-
-	capacity, err := s.db.Queries.SumActiveTableCapacity(ctx)
-	if err != nil {
-		return nil, apperr.Wrap(apperr.Internal("Failed to load capacity."), err)
-	}
-	existing, err := s.db.Queries.ListActiveReservationsForDate(ctx, date)
-	if err != nil {
-		return nil, apperr.Wrap(apperr.Internal("Failed to validate availability."), err)
-	}
-	buffer := time.Duration(settings.BufferMinutes) * time.Minute
-	used := occupiedGuests(existing, start, duration, buffer, loc)
-	if used+int32(input.GuestCount) > int32(capacity) {
-		return nil, apperr.Conflict("Selected time slot is fully booked.")
-	}
-
-	dup, err := s.db.Queries.CountDuplicateGuestReservation(ctx, sqlcdb.CountDuplicateGuestReservationParams{
-		GuestEmail:      email,
-		ReservationDate: date,
-		ReservationTime: clock,
-	})
-	if err != nil {
-		return nil, apperr.Wrap(apperr.Internal("Failed to check duplicate reservations."), err)
-	}
-	if dup > 0 {
-		return nil, apperr.Conflict("A reservation already exists for this email at the selected time.")
-	}
-
-	number, err := generateReservationNumber(date)
+	number, err := generateReservationNumber(prepared.date)
 	if err != nil {
 		return nil, apperr.Wrap(apperr.Internal("Failed to create reservation number."), err)
 	}
@@ -375,14 +316,14 @@ func (s *Service) Create(ctx context.Context, input CreateInput) (*ReservationDT
 		ID:                uuid.New(),
 		ReservationNumber: number,
 		CustomerUserID:    input.CustomerUserID,
-		GuestFullName:     fullName,
-		GuestEmail:        email,
-		GuestPhone:        phone,
-		ReservationDate:   date,
-		ReservationTime:   clock,
-		GuestCount:        int32(input.GuestCount),
+		GuestFullName:     prepared.fullName,
+		GuestEmail:        prepared.email,
+		GuestPhone:        prepared.phone,
+		ReservationDate:   prepared.date,
+		ReservationTime:   prepared.clock,
+		GuestCount:        prepared.guestCount,
 		Status:            "pending",
-		Notes:             notes,
+		Notes:             prepared.notes,
 		TableID:           nil,
 	})
 	if err != nil {
@@ -421,6 +362,231 @@ func (s *Service) Create(ctx context.Context, input CreateInput) (*ReservationDT
 		})
 	}
 	return &dto, nil
+}
+
+func (s *Service) CreateAdmin(ctx context.Context, input AdminCreateInput) (*ReservationDTO, error) {
+	if err := s.requireDB(); err != nil {
+		return nil, err
+	}
+
+	prepared, err := s.prepareCreate(ctx, input.FullName, input.Email, input.Phone, input.Date, input.Time, input.Notes, input.GuestCount, true)
+	if err != nil {
+		return nil, err
+	}
+
+	status := strings.ToLower(strings.TrimSpace(input.Status))
+	if status == "" {
+		status = "confirmed"
+	}
+	if status != "pending" && status != "confirmed" {
+		return nil, apperr.Validation("Invalid status.", response.FieldError{
+			Field:   "status",
+			Message: "must be pending or confirmed",
+		})
+	}
+
+	var tableID *uuid.UUID
+	if input.TableID != nil {
+		table, err := s.db.Queries.GetActiveCafeTableByID(ctx, *input.TableID)
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return nil, apperr.NotFound("Cafe table not found.")
+			}
+			return nil, apperr.Wrap(apperr.Internal("Failed to load cafe table."), err)
+		}
+		if table.Capacity < prepared.guestCount {
+			return nil, apperr.Validation("Table capacity is too small for this party.", response.FieldError{
+				Field:   "tableId",
+				Message: fmt.Sprintf("capacity %d is less than %d guests", table.Capacity, prepared.guestCount),
+			})
+		}
+		tableID = input.TableID
+	}
+
+	number, err := generateReservationNumber(prepared.date)
+	if err != nil {
+		return nil, apperr.Wrap(apperr.Internal("Failed to create reservation number."), err)
+	}
+
+	actorID := input.ActorUserID
+	tx, err := s.db.Pool.Begin(ctx)
+	if err != nil {
+		return nil, apperr.Wrap(apperr.Internal("Failed to start reservation transaction."), err)
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+	qtx := s.db.Queries.WithTx(tx)
+
+	created, err := qtx.CreateReservation(ctx, sqlcdb.CreateReservationParams{
+		ID:                uuid.New(),
+		ReservationNumber: number,
+		CustomerUserID:    nil,
+		GuestFullName:     prepared.fullName,
+		GuestEmail:        prepared.email,
+		GuestPhone:        prepared.phone,
+		ReservationDate:   prepared.date,
+		ReservationTime:   prepared.clock,
+		GuestCount:        prepared.guestCount,
+		Status:            status,
+		Notes:             prepared.notes,
+		TableID:           tableID,
+	})
+	if err != nil {
+		return nil, apperr.Wrap(apperr.Internal("Failed to create reservation."), err)
+	}
+
+	if err := qtx.CreateReservationHistory(ctx, sqlcdb.CreateReservationHistoryParams{
+		ID:            uuid.New(),
+		ReservationID: created.ID,
+		FromStatus:    nil,
+		ToStatus:      status,
+		ActorUserID:   &actorID,
+		Note:          "Reservation created by staff",
+	}); err != nil {
+		return nil, apperr.Wrap(apperr.Internal("Failed to write reservation history."), err)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return nil, apperr.Wrap(apperr.Internal("Failed to commit reservation."), err)
+	}
+
+	_ = s.writeAudit(ctx, &actorID, "reservation.created", created.ID.String(), map[string]any{
+		"reservationNumber": created.ReservationNumber,
+		"source":            "admin",
+		"status":            status,
+	})
+
+	dto := toDTO(created)
+	notify := true
+	if input.NotifyGuest != nil {
+		notify = *input.NotifyGuest
+	}
+	if notify && s.notifier != nil {
+		payload := mailer.ReservationConfirmation{
+			GuestFullName:     dto.GuestFullName,
+			GuestEmail:        dto.GuestEmail,
+			ReservationNumber: dto.ReservationNumber,
+			Date:              dto.Date,
+			Time:              dto.Time,
+			GuestCount:        dto.GuestCount,
+			Status:            dto.Status,
+		}
+		if status == "confirmed" {
+			_ = s.notifier.SendReservationConfirmed(ctx, payload)
+		} else {
+			_ = s.notifier.SendReservationConfirmation(ctx, payload)
+		}
+	}
+	return &dto, nil
+}
+
+// prepareCreate validates contact fields, hours, capacity, max-advance, and duplicates.
+// When skipMinAdvance is true (admin walk-in), the min-advance window is not enforced.
+func (s *Service) prepareCreate(
+	ctx context.Context,
+	fullNameRaw, emailRaw, phoneRaw, dateRaw, timeRaw, notesRaw string,
+	guestCount int,
+	skipMinAdvance bool,
+) (*preparedCreate, error) {
+	settings, err := s.db.Queries.GetReservationSettings(ctx)
+	if err != nil {
+		return nil, apperr.Wrap(apperr.Internal("Failed to load reservation settings."), err)
+	}
+
+	fullName := strings.TrimSpace(fullNameRaw)
+	email := strings.TrimSpace(strings.ToLower(emailRaw))
+	phone := strings.TrimSpace(phoneRaw)
+	notes := strings.TrimSpace(notesRaw)
+
+	var fieldErrors []response.FieldError
+	if fullName == "" {
+		fieldErrors = append(fieldErrors, response.FieldError{Field: "fullName", Message: "is required"})
+	}
+	if !emailPattern.MatchString(email) {
+		fieldErrors = append(fieldErrors, response.FieldError{Field: "email", Message: "is invalid"})
+	}
+	if !phonePattern.MatchString(phone) {
+		fieldErrors = append(fieldErrors, response.FieldError{Field: "phone", Message: "is invalid"})
+	}
+	if guestCount < int(settings.MinGuests) || guestCount > int(settings.MaxGuests) {
+		fieldErrors = append(fieldErrors, response.FieldError{
+			Field:   "guestCount",
+			Message: fmt.Sprintf("must be between %d and %d", settings.MinGuests, settings.MaxGuests),
+		})
+	}
+	if len(fieldErrors) > 0 {
+		return nil, apperr.Validation("Invalid reservation payload.", fieldErrors...)
+	}
+
+	loc := loadLocation(settings.Timezone)
+	date, err := time.ParseInLocation("2006-01-02", strings.TrimSpace(dateRaw), loc)
+	if err != nil {
+		return nil, apperr.Validation("Invalid date.", response.FieldError{Field: "date", Message: "must be YYYY-MM-DD"})
+	}
+	clock, err := parseClock(strings.TrimSpace(timeRaw))
+	if err != nil {
+		return nil, apperr.Validation("Invalid time.", response.FieldError{Field: "time", Message: "must be HH:MM"})
+	}
+
+	start := combine(date, clock, loc)
+	now := time.Now().In(loc)
+	if !skipMinAdvance {
+		if start.Before(now.Add(time.Duration(settings.MinAdvanceMinutes) * time.Minute)) {
+			return nil, apperr.BadRequest("Reservation time is too soon.")
+		}
+	}
+	maxDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, loc).AddDate(0, 0, int(settings.MaxAdvanceDays))
+	if date.After(maxDate) {
+		return nil, apperr.BadRequest("Reservation date is outside the booking window.")
+	}
+
+	hours, err := hoursForDate(settings.WeeklyHours, date)
+	if err != nil || hours == nil {
+		return nil, apperr.BadRequest("Cafe is closed on the selected date.")
+	}
+	openClock, _ := parseClock(hours.Open)
+	closeClock, _ := parseClock(hours.Close)
+	duration := time.Duration(settings.DurationMinutes) * time.Minute
+	openAt := combine(date, openClock, loc)
+	closeAt := closingAt(date, openClock, closeClock, loc)
+	if start.Before(openAt) || start.Add(duration).After(closeAt) {
+		return nil, apperr.BadRequest("Reservation time is outside business hours.")
+	}
+
+	capacity, err := s.db.Queries.SumActiveTableCapacity(ctx)
+	if err != nil {
+		return nil, apperr.Wrap(apperr.Internal("Failed to load capacity."), err)
+	}
+	existing, err := s.db.Queries.ListActiveReservationsForDate(ctx, date)
+	if err != nil {
+		return nil, apperr.Wrap(apperr.Internal("Failed to validate availability."), err)
+	}
+	buffer := time.Duration(settings.BufferMinutes) * time.Minute
+	used := occupiedGuests(existing, start, duration, buffer, loc)
+	if used+int32(guestCount) > int32(capacity) {
+		return nil, apperr.Conflict("Selected time slot is fully booked.")
+	}
+
+	dup, err := s.db.Queries.CountDuplicateGuestReservation(ctx, sqlcdb.CountDuplicateGuestReservationParams{
+		GuestEmail:      email,
+		ReservationDate: date,
+		ReservationTime: clock,
+	})
+	if err != nil {
+		return nil, apperr.Wrap(apperr.Internal("Failed to check duplicate reservations."), err)
+	}
+	if dup > 0 {
+		return nil, apperr.Conflict("A reservation already exists for this email at the selected time.")
+	}
+
+	return &preparedCreate{
+		fullName:   fullName,
+		email:      email,
+		phone:      phone,
+		notes:      notes,
+		date:       date,
+		clock:      clock,
+		guestCount: int32(guestCount),
+	}, nil
 }
 
 func (s *Service) ListCustomer(ctx context.Context, userID uuid.UUID) ([]ReservationDTO, error) {

@@ -393,6 +393,10 @@ Admin
 
 GET    /api/v1/admin/reservations
 
+POST   /api/v1/admin/reservations
+
+Staff walk-in / phone create. Defaults to `confirmed`, skips min-advance, keeps hours/capacity/max-advance/duplicate checks. Optional `tableId` and `notifyGuest` (confirmed mail when status is confirmed).
+
 PATCH  /api/v1/admin/reservations/{id}
 
 PATCH  /api/v1/admin/reservations/{id}/confirm

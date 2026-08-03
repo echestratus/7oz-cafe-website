@@ -1253,6 +1253,174 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/users:
+    get:
+      summary: List staff users
+      operationId: listAdminUsers
+      tags: [Users]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: role
+          in: query
+          schema:
+            type: string
+            enum: [admin, super_admin]
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Paginated staff users
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+    post:
+      summary: Create staff user
+      operationId: createAdminUser
+      tags: [Users]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, fullName, password, roleCode]
+              properties:
+                email:
+                  type: string
+                  format: email
+                fullName:
+                  type: string
+                password:
+                  type: string
+                roleCode:
+                  type: string
+                  enum: [admin, super_admin]
+      responses:
+        "201":
+          description: Staff user created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/users/{id}:
+    get:
+      summary: Get staff user details
+      operationId: getAdminUser
+      tags: [Users]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Staff user details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/users/{id}/status:
+    patch:
+      summary: Update staff account status
+      operationId: updateAdminUserStatus
+      tags: [Users]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [active, suspended, inactive]
+                reason:
+                  type: string
+      responses:
+        "200":
+          description: Staff status updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/users/{id}/role:
+    put:
+      summary: Update staff role
+      operationId: updateAdminUserRole
+      tags: [Users]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [roleCode]
+              properties:
+                roleCode:
+                  type: string
+                  enum: [admin, super_admin]
+      responses:
+        "200":
+          description: Staff role updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/roles:
+    get:
+      summary: List assignable staff roles
+      operationId: listAdminRoles
+      tags: [Users]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Admin and super_admin roles
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
   /admin/memberships/{id}:
     get:
       summary: Get membership details

@@ -62,6 +62,51 @@ func (q *Queries) CountCustomersAdmin(ctx context.Context, arg CountCustomersAdm
 	return total, err
 }
 
+const countStaffUsersAdmin = `-- name: CountStaffUsersAdmin :one
+SELECT COUNT(*)::bigint AS total
+FROM users u
+WHERE u.deleted_at IS NULL
+  AND EXISTS (
+    SELECT 1
+    FROM user_roles ur
+    INNER JOIN roles r ON r.id = ur.role_id
+    WHERE ur.user_id = u.id
+      AND r.code IN ('admin', 'super_admin')
+  )
+  AND (
+    $1::text IS NULL
+    OR u.status = $1
+  )
+  AND (
+    $2::text IS NULL
+    OR EXISTS (
+      SELECT 1
+      FROM user_roles ur
+      INNER JOIN roles r ON r.id = ur.role_id
+      WHERE ur.user_id = u.id
+        AND r.code = $2
+    )
+  )
+  AND (
+    $3::text IS NULL
+    OR u.email::text ILIKE '%' || $3 || '%'
+    OR u.full_name ILIKE '%' || $3 || '%'
+  )
+`
+
+type CountStaffUsersAdminParams struct {
+	Status   *string `json:"status"`
+	RoleCode *string `json:"role_code"`
+	Search   *string `json:"search"`
+}
+
+func (q *Queries) CountStaffUsersAdmin(ctx context.Context, arg CountStaffUsersAdminParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countStaffUsersAdmin, arg.Status, arg.RoleCode, arg.Search)
+	var total int64
+	err := row.Scan(&total)
+	return total, err
+}
+
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
     id,
@@ -119,6 +164,19 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.DeletedAt,
 	)
 	return i, err
+}
+
+const deleteUserStaffRoles = `-- name: DeleteUserStaffRoles :exec
+DELETE FROM user_roles
+WHERE user_id = $1
+  AND role_id IN (
+    SELECT id FROM roles WHERE code IN ('admin', 'super_admin')
+  )
+`
+
+func (q *Queries) DeleteUserStaffRoles(ctx context.Context, userID uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteUserStaffRoles, userID)
+	return err
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
@@ -255,6 +313,102 @@ func (q *Queries) ListCustomersAdmin(ctx context.Context, arg ListCustomersAdmin
 	items := []ListCustomersAdminRow{}
 	for rows.Next() {
 		var i ListCustomersAdminRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Email,
+			&i.FullName,
+			&i.Status,
+			&i.EmailVerifiedAt,
+			&i.LastLoginAt,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listStaffUsersAdmin = `-- name: ListStaffUsersAdmin :many
+SELECT
+    u.id,
+    u.email,
+    u.full_name,
+    u.status,
+    u.email_verified_at,
+    u.last_login_at,
+    u.created_at,
+    u.updated_at
+FROM users u
+WHERE u.deleted_at IS NULL
+  AND EXISTS (
+    SELECT 1
+    FROM user_roles ur
+    INNER JOIN roles r ON r.id = ur.role_id
+    WHERE ur.user_id = u.id
+      AND r.code IN ('admin', 'super_admin')
+  )
+  AND (
+    $3::text IS NULL
+    OR u.status = $3
+  )
+  AND (
+    $4::text IS NULL
+    OR EXISTS (
+      SELECT 1
+      FROM user_roles ur
+      INNER JOIN roles r ON r.id = ur.role_id
+      WHERE ur.user_id = u.id
+        AND r.code = $4
+    )
+  )
+  AND (
+    $5::text IS NULL
+    OR u.email::text ILIKE '%' || $5 || '%'
+    OR u.full_name ILIKE '%' || $5 || '%'
+  )
+ORDER BY u.created_at DESC
+LIMIT $1 OFFSET $2
+`
+
+type ListStaffUsersAdminParams struct {
+	Limit    int32   `json:"limit"`
+	Offset   int32   `json:"offset"`
+	Status   *string `json:"status"`
+	RoleCode *string `json:"role_code"`
+	Search   *string `json:"search"`
+}
+
+type ListStaffUsersAdminRow struct {
+	ID              uuid.UUID  `json:"id"`
+	Email           string     `json:"email"`
+	FullName        string     `json:"full_name"`
+	Status          string     `json:"status"`
+	EmailVerifiedAt *time.Time `json:"email_verified_at"`
+	LastLoginAt     *time.Time `json:"last_login_at"`
+	CreatedAt       time.Time  `json:"created_at"`
+	UpdatedAt       time.Time  `json:"updated_at"`
+}
+
+func (q *Queries) ListStaffUsersAdmin(ctx context.Context, arg ListStaffUsersAdminParams) ([]ListStaffUsersAdminRow, error) {
+	rows, err := q.db.Query(ctx, listStaffUsersAdmin,
+		arg.Limit,
+		arg.Offset,
+		arg.Status,
+		arg.RoleCode,
+		arg.Search,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListStaffUsersAdminRow{}
+	for rows.Next() {
+		var i ListStaffUsersAdminRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Email,
@@ -463,4 +617,21 @@ func (q *Queries) UserHasRoleCode(ctx context.Context, arg UserHasRoleCodeParams
 	var has_role bool
 	err := row.Scan(&has_role)
 	return has_role, err
+}
+
+const userIsStaff = `-- name: UserIsStaff :one
+SELECT EXISTS (
+    SELECT 1
+    FROM user_roles ur
+    INNER JOIN roles r ON r.id = ur.role_id
+    WHERE ur.user_id = $1
+      AND r.code IN ('admin', 'super_admin')
+)::bool AS is_staff
+`
+
+func (q *Queries) UserIsStaff(ctx context.Context, userID uuid.UUID) (bool, error) {
+	row := q.db.QueryRow(ctx, userIsStaff, userID)
+	var is_staff bool
+	err := row.Scan(&is_staff)
+	return is_staff, err
 }

@@ -376,21 +376,22 @@ Audit logs are immutable.
 
 Manage:
 
-Admins
+Admins / Super Admins — `/users` (permission `user.manage`)
 
-Super Admins
+- List / search staff
+- Create staff (`admin` or `super_admin`)
+- Activate / suspend (cannot change own status)
+- Assign role (`role.manage`, Super Admin only; cannot change own role)
 
-Customers (read / support actions)
+Customers (read / support actions) — `/customers`
 
-Status
+Deferred:
 
-Roles
-
-Permissions
+Permissions matrix UI
 
 Sessions
 
-Password Reset
+Password reset by admin
 
 MVP persisted roles:
 

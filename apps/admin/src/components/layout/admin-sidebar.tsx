@@ -13,6 +13,7 @@ import {
   LayoutDashboard,
   LogOut,
   Newspaper,
+  Shield,
   Sparkles,
   Users,
 } from 'lucide-react';
@@ -24,6 +25,7 @@ const links = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/reservations', label: 'Reservations', icon: CalendarDays, permission: 'reservation.manage' },
   { href: '/customers', label: 'Customers', icon: Users, permission: 'customer.read' },
+  { href: '/users', label: 'Staff', icon: Shield, permission: 'user.manage' },
   { href: '/contact-messages', label: 'Contact', icon: Inbox, permission: 'contact.manage' },
   { href: '/membership', label: 'Membership', icon: Sparkles, permission: 'membership.manage' },
   { href: '/loyalty', label: 'Loyalty', icon: Gift, permission: 'loyalty.manage' },

@@ -185,3 +185,91 @@ RETURNING
     created_at,
     updated_at,
     deleted_at;
+
+-- name: ListStaffUsersAdmin :many
+SELECT
+    u.id,
+    u.email,
+    u.full_name,
+    u.status,
+    u.email_verified_at,
+    u.last_login_at,
+    u.created_at,
+    u.updated_at
+FROM users u
+WHERE u.deleted_at IS NULL
+  AND EXISTS (
+    SELECT 1
+    FROM user_roles ur
+    INNER JOIN roles r ON r.id = ur.role_id
+    WHERE ur.user_id = u.id
+      AND r.code IN ('admin', 'super_admin')
+  )
+  AND (
+    sqlc.narg('status')::text IS NULL
+    OR u.status = sqlc.narg('status')
+  )
+  AND (
+    sqlc.narg('role_code')::text IS NULL
+    OR EXISTS (
+      SELECT 1
+      FROM user_roles ur
+      INNER JOIN roles r ON r.id = ur.role_id
+      WHERE ur.user_id = u.id
+        AND r.code = sqlc.narg('role_code')
+    )
+  )
+  AND (
+    sqlc.narg('search')::text IS NULL
+    OR u.email::text ILIKE '%' || sqlc.narg('search') || '%'
+    OR u.full_name ILIKE '%' || sqlc.narg('search') || '%'
+  )
+ORDER BY u.created_at DESC
+LIMIT $1 OFFSET $2;
+
+-- name: CountStaffUsersAdmin :one
+SELECT COUNT(*)::bigint AS total
+FROM users u
+WHERE u.deleted_at IS NULL
+  AND EXISTS (
+    SELECT 1
+    FROM user_roles ur
+    INNER JOIN roles r ON r.id = ur.role_id
+    WHERE ur.user_id = u.id
+      AND r.code IN ('admin', 'super_admin')
+  )
+  AND (
+    sqlc.narg('status')::text IS NULL
+    OR u.status = sqlc.narg('status')
+  )
+  AND (
+    sqlc.narg('role_code')::text IS NULL
+    OR EXISTS (
+      SELECT 1
+      FROM user_roles ur
+      INNER JOIN roles r ON r.id = ur.role_id
+      WHERE ur.user_id = u.id
+        AND r.code = sqlc.narg('role_code')
+    )
+  )
+  AND (
+    sqlc.narg('search')::text IS NULL
+    OR u.email::text ILIKE '%' || sqlc.narg('search') || '%'
+    OR u.full_name ILIKE '%' || sqlc.narg('search') || '%'
+  );
+
+-- name: UserIsStaff :one
+SELECT EXISTS (
+    SELECT 1
+    FROM user_roles ur
+    INNER JOIN roles r ON r.id = ur.role_id
+    WHERE ur.user_id = $1
+      AND r.code IN ('admin', 'super_admin')
+)::bool AS is_staff;
+
+-- name: DeleteUserStaffRoles :exec
+DELETE FROM user_roles
+WHERE user_id = $1
+  AND role_id IN (
+    SELECT id FROM roles WHERE code IN ('admin', 'super_admin')
+  );

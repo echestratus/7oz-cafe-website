@@ -24,6 +24,7 @@ import (
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/media"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/membership"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/reservation"
+	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/modules/users"
 	"github.com/echestratus/7oz-cafe-website/apps/backend/internal/server"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -94,6 +95,7 @@ func main() {
 	membershipService := membership.NewService(postgres)
 	loyaltyService := loyalty.NewService(postgres)
 	customerService := customer.NewService(postgres)
+	usersService := users.NewService(postgres)
 	contactService := contact.NewService(postgres, emailNotifier)
 	membershipService.SetLifetimePointsProvider(loyaltyService.GetLifetimeEarnedPoints)
 	reservationService.SetOnCompleted(func(ctx context.Context, userID uuid.UUID, reservationID uuid.UUID) {
@@ -114,6 +116,7 @@ func main() {
 		MembershipService:  membershipService,
 		LoyaltyService:     loyaltyService,
 		CustomerService:    customerService,
+		UsersService:       usersService,
 		ContactService:     contactService,
 	})
 

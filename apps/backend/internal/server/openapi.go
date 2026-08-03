@@ -842,6 +842,86 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/reservations/holidays:
+    get:
+      summary: List reservation closed days (holidays)
+      operationId: listAdminReservationHolidays
+      tags: [Reservations]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Closed days
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+    post:
+      summary: Create a closed day
+      operationId: createAdminReservationHoliday
+      tags: [Reservations]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClosedDayRequest"
+      responses:
+        "201":
+          description: Closed day created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/reservations/holidays/{id}:
+    patch:
+      summary: Update a closed day
+      operationId: updateAdminReservationHoliday
+      tags: [Reservations]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClosedDayRequest"
+      responses:
+        "200":
+          description: Closed day updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+    delete:
+      summary: Delete a closed day
+      operationId: deleteAdminReservationHoliday
+      tags: [Reservations]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Closed day deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
   /admin/reservations/{id}:
     get:
       summary: Get reservation details
@@ -2073,6 +2153,18 @@ components:
           description: Defaults to true
         sortOrder:
           type: integer
+    ClosedDayRequest:
+      type: object
+      required: [closedDate]
+      properties:
+        closedDate:
+          type: string
+          format: date
+        label:
+          type: string
+          example: Independence Day
+        note:
+          type: string
     CreateContactMessageRequest:
       type: object
       required: [fullName, email, message]

@@ -169,6 +169,83 @@ RETURNING
     updated_at,
     deleted_at;
 
+-- name: GetReservationClosedDayByDate :one
+SELECT
+    id,
+    closed_date,
+    label,
+    note,
+    created_at,
+    updated_at
+FROM reservation_closed_days
+WHERE closed_date = $1;
+
+-- name: GetReservationClosedDayByID :one
+SELECT
+    id,
+    closed_date,
+    label,
+    note,
+    created_at,
+    updated_at
+FROM reservation_closed_days
+WHERE id = $1;
+
+-- name: ListReservationClosedDays :many
+SELECT
+    id,
+    closed_date,
+    label,
+    note,
+    created_at,
+    updated_at
+FROM reservation_closed_days
+ORDER BY closed_date ASC;
+
+-- name: CreateReservationClosedDay :one
+INSERT INTO reservation_closed_days (
+    id,
+    closed_date,
+    label,
+    note,
+    created_at,
+    updated_at
+) VALUES (
+    $1, $2, $3, $4, NOW(), NOW()
+) RETURNING
+    id,
+    closed_date,
+    label,
+    note,
+    created_at,
+    updated_at;
+
+-- name: UpdateReservationClosedDay :one
+UPDATE reservation_closed_days
+SET closed_date = $2,
+    label = $3,
+    note = $4,
+    updated_at = NOW()
+WHERE id = $1
+RETURNING
+    id,
+    closed_date,
+    label,
+    note,
+    created_at,
+    updated_at;
+
+-- name: DeleteReservationClosedDay :one
+DELETE FROM reservation_closed_days
+WHERE id = $1
+RETURNING
+    id,
+    closed_date,
+    label,
+    note,
+    created_at,
+    updated_at;
+
 -- name: SumActiveTableCapacity :one
 SELECT COALESCE(SUM(capacity), 0)::bigint AS total_capacity
 FROM cafe_tables

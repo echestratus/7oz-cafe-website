@@ -405,6 +405,88 @@ func bindCafeTable(c fiber.Ctx, requireCode bool) (CafeTableInput, error) {
 	return input, nil
 }
 
+func (h *Handler) ListClosedDays(c fiber.Ctx) error {
+	items, err := h.service.ListClosedDays(c.Context())
+	if err != nil {
+		return err
+	}
+	return response.JSON(c, fiber.StatusOK, response.OK("OK", items))
+}
+
+func (h *Handler) CreateClosedDay(c fiber.Ctx) error {
+	principal, ok := authctx.PrincipalFromCtx(c)
+	if !ok {
+		return apperr.Unauthorized("Authentication required.")
+	}
+
+	input, err := bindClosedDay(c)
+	if err != nil {
+		return err
+	}
+
+	item, err := h.service.CreateClosedDay(c.Context(), principal.UserID, input)
+	if err != nil {
+		return err
+	}
+	return response.JSON(c, fiber.StatusCreated, response.OK("Closed day created.", item))
+}
+
+func (h *Handler) UpdateClosedDay(c fiber.Ctx) error {
+	principal, ok := authctx.PrincipalFromCtx(c)
+	if !ok {
+		return apperr.Unauthorized("Authentication required.")
+	}
+
+	closedDayID, err := uuid.Parse(c.Params("id"))
+	if err != nil {
+		return apperr.BadRequest("Invalid closed day id.")
+	}
+
+	input, err := bindClosedDay(c)
+	if err != nil {
+		return err
+	}
+
+	item, err := h.service.UpdateClosedDay(c.Context(), closedDayID, principal.UserID, input)
+	if err != nil {
+		return err
+	}
+	return response.JSON(c, fiber.StatusOK, response.OK("Closed day updated.", item))
+}
+
+func (h *Handler) DeleteClosedDay(c fiber.Ctx) error {
+	principal, ok := authctx.PrincipalFromCtx(c)
+	if !ok {
+		return apperr.Unauthorized("Authentication required.")
+	}
+
+	closedDayID, err := uuid.Parse(c.Params("id"))
+	if err != nil {
+		return apperr.BadRequest("Invalid closed day id.")
+	}
+
+	if err := h.service.DeleteClosedDay(c.Context(), closedDayID, principal.UserID); err != nil {
+		return err
+	}
+	return response.JSON(c, fiber.StatusOK, response.OK("Closed day deleted.", map[string]any{}))
+}
+
+func bindClosedDay(c fiber.Ctx) (ClosedDayInput, error) {
+	var req struct {
+		ClosedDate string `json:"closedDate"`
+		Label      string `json:"label"`
+		Note       string `json:"note"`
+	}
+	if err := c.Bind().Body(&req); err != nil {
+		return ClosedDayInput{}, apperr.BadRequest("Invalid JSON body.")
+	}
+	return ClosedDayInput{
+		ClosedDate: req.ClosedDate,
+		Label:      req.Label,
+		Note:       req.Note,
+	}, nil
+}
+
 func (h *Handler) Confirm(c fiber.Ctx) error {
 	return h.runAdminTransition(c, h.service.Confirm, "Reservation confirmed.")
 }

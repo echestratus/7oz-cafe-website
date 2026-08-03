@@ -259,6 +259,51 @@ func (q *Queries) CreateReservation(ctx context.Context, arg CreateReservationPa
 	return i, err
 }
 
+const createReservationClosedDay = `-- name: CreateReservationClosedDay :one
+INSERT INTO reservation_closed_days (
+    id,
+    closed_date,
+    label,
+    note,
+    created_at,
+    updated_at
+) VALUES (
+    $1, $2, $3, $4, NOW(), NOW()
+) RETURNING
+    id,
+    closed_date,
+    label,
+    note,
+    created_at,
+    updated_at
+`
+
+type CreateReservationClosedDayParams struct {
+	ID         uuid.UUID `json:"id"`
+	ClosedDate time.Time `json:"closed_date"`
+	Label      string    `json:"label"`
+	Note       string    `json:"note"`
+}
+
+func (q *Queries) CreateReservationClosedDay(ctx context.Context, arg CreateReservationClosedDayParams) (ReservationClosedDay, error) {
+	row := q.db.QueryRow(ctx, createReservationClosedDay,
+		arg.ID,
+		arg.ClosedDate,
+		arg.Label,
+		arg.Note,
+	)
+	var i ReservationClosedDay
+	err := row.Scan(
+		&i.ID,
+		&i.ClosedDate,
+		&i.Label,
+		&i.Note,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const createReservationHistory = `-- name: CreateReservationHistory :exec
 INSERT INTO reservation_histories (
     id,
@@ -292,6 +337,32 @@ func (q *Queries) CreateReservationHistory(ctx context.Context, arg CreateReserv
 		arg.Note,
 	)
 	return err
+}
+
+const deleteReservationClosedDay = `-- name: DeleteReservationClosedDay :one
+DELETE FROM reservation_closed_days
+WHERE id = $1
+RETURNING
+    id,
+    closed_date,
+    label,
+    note,
+    created_at,
+    updated_at
+`
+
+func (q *Queries) DeleteReservationClosedDay(ctx context.Context, id uuid.UUID) (ReservationClosedDay, error) {
+	row := q.db.QueryRow(ctx, deleteReservationClosedDay, id)
+	var i ReservationClosedDay
+	err := row.Scan(
+		&i.ID,
+		&i.ClosedDate,
+		&i.Label,
+		&i.Note,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const getActiveCafeTableByID = `-- name: GetActiveCafeTableByID :one
@@ -455,6 +526,58 @@ func (q *Queries) GetReservationByNumber(ctx context.Context, reservationNumber 
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
+	)
+	return i, err
+}
+
+const getReservationClosedDayByDate = `-- name: GetReservationClosedDayByDate :one
+SELECT
+    id,
+    closed_date,
+    label,
+    note,
+    created_at,
+    updated_at
+FROM reservation_closed_days
+WHERE closed_date = $1
+`
+
+func (q *Queries) GetReservationClosedDayByDate(ctx context.Context, closedDate time.Time) (ReservationClosedDay, error) {
+	row := q.db.QueryRow(ctx, getReservationClosedDayByDate, closedDate)
+	var i ReservationClosedDay
+	err := row.Scan(
+		&i.ID,
+		&i.ClosedDate,
+		&i.Label,
+		&i.Note,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getReservationClosedDayByID = `-- name: GetReservationClosedDayByID :one
+SELECT
+    id,
+    closed_date,
+    label,
+    note,
+    created_at,
+    updated_at
+FROM reservation_closed_days
+WHERE id = $1
+`
+
+func (q *Queries) GetReservationClosedDayByID(ctx context.Context, id uuid.UUID) (ReservationClosedDay, error) {
+	row := q.db.QueryRow(ctx, getReservationClosedDayByID, id)
+	var i ReservationClosedDay
+	err := row.Scan(
+		&i.ID,
+		&i.ClosedDate,
+		&i.Label,
+		&i.Note,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
@@ -645,6 +768,45 @@ func (q *Queries) ListCafeTablesAdmin(ctx context.Context) ([]CafeTable, error) 
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listReservationClosedDays = `-- name: ListReservationClosedDays :many
+SELECT
+    id,
+    closed_date,
+    label,
+    note,
+    created_at,
+    updated_at
+FROM reservation_closed_days
+ORDER BY closed_date ASC
+`
+
+func (q *Queries) ListReservationClosedDays(ctx context.Context) ([]ReservationClosedDay, error) {
+	rows, err := q.db.Query(ctx, listReservationClosedDays)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ReservationClosedDay{}
+	for rows.Next() {
+		var i ReservationClosedDay
+		if err := rows.Scan(
+			&i.ID,
+			&i.ClosedDate,
+			&i.Label,
+			&i.Note,
+			&i.CreatedAt,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -894,6 +1056,48 @@ func (q *Queries) UpdateCafeTable(ctx context.Context, arg UpdateCafeTableParams
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
+	)
+	return i, err
+}
+
+const updateReservationClosedDay = `-- name: UpdateReservationClosedDay :one
+UPDATE reservation_closed_days
+SET closed_date = $2,
+    label = $3,
+    note = $4,
+    updated_at = NOW()
+WHERE id = $1
+RETURNING
+    id,
+    closed_date,
+    label,
+    note,
+    created_at,
+    updated_at
+`
+
+type UpdateReservationClosedDayParams struct {
+	ID         uuid.UUID `json:"id"`
+	ClosedDate time.Time `json:"closed_date"`
+	Label      string    `json:"label"`
+	Note       string    `json:"note"`
+}
+
+func (q *Queries) UpdateReservationClosedDay(ctx context.Context, arg UpdateReservationClosedDayParams) (ReservationClosedDay, error) {
+	row := q.db.QueryRow(ctx, updateReservationClosedDay,
+		arg.ID,
+		arg.ClosedDate,
+		arg.Label,
+		arg.Note,
+	)
+	var i ReservationClosedDay
+	err := row.Scan(
+		&i.ID,
+		&i.ClosedDate,
+		&i.Label,
+		&i.Note,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }

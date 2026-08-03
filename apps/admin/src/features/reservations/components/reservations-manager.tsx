@@ -12,13 +12,17 @@ import {
   completeReservation,
   confirmReservation,
   createCafeTable,
+  createClosedDay,
   createReservation,
   deleteCafeTable,
+  deleteClosedDay,
   getReservationSettings,
   listCafeTables,
+  listClosedDays,
   listReservations,
   markNoShow,
   updateCafeTable,
+  updateClosedDay,
   updateReservationSettings,
   type CafeTable,
   type DayHours,
@@ -102,6 +106,20 @@ function emptyTableForm(): TableFormState {
   };
 }
 
+type HolidayFormState = {
+  closedDate: string;
+  label: string;
+  note: string;
+};
+
+function emptyHolidayForm(): HolidayFormState {
+  return {
+    closedDate: todayISODate(),
+    label: '',
+    note: '',
+  };
+}
+
 function nextActions(status: string): Array<'confirm' | 'check_in' | 'complete' | 'cancel' | 'no_show'> {
   switch (status) {
     case 'pending':
@@ -125,7 +143,7 @@ function tableLabel(table: CafeTable): string {
 
 export function ReservationsManager() {
   const queryClient = useQueryClient();
-  const [tab, setTab] = useState<'bookings' | 'tables' | 'settings'>('bookings');
+  const [tab, setTab] = useState<'bookings' | 'tables' | 'holidays' | 'settings'>('bookings');
   const [date, setDate] = useState(todayISODate());
   const [status, setStatus] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -135,6 +153,8 @@ export function ReservationsManager() {
   const [newBooking, setNewBooking] = useState<NewBookingFormState>(emptyNewBookingForm);
   const [editingTableId, setEditingTableId] = useState<string | null>(null);
   const [tableForm, setTableForm] = useState<TableFormState>(emptyTableForm);
+  const [editingHolidayId, setEditingHolidayId] = useState<string | null>(null);
+  const [holidayForm, setHolidayForm] = useState<HolidayFormState>(emptyHolidayForm);
 
   const [minGuests, setMinGuests] = useState(1);
   const [maxGuests, setMaxGuests] = useState(10);
@@ -163,6 +183,12 @@ export function ReservationsManager() {
     queryKey: ['admin-cafe-tables'],
     queryFn: () => listCafeTables(),
     enabled: tab === 'bookings' || tab === 'tables',
+  });
+
+  const holidaysQuery = useQuery({
+    queryKey: ['admin-reservation-holidays'],
+    queryFn: () => listClosedDays(),
+    enabled: tab === 'holidays',
   });
 
   useEffect(() => {
@@ -330,14 +356,59 @@ export function ReservationsManager() {
     },
   });
 
+  const holidayMutation = useMutation({
+    mutationFn: async () => {
+      const payload = {
+        closedDate: holidayForm.closedDate,
+        label: holidayForm.label.trim() || undefined,
+        note: holidayForm.note.trim() || undefined,
+      };
+      if (editingHolidayId) {
+        return updateClosedDay(editingHolidayId, payload);
+      }
+      return createClosedDay(payload);
+    },
+    onSuccess: async () => {
+      setError(null);
+      setMessage(editingHolidayId ? 'Closed day updated.' : 'Closed day created.');
+      setEditingHolidayId(null);
+      setHolidayForm(emptyHolidayForm());
+      await queryClient.invalidateQueries({ queryKey: ['admin-reservation-holidays'] });
+    },
+    onError: (err) => {
+      setMessage(null);
+      setError(err instanceof ApiClientError ? err.message : 'Unable to save closed day.');
+    },
+  });
+
+  const deleteHolidayMutation = useMutation({
+    mutationFn: (id: string) => deleteClosedDay(id),
+    onSuccess: async () => {
+      setError(null);
+      setMessage('Closed day deleted.');
+      if (editingHolidayId) {
+        setEditingHolidayId(null);
+        setHolidayForm(emptyHolidayForm());
+      }
+      await queryClient.invalidateQueries({ queryKey: ['admin-reservation-holidays'] });
+    },
+    onError: (err) => {
+      setMessage(null);
+      setError(err instanceof ApiClientError ? err.message : 'Unable to delete closed day.');
+    },
+  });
+
   const tables = tablesQuery.data ?? [];
+  const holidays = holidaysQuery.data ?? [];
   const activeTables = tables.filter((table) => table.isActive);
   const pending =
     actionMutation.isPending ||
     assignMutation.isPending ||
     createMutation.isPending ||
     tableMutation.isPending ||
-    deleteTableMutation.isPending;
+    deleteTableMutation.isPending ||
+    holidayMutation.isPending ||
+    deleteHolidayMutation.isPending;
   const suitableNewBookingTables = activeTables.filter(
     (table) => table.capacity >= newBooking.guestCount,
   );
@@ -346,7 +417,7 @@ export function ReservationsManager() {
     <div>
       <PageHeader
         title="Reservations"
-        description="Review bookings, manage cafe tables, and configure booking rules."
+        description="Review bookings, manage tables and holidays, and configure booking rules."
       />
 
       <div className="mb-6 flex flex-wrap gap-2">
@@ -354,6 +425,7 @@ export function ReservationsManager() {
           [
             ['bookings', 'Bookings'],
             ['tables', 'Tables'],
+            ['holidays', 'Holidays'],
             ['settings', 'Settings'],
           ] as const
         ).map(([value, label]) => (
@@ -777,6 +849,146 @@ export function ReservationsManager() {
                     onClick={() => {
                       if (window.confirm(`Delete table ${table.code}? This cannot be undone in the UI.`)) {
                         deleteTableMutation.mutate(table.id);
+                      }
+                    }}
+                    className="rounded-[12px] border border-red-200 px-3 py-2 text-sm text-red-700 hover:bg-red-50 disabled:opacity-60"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {tab === 'holidays' ? (
+        <div className="space-y-6">
+          <form
+            className="grid max-w-3xl gap-4 rounded-[16px] border border-border bg-surface p-4 md:grid-cols-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              holidayMutation.mutate();
+            }}
+          >
+            <p className="text-sm font-medium text-text md:col-span-2">
+              {editingHolidayId ? 'Edit closed day' : 'Add closed day'}
+            </p>
+            <p className="text-xs text-text-muted md:col-span-2">
+              Full-day closures block public availability and all booking creates (including staff).
+            </p>
+            <label className="space-y-1 text-sm">
+              <span className="text-text-secondary">Date</span>
+              <input
+                type="date"
+                required
+                value={holidayForm.closedDate}
+                onChange={(event) =>
+                  setHolidayForm((prev) => ({ ...prev, closedDate: event.target.value }))
+                }
+                className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+              />
+            </label>
+            <label className="space-y-1 text-sm">
+              <span className="text-text-secondary">Label</span>
+              <input
+                value={holidayForm.label}
+                onChange={(event) =>
+                  setHolidayForm((prev) => ({ ...prev, label: event.target.value }))
+                }
+                placeholder="Independence Day"
+                className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+              />
+            </label>
+            <label className="space-y-1 text-sm md:col-span-2">
+              <span className="text-text-secondary">Note</span>
+              <textarea
+                rows={2}
+                value={holidayForm.note}
+                onChange={(event) =>
+                  setHolidayForm((prev) => ({ ...prev, note: event.target.value }))
+                }
+                className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+              />
+            </label>
+            <div className="flex flex-wrap gap-3 md:col-span-2">
+              <button
+                type="submit"
+                disabled={holidayMutation.isPending}
+                className="rounded-[12px] bg-primary px-4 py-2 text-sm text-white hover:bg-primary-hover disabled:opacity-60"
+              >
+                {editingHolidayId
+                  ? holidayMutation.isPending
+                    ? 'Saving…'
+                    : 'Save closed day'
+                  : holidayMutation.isPending
+                    ? 'Creating…'
+                    : 'Add closed day'}
+              </button>
+              {editingHolidayId ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingHolidayId(null);
+                    setHolidayForm(emptyHolidayForm());
+                  }}
+                  className="rounded-[12px] border border-border bg-surface px-4 py-2 text-sm text-text hover:bg-surface-secondary"
+                >
+                  Cancel edit
+                </button>
+              ) : null}
+            </div>
+          </form>
+
+          {holidaysQuery.isLoading ? (
+            <p className="text-sm text-text-secondary">Loading closed days…</p>
+          ) : null}
+          {holidaysQuery.isError ? (
+            <p className="text-sm text-red-700" role="alert">
+              {holidaysQuery.error instanceof ApiClientError
+                ? holidaysQuery.error.message
+                : 'Unable to load closed days.'}
+            </p>
+          ) : null}
+          {!holidaysQuery.isLoading && holidays.length === 0 ? (
+            <p className="text-sm text-text-secondary">No closed days configured.</p>
+          ) : null}
+
+          <div className="space-y-3">
+            {holidays.map((day) => (
+              <article
+                key={day.id}
+                className="flex flex-col gap-3 rounded-[16px] border border-border bg-surface p-4 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div>
+                  <p className="font-medium text-text">
+                    {day.closedDate}
+                    {day.label ? ` · ${day.label}` : ''}
+                  </p>
+                  {day.note ? <p className="text-sm text-text-secondary">{day.note}</p> : null}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    disabled={pending}
+                    onClick={() => {
+                      setEditingHolidayId(day.id);
+                      setHolidayForm({
+                        closedDate: day.closedDate,
+                        label: day.label,
+                        note: day.note,
+                      });
+                    }}
+                    className="rounded-[12px] border border-border px-3 py-2 text-sm text-text hover:bg-surface-secondary disabled:opacity-60"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    disabled={pending}
+                    onClick={() => {
+                      if (window.confirm(`Remove closed day ${day.closedDate}?`)) {
+                        deleteHolidayMutation.mutate(day.id);
                       }
                     }}
                     className="rounded-[12px] border border-red-200 px-3 py-2 text-sm text-red-700 hover:bg-red-50 disabled:opacity-60"

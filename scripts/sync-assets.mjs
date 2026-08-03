@@ -29,6 +29,7 @@ const includeCategories = [
   'social',
   'about',
   'news',
+  'reviews',
 ];
 
 function ensureDir(path) {

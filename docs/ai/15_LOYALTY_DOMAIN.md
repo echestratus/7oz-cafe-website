@@ -214,8 +214,10 @@ Admins may:
 - Create campaigns
 - Apply manual adjustments
 - Configure point rules
+- Look up a member at the café desk (membership number, email, or QR payload)
+- Redeem a reward on behalf of a customer (staff as actor; same Redeem rules)
 
-Manual adjustments require audit logging.
+Manual adjustments and staff redemptions require audit logging.
 
 ---
 
@@ -252,6 +254,10 @@ GET /api/v1/admin/loyalty
 GET /api/v1/admin/loyalty/history
 
 POST /api/v1/admin/loyalty/adjustments
+
+GET /api/v1/admin/loyalty/desk/lookup?q=
+
+POST /api/v1/admin/loyalty/redeem
 
 GET /api/v1/admin/loyalty/campaigns
 

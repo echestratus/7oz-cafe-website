@@ -97,6 +97,24 @@ type RedemptionDTO struct {
 	Reward      RewardDTO  `json:"reward"`
 }
 
+type DeskCustomerDTO struct {
+	UserID           string     `json:"userId"`
+	Email            string     `json:"email"`
+	FullName         string     `json:"fullName"`
+	MembershipNumber string     `json:"membershipNumber,omitempty"`
+	MembershipStatus string     `json:"membershipStatus,omitempty"`
+	Account          AccountDTO `json:"account"`
+}
+
+type AdminRedeemInput struct {
+	RewardID         uuid.UUID
+	UserID           *uuid.UUID
+	MembershipNumber string
+	Email            string
+	QRPayload        string
+	ActorUserID      uuid.UUID
+}
+
 type AdjustInput struct {
 	UserID uuid.UUID
 	Points int32
@@ -254,7 +272,7 @@ func (s *Service) ListPublicRewards(ctx context.Context) ([]RewardDTO, error) {
 	return s.ListCustomerRewards(ctx)
 }
 
-func (s *Service) Redeem(ctx context.Context, userID, rewardID uuid.UUID) (*RedemptionDTO, error) {
+func (s *Service) Redeem(ctx context.Context, userID, rewardID, actorUserID uuid.UUID) (*RedemptionDTO, error) {
 	if err := s.requireDB(); err != nil {
 		return nil, err
 	}
@@ -324,8 +342,9 @@ func (s *Service) Redeem(ctx context.Context, userID, rewardID uuid.UUID) (*Rede
 		return nil, apperr.Wrap(apperr.Internal("Failed to update loyalty balance."), err)
 	}
 
+	redemptionID := uuid.New()
 	txnID := uuid.New()
-	relatedType := "loyalty_reward"
+	relatedType := "loyalty_redemption"
 	txn, err := qtx.CreateLoyaltyTransaction(ctx, sqlcdb.CreateLoyaltyTransactionParams{
 		ID:                txnID,
 		AccountID:         account.ID,
@@ -336,16 +355,16 @@ func (s *Service) Redeem(ctx context.Context, userID, rewardID uuid.UUID) (*Rede
 		Source:            "reward_redemption",
 		Description:       fmt.Sprintf("Redeemed %s", reward.Title),
 		RelatedEntityType: &relatedType,
-		RelatedEntityID:   &reward.ID,
+		RelatedEntityID:   &redemptionID,
 		CampaignID:        nil,
-		ActorUserID:       &userID,
+		ActorUserID:       &actorUserID,
 	})
 	if err != nil {
 		return nil, apperr.Wrap(apperr.Internal("Failed to record redemption transaction."), err)
 	}
 
 	redemption, err := qtx.CreateLoyaltyRedemption(ctx, sqlcdb.CreateLoyaltyRedemptionParams{
-		ID:            uuid.New(),
+		ID:            redemptionID,
 		UserID:        userID,
 		AccountID:     account.ID,
 		RewardID:      reward.ID,
@@ -361,9 +380,11 @@ func (s *Service) Redeem(ctx context.Context, userID, rewardID uuid.UUID) (*Rede
 		return nil, apperr.Wrap(apperr.Internal("Failed to commit redemption."), err)
 	}
 
-	_ = s.writeAudit(ctx, &userID, "loyalty.redeemed", redemption.ID.String(), map[string]any{
-		"rewardId": reward.ID.String(),
-		"points":   reward.PointsCost,
+	_ = s.writeAudit(ctx, &actorUserID, "loyalty.redeemed", redemption.ID.String(), map[string]any{
+		"rewardId":    reward.ID.String(),
+		"points":      reward.PointsCost,
+		"targetUser":  userID.String(),
+		"actorUserId": actorUserID.String(),
 	})
 
 	rewardDTO, err := toRewardDTO(reward)
@@ -378,6 +399,148 @@ func (s *Service) Redeem(ctx context.Context, userID, rewardID uuid.UUID) (*Rede
 		CreatedAt:   redemption.CreatedAt.UTC().Format(time.RFC3339),
 		Account:     toAccountDTO(updatedAccount),
 		Reward:      rewardDTO,
+	}, nil
+}
+
+func (s *Service) LookupDeskCustomer(ctx context.Context, query string) (*DeskCustomerDTO, error) {
+	if err := s.requireDB(); err != nil {
+		return nil, err
+	}
+	userID, membershipNumber, membershipStatus, err := s.resolveDeskUser(ctx, strings.TrimSpace(query), nil, "", "", "")
+	if err != nil {
+		return nil, err
+	}
+	return s.buildDeskCustomer(ctx, userID, membershipNumber, membershipStatus)
+}
+
+func (s *Service) AdminRedeem(ctx context.Context, input AdminRedeemInput) (*RedemptionDTO, error) {
+	userID, _, _, err := s.resolveDeskUser(
+		ctx,
+		"",
+		input.UserID,
+		input.MembershipNumber,
+		input.Email,
+		input.QRPayload,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return s.Redeem(ctx, userID, input.RewardID, input.ActorUserID)
+}
+
+func (s *Service) resolveDeskUser(
+	ctx context.Context,
+	query string,
+	userID *uuid.UUID,
+	membershipNumber, email, qrPayload string,
+) (uuid.UUID, string, string, error) {
+	if userID != nil {
+		user, err := s.db.Queries.GetUserByID(ctx, *userID)
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return uuid.Nil, "", "", apperr.NotFound("Customer not found.")
+			}
+			return uuid.Nil, "", "", apperr.Wrap(apperr.Internal("Failed to load user."), err)
+		}
+		membership, memErr := s.db.Queries.GetMembershipByUserID(ctx, user.ID)
+		if memErr != nil && !errors.Is(memErr, pgx.ErrNoRows) {
+			return uuid.Nil, "", "", apperr.Wrap(apperr.Internal("Failed to load membership."), memErr)
+		}
+		number, status := "", ""
+		if memErr == nil {
+			number, status = membership.MembershipNumber, membership.Status
+		}
+		return user.ID, number, status, nil
+	}
+
+	membershipNumber = strings.TrimSpace(membershipNumber)
+	email = strings.TrimSpace(strings.ToLower(email))
+	qrPayload = strings.TrimSpace(qrPayload)
+	query = strings.TrimSpace(query)
+
+	if query != "" && membershipNumber == "" && email == "" && qrPayload == "" {
+		if strings.Contains(query, "@") {
+			email = strings.ToLower(query)
+		} else if strings.HasPrefix(strings.ToLower(query), "7oz-member:") {
+			qrPayload = query
+		} else {
+			membershipNumber = query
+		}
+	}
+
+	if qrPayload != "" {
+		token := qrPayload
+		const prefix = "7oz-member:"
+		if strings.HasPrefix(strings.ToLower(token), prefix) {
+			token = token[len(prefix):]
+		}
+		membership, err := s.db.Queries.GetMembershipByQrToken(ctx, token)
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return uuid.Nil, "", "", apperr.NotFound("Membership QR not found.")
+			}
+			return uuid.Nil, "", "", apperr.Wrap(apperr.Internal("Failed to load membership by QR."), err)
+		}
+		return membership.UserID, membership.MembershipNumber, membership.Status, nil
+	}
+
+	if membershipNumber != "" {
+		membership, err := s.db.Queries.GetMembershipByMembershipNumber(ctx, membershipNumber)
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return uuid.Nil, "", "", apperr.NotFound("Membership number not found.")
+			}
+			return uuid.Nil, "", "", apperr.Wrap(apperr.Internal("Failed to load membership."), err)
+		}
+		return membership.UserID, membership.MembershipNumber, membership.Status, nil
+	}
+
+	if email != "" {
+		user, err := s.db.Queries.GetUserByEmail(ctx, email)
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return uuid.Nil, "", "", apperr.NotFound("Customer email not found.")
+			}
+			return uuid.Nil, "", "", apperr.Wrap(apperr.Internal("Failed to load user by email."), err)
+		}
+		membership, memErr := s.db.Queries.GetMembershipByUserID(ctx, user.ID)
+		number, status := "", ""
+		if memErr == nil {
+			number, status = membership.MembershipNumber, membership.Status
+		} else if !errors.Is(memErr, pgx.ErrNoRows) {
+			return uuid.Nil, "", "", apperr.Wrap(apperr.Internal("Failed to load membership."), memErr)
+		}
+		return user.ID, number, status, nil
+	}
+
+	return uuid.Nil, "", "", apperr.Validation("Lookup query is required.", response.FieldError{
+		Field:   "query",
+		Message: "provide email, membership number, or QR payload",
+	})
+}
+
+func (s *Service) buildDeskCustomer(ctx context.Context, userID uuid.UUID, membershipNumber, membershipStatus string) (*DeskCustomerDTO, error) {
+	user, err := s.db.Queries.GetUserByID(ctx, userID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, apperr.NotFound("Customer not found.")
+		}
+		return nil, apperr.Wrap(apperr.Internal("Failed to load user."), err)
+	}
+	account, err := s.ensureAccount(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	dto := toAccountDTO(*account)
+	dto.UserEmail = user.Email
+	dto.UserFullName = user.FullName
+	return &DeskCustomerDTO{
+		UserID:           user.ID.String(),
+		Email:            user.Email,
+		FullName:         user.FullName,
+		MembershipNumber: membershipNumber,
+		MembershipStatus: membershipStatus,
+		Account:          dto,
 	}, nil
 }
 

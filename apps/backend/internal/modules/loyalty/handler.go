@@ -120,7 +120,7 @@ func (h *Handler) Redeem(c fiber.Ctx) error {
 	if err != nil {
 		return apperr.Validation("Invalid reward id.", response.FieldError{Field: "rewardId", Message: "must be a UUID"})
 	}
-	item, err := h.service.Redeem(c.Context(), principal.UserID, rewardID)
+	item, err := h.service.Redeem(c.Context(), principal.UserID, rewardID, principal.UserID)
 	if err != nil {
 		return err
 	}
@@ -204,6 +204,60 @@ func (h *Handler) Adjust(c fiber.Ctx) error {
 		return err
 	}
 	return response.JSON(c, fiber.StatusOK, response.OK("Loyalty balance adjusted.", item))
+}
+
+func (h *Handler) LookupDeskCustomer(c fiber.Ctx) error {
+	query := strings.TrimSpace(c.Query("q"))
+	if query == "" {
+		return apperr.Validation("Lookup query is required.", response.FieldError{Field: "q", Message: "is required"})
+	}
+	item, err := h.service.LookupDeskCustomer(c.Context(), query)
+	if err != nil {
+		return err
+	}
+	return response.JSON(c, fiber.StatusOK, response.OK("OK", item))
+}
+
+func (h *Handler) AdminRedeem(c fiber.Ctx) error {
+	principal, ok := authctx.PrincipalFromCtx(c)
+	if !ok {
+		return apperr.Unauthorized("Authentication required.")
+	}
+	var req struct {
+		RewardID         string  `json:"rewardId"`
+		UserID           *string `json:"userId"`
+		MembershipNumber string  `json:"membershipNumber"`
+		Email            string  `json:"email"`
+		QRPayload        string  `json:"qrPayload"`
+	}
+	if err := c.Bind().Body(&req); err != nil {
+		return apperr.BadRequest("Invalid JSON body.")
+	}
+	rewardID, err := uuid.Parse(strings.TrimSpace(req.RewardID))
+	if err != nil {
+		return apperr.Validation("Invalid reward id.", response.FieldError{Field: "rewardId", Message: "must be a UUID"})
+	}
+
+	input := AdminRedeemInput{
+		RewardID:         rewardID,
+		MembershipNumber: req.MembershipNumber,
+		Email:            req.Email,
+		QRPayload:        req.QRPayload,
+		ActorUserID:      principal.UserID,
+	}
+	if req.UserID != nil && strings.TrimSpace(*req.UserID) != "" {
+		parsed, parseErr := uuid.Parse(strings.TrimSpace(*req.UserID))
+		if parseErr != nil {
+			return apperr.Validation("Invalid user id.", response.FieldError{Field: "userId", Message: "must be a UUID"})
+		}
+		input.UserID = &parsed
+	}
+
+	item, err := h.service.AdminRedeem(c.Context(), input)
+	if err != nil {
+		return err
+	}
+	return response.JSON(c, fiber.StatusCreated, response.OK("Reward redeemed.", item))
 }
 
 func (h *Handler) ListCampaigns(c fiber.Ctx) error {

@@ -1596,6 +1596,62 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/loyalty/desk/lookup:
+    get:
+      summary: Lookup a customer for the staff redemption desk
+      operationId: lookupLoyaltyDeskCustomer
+      tags: [Loyalty]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Email, membership number, or 7oz-member QR payload
+      responses:
+        "200":
+          description: Customer loyalty desk profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/loyalty/redeem:
+    post:
+      summary: Redeem a reward for a customer at the staff desk
+      operationId: createAdminLoyaltyRedemption
+      tags: [Loyalty]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rewardId]
+              properties:
+                rewardId:
+                  type: string
+                  format: uuid
+                userId:
+                  type: string
+                  format: uuid
+                membershipNumber:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                qrPayload:
+                  type: string
+      responses:
+        "201":
+          description: Reward redeemed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
   /admin/loyalty/campaigns:
     get:
       summary: List loyalty campaigns

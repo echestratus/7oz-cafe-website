@@ -15,9 +15,12 @@ import {
   listLoyaltyCampaigns,
   listLoyaltyHistory,
   listLoyaltyRewards,
+  lookupDeskCustomer,
+  redeemLoyaltyForCustomer,
   updateLoyaltyCampaign,
   updateLoyaltyReward,
   updateLoyaltySettings,
+  type DeskCustomer,
   type LoyaltyCampaign,
   type LoyaltyReward,
 } from '@/services/loyalty';
@@ -88,9 +91,9 @@ const emptyCampaignForm = (): CampaignFormState => ({
 
 export function LoyaltyManager() {
   const queryClient = useQueryClient();
-  const [tab, setTab] = useState<'accounts' | 'history' | 'campaigns' | 'rewards' | 'settings'>(
-    'accounts',
-  );
+  const [tab, setTab] = useState<
+    'desk' | 'accounts' | 'history' | 'campaigns' | 'rewards' | 'settings'
+  >('desk');
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [userId, setUserId] = useState('');
@@ -107,6 +110,9 @@ export function LoyaltyManager() {
   const [expirationStrategy, setExpirationStrategy] = useState<'never' | 'rolling_months'>('never');
   const [expirationMonths, setExpirationMonths] = useState(12);
   const [settingsHydrated, setSettingsHydrated] = useState(false);
+  const [deskQuery, setDeskQuery] = useState('');
+  const [deskCustomer, setDeskCustomer] = useState<DeskCustomer | null>(null);
+  const [deskRewardId, setDeskRewardId] = useState('');
 
   const accountsQuery = useQuery({
     queryKey: ['admin-loyalty-accounts'],
@@ -131,7 +137,7 @@ export function LoyaltyManager() {
   const rewardsQuery = useQuery({
     queryKey: ['admin-loyalty-rewards'],
     queryFn: () => listLoyaltyRewards(),
-    enabled: tab === 'rewards',
+    enabled: tab === 'rewards' || tab === 'desk',
   });
   const settingsQuery = useQuery({
     queryKey: ['admin-loyalty-settings'],
@@ -150,6 +156,53 @@ export function LoyaltyManager() {
     setExpirationMonths(settingsQuery.data.expirationMonths);
     setSettingsHydrated(true);
   }, [settingsQuery.data, settingsHydrated]);
+
+  const deskLookupMutation = useMutation({
+    mutationFn: () => lookupDeskCustomer(deskQuery.trim()),
+    onSuccess: (customer) => {
+      setError(null);
+      setMessage(null);
+      setDeskCustomer(customer);
+      setDeskRewardId('');
+    },
+    onError: (err) => {
+      setDeskCustomer(null);
+      setMessage(null);
+      setError(err instanceof ApiClientError ? err.message : 'Lookup failed.');
+    },
+  });
+
+  const deskRedeemMutation = useMutation({
+    mutationFn: () => {
+      if (!deskCustomer) {
+        throw new Error('Select a customer first.');
+      }
+      return redeemLoyaltyForCustomer({
+        rewardId: deskRewardId,
+        userId: deskCustomer.userId,
+      });
+    },
+    onSuccess: async (redemption) => {
+      setError(null);
+      setMessage(`Redeemed ${redemption.reward.title} (−${redemption.pointsSpent} pts).`);
+      setDeskCustomer((prev) =>
+        prev
+          ? {
+              ...prev,
+              account: redemption.account,
+            }
+          : prev,
+      );
+      setDeskRewardId('');
+      await queryClient.invalidateQueries({ queryKey: ['admin-loyalty-accounts'] });
+      await queryClient.invalidateQueries({ queryKey: ['admin-loyalty-rewards'] });
+    },
+    onError: (err) => {
+      setMessage(null);
+      setError(err instanceof ApiClientError ? err.message : 'Redemption failed.');
+    },
+  });
+
   const adjustMutation = useMutation({
     mutationFn: () =>
       adjustLoyalty({
@@ -353,12 +406,13 @@ export function LoyaltyManager() {
     <div>
       <PageHeader
         title="Loyalty"
-        description="Review balances, configure rewards, apply audited adjustments, and monitor campaigns."
+        description="Redeem rewards at the desk, review balances, and configure the loyalty program."
       />
 
       <div className="mb-6 flex flex-wrap gap-2">
         {(
           [
+            ['desk', 'Desk'],
             ['accounts', 'Accounts'],
             ['history', 'History'],
             ['rewards', 'Rewards'],
@@ -371,6 +425,8 @@ export function LoyaltyManager() {
             type="button"
             onClick={() => {
               setTab(value);
+              setError(null);
+              setMessage(null);
               if (value === 'settings') {
                 setSettingsHydrated(false);
               }
@@ -393,6 +449,97 @@ export function LoyaltyManager() {
         <p className="mb-4 rounded-[12px] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
           {error}
         </p>
+      ) : null}
+
+      {tab === 'desk' ? (
+        <div className="space-y-6">
+          <form
+            className="grid max-w-3xl gap-3 rounded-[16px] border border-border bg-surface p-4"
+            onSubmit={(event) => {
+              event.preventDefault();
+              deskLookupMutation.mutate();
+            }}
+          >
+            <p className="text-sm font-medium text-text">Find customer</p>
+            <p className="text-xs text-text-muted">
+              Search by membership number, email, or scanned QR payload (`7oz-member:…`).
+            </p>
+            <label className="space-y-1 text-sm">
+              <span className="text-text-secondary">Lookup</span>
+              <input
+                required
+                value={deskQuery}
+                onChange={(event) => setDeskQuery(event.target.value)}
+                placeholder="7OZ-M-… / guest@email.com / 7oz-member:…"
+                className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+              />
+            </label>
+            <button
+              type="submit"
+              disabled={deskLookupMutation.isPending}
+              className="w-fit rounded-[12px] bg-primary px-4 py-2 text-sm text-white hover:bg-primary-hover disabled:opacity-60"
+            >
+              {deskLookupMutation.isPending ? 'Looking up…' : 'Lookup up'}
+            </button>
+          </form>
+
+          {deskCustomer ? (
+            <div className="grid max-w-3xl gap-4 rounded-[16px] border border-border bg-surface p-4">
+              <div>
+                <p className="font-medium text-text">{deskCustomer.fullName || 'Customer'}</p>
+                <p className="text-sm text-text-secondary">{deskCustomer.email}</p>
+                <p className="mt-1 text-sm text-text-muted">
+                  {deskCustomer.membershipNumber
+                    ? `${deskCustomer.membershipNumber} · ${deskCustomer.membershipStatus || 'unknown'}`
+                    : 'No membership on file'}{' '}
+                  · Balance {deskCustomer.account.balance} pts
+                </p>
+              </div>
+
+              <form
+                className="grid gap-3"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  deskRedeemMutation.mutate();
+                }}
+              >
+                <label className="space-y-1 text-sm">
+                  <span className="text-text-secondary">Reward</span>
+                  <select
+                    required
+                    value={deskRewardId}
+                    onChange={(event) => setDeskRewardId(event.target.value)}
+                    className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+                  >
+                    <option value="">Select reward</option>
+                    {(rewardsQuery.data ?? [])
+                      .filter((reward) => reward.isActive)
+                      .map((reward) => (
+                        <option
+                          key={reward.id}
+                          value={reward.id}
+                          disabled={
+                            reward.pointsCost > deskCustomer.account.balance ||
+                            (reward.stock !== null && reward.stock <= 0)
+                          }
+                        >
+                          {reward.title} · {reward.pointsCost} pts
+                          {reward.stock !== null ? ` · stock ${reward.stock}` : ''}
+                        </option>
+                      ))}
+                  </select>
+                </label>
+                <button
+                  type="submit"
+                  disabled={deskRedeemMutation.isPending || !deskRewardId}
+                  className="w-fit rounded-[12px] bg-primary px-4 py-2 text-sm text-white hover:bg-primary-hover disabled:opacity-60"
+                >
+                  {deskRedeemMutation.isPending ? 'Redeeming…' : 'Redeem for customer'}
+                </button>
+              </form>
+            </div>
+          ) : null}
+        </div>
       ) : null}
 
       {tab === 'accounts' ? (

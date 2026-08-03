@@ -196,6 +196,8 @@ Status Management
 
 Features:
 
+Redemption Desk (lookup by membership number / email / QR, staff redeem)
+
 Point History
 
 Reward Catalog
@@ -204,9 +206,9 @@ Campaign Management
 
 Manual Adjustment
 
-Redemption Requests
-
 Point Expiration
+
+Deferred: pending→fulfill redemption queue (MVP redeems complete instantly)
 
 ---
 

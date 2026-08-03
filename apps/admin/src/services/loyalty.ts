@@ -137,6 +137,43 @@ export async function adjustLoyalty(input: {
   });
 }
 
+export type DeskCustomer = {
+  userId: string;
+  email: string;
+  fullName: string;
+  membershipNumber?: string;
+  membershipStatus?: string;
+  account: LoyaltyAccount;
+};
+
+export type LoyaltyRedemption = {
+  id: string;
+  rewardId: string;
+  pointsSpent: number;
+  status: string;
+  createdAt: string;
+  account: LoyaltyAccount;
+  reward: LoyaltyReward;
+};
+
+export async function lookupDeskCustomer(query: string): Promise<DeskCustomer> {
+  const search = new URLSearchParams({ q: query });
+  return apiRequest<DeskCustomer>(`/admin/loyalty/desk/lookup?${search.toString()}`);
+}
+
+export async function redeemLoyaltyForCustomer(input: {
+  rewardId: string;
+  userId?: string;
+  membershipNumber?: string;
+  email?: string;
+  qrPayload?: string;
+}): Promise<LoyaltyRedemption> {
+  return apiRequest<LoyaltyRedemption>('/admin/loyalty/redeem', {
+    method: 'POST',
+    body: input,
+  });
+}
+
 export async function listLoyaltyCampaigns(): Promise<LoyaltyCampaign[]> {
   return apiRequest<LoyaltyCampaign[]>('/admin/loyalty/campaigns');
 }

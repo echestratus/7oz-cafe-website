@@ -8,6 +8,7 @@
   --color-background: #fcfbf8;
   --color-surface: #ffffff;
   --color-surface-secondary: #f5f3ef;
+  --color-surface-highlight: #fefbec;
   --color-border: #e8e4dd;
   --color-divider: #d9d3ca;
   --color-text: #1f2937;
@@ -33,6 +34,7 @@
   --color-background: var(--color-background);
   --color-surface: var(--color-surface);
   --color-surface-secondary: var(--color-surface-secondary);
+  --color-surface-highlight: var(--color-surface-highlight);
   --color-border: var(--color-border);
   --color-divider: var(--color-divider);
   --color-text: var(--color-text);

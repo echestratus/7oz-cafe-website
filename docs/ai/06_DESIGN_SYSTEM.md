@@ -99,6 +99,10 @@ Surface Secondary
 
 #F5F3EF
 
+Surface Highlight
+
+#FEFBEC
+
 Border
 
 #E8E4DD

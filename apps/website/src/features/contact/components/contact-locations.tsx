@@ -17,6 +17,12 @@ function ContactLinks({
   location: CafeLocation;
   isOpen: boolean;
 }) {
+  const galleryLabel = !isOpen
+    ? 'Coming soon'
+    : location.hasGallery
+      ? 'View gallery'
+      : 'Visit page';
+
   return (
     <div className="flex flex-wrap gap-x-6 gap-y-3">
       <a
@@ -32,7 +38,7 @@ function ContactLinks({
         href={`/gallery/${location.slug}`}
         className="text-link-quiet inline-flex items-center gap-2"
       >
-        {isOpen ? 'View gallery' : 'Coming soon'}
+        {galleryLabel}
         <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
       </Link>
     </div>

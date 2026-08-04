@@ -24,6 +24,8 @@ export function LocationCard({
 }: LocationCardProps) {
   const isOpen = location.status === 'open';
   const isCompact = variant === 'compact';
+  const statusLabel =
+    isOpen && !location.hasGallery ? 'Open · Gallery soon' : locationStatusLabel(location.status);
 
   return (
     <Link
@@ -54,7 +56,7 @@ export function LocationCard({
             isOpen ? 'bg-white/95 text-primary' : 'bg-white/15 text-white backdrop-blur-sm',
           )}
         >
-          {locationStatusLabel(location.status)}
+          {statusLabel}
         </span>
         <ArrowUpRight
           className="h-5 w-5 text-white/80 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"

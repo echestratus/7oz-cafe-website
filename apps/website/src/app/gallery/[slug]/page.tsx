@@ -5,6 +5,7 @@ import { SiteShell } from '@/components/layout/site-shell';
 import { LocationGalleryView } from '@/features/gallery/components/location-gallery-view';
 import { listGalleryImages } from '@/features/gallery/lib/list-gallery-images';
 import { ComingSoonLocationView } from '@/features/locations/components/coming-soon-location-view';
+import { OpenLocationAwaitingGalleryView } from '@/features/locations/components/open-location-awaiting-gallery-view';
 import {
   CAFE_LOCATIONS,
   getLocationBySlug,
@@ -29,12 +30,25 @@ export async function generateMetadata({
     return { title: 'Gallery' };
   }
 
-  const isOpen = location.status === 'open';
+  if (location.status === 'coming_soon') {
+    return {
+      title: `${location.shortName} — Coming Soon`,
+      description: `${location.name} is coming soon. ${location.address}`,
+      alternates: { canonical: `/gallery/${location.slug}` },
+    };
+  }
+
+  if (!location.hasGallery) {
+    return {
+      title: `${location.shortName} — Open now`,
+      description: `${location.name} is open. Gallery photos are being prepared. ${location.address}`,
+      alternates: { canonical: `/gallery/${location.slug}` },
+    };
+  }
+
   return {
-    title: isOpen ? `${location.shortName} Gallery` : `${location.shortName} — Coming Soon`,
-    description: isOpen
-      ? `Atmosphere and craft from ${location.name}.`
-      : `${location.name} is coming soon. ${location.address}`,
+    title: `${location.shortName} Gallery`,
+    description: `Atmosphere and craft from ${location.name}.`,
     alternates: { canonical: `/gallery/${location.slug}` },
   };
 }
@@ -48,7 +62,7 @@ export default async function GalleryLocationPage({ params }: GalleryLocationPag
 
   const footer = await getPublishedCmsPage('footer');
 
-  if (location.status === 'coming_soon' || !location.hasGallery) {
+  if (location.status === 'coming_soon') {
     return (
       <SiteShell footer={footer} headerTone="overlay">
         <ComingSoonLocationView location={location} />
@@ -64,6 +78,14 @@ export default async function GalleryLocationPage({ params }: GalleryLocationPag
     }
   } catch {
     // Keep filesystem gallery if the API is unavailable or empty.
+  }
+
+  if (!location.hasGallery || images.length === 0) {
+    return (
+      <SiteShell footer={footer} headerTone="overlay">
+        <OpenLocationAwaitingGalleryView location={location} />
+      </SiteShell>
+    );
   }
 
   return (

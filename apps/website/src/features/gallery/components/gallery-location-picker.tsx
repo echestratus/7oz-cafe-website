@@ -7,6 +7,11 @@ import { getAllLocations } from '@/features/locations/lib/locations';
 export function GalleryLocationPicker() {
   const locations = getAllLocations();
   const openCount = locations.filter((location) => location.status === 'open').length;
+  const comingSoonCount = locations.length - openCount;
+  const description =
+    comingSoonCount > 0
+      ? `Moments from each 7Oz room. ${openCount} open now — ${comingSoonCount} more on the way.`
+      : `Moments from each 7Oz room. ${openCount} open now.`;
 
   return (
     <main className="pt-28 pb-24 md:pt-36 md:pb-32">
@@ -15,7 +20,7 @@ export function GalleryLocationPicker() {
           <SectionIntro
             eyebrow="Gallery"
             title="Choose a location"
-            description={`Moments from each 7Oz room. ${openCount} open now — the rest are on the way.`}
+            description={description}
             titleAs="h1"
           />
         </Reveal>

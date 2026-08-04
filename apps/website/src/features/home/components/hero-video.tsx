@@ -73,7 +73,7 @@ export function HeroVideo() {
         loop
         playsInline
         preload="metadata"
-        poster="/assets/gallery/7oz-1.webp"
+        poster="/assets/gallery/city-park/7oz-1.webp"
         aria-hidden="true"
       >
         <source src="/assets/home/hero-page-video.mp4" type="video/mp4" />

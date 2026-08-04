@@ -53,10 +53,10 @@ export const CAFE_LOCATIONS: readonly CafeLocation[] = [
     city: "Xoʻja Ismoil",
     country: 'Uzbekistan',
     address: "RW6X+G73 Payariq Region, Xoʻja Ismoil, Samarqand viloyati, Uzbekistan",
-    status: 'coming_soon',
+    status: 'open',
     imageSrc: '/assets/locations/7Oz-kampoeng-indonesia.webp',
-    imageAlt: 'Upcoming 7Oz location at Hotel Kampoeng Indonesia',
-    hasGallery: false,
+    imageAlt: '7Oz Espresso Cafe at Hotel Kampoeng Indonesia',
+    hasGallery: true,
   },
   {
     id: 'hadith-hotel',

@@ -16,6 +16,7 @@ import {
 const locations = [
   { value: '', label: 'All locations' },
   { value: 'city-park', label: 'City Park' },
+  { value: 'kampoeng-indonesia', label: 'Kampoeng Indonesia' },
   { value: 'dharmawangsa', label: 'Dharmawangsa' },
 ] as const;
 
@@ -220,7 +221,7 @@ export function GalleryManager() {
               required
               value={form.imageUrl}
               onChange={(event) => setForm((prev) => ({ ...prev, imageUrl: event.target.value }))}
-              placeholder="/assets/gallery/7oz-1.webp or /media/…"
+              placeholder="/assets/gallery/city-park/7oz-1.webp or /media/…"
               className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
             />
           </label>
@@ -235,6 +236,7 @@ export function GalleryManager() {
                 className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
               >
                 <option value="city-park">City Park</option>
+                <option value="kampoeng-indonesia">Kampoeng Indonesia</option>
                 <option value="dharmawangsa">Dharmawangsa</option>
               </select>
             </label>

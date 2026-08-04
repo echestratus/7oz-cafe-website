@@ -56,7 +56,7 @@ export default async function GalleryLocationPage({ params }: GalleryLocationPag
     );
   }
 
-  let images = await listGalleryImages(location.name);
+  let images = await listGalleryImages(location.slug, location.name);
   try {
     const remote = await listPublicGallery(location.slug);
     if (remote.length > 0) {

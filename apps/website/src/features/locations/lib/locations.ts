@@ -95,9 +95,9 @@ export const CAFE_LOCATIONS: readonly CafeLocation[] = [
     address:
       'Jl. Darmawangsa Raya No.16, RT.6/RW.1, Pulo, Kec. Kby. Baru, Kota Jakarta Selatan, Daerah Khusus Ibukota Jakarta 12160',
     status: 'open',
-    imageSrc: '/assets/locations/7Oz-dharmawangsa-temp.webp',
+    imageSrc: '/assets/locations/7Oz-dharmawangsa.webp',
     imageAlt: '7Oz Espresso Cafe at Dharmawangsa, Jakarta',
-    hasGallery: false,
+    hasGallery: true,
     mapsUrl: 'https://maps.app.goo.gl/T8Pciwd3C56qyqxX9',
   },
 ] as const;

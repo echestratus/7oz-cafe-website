@@ -26,6 +26,19 @@ type createRequest struct {
 	Notes      string `json:"notes"`
 }
 
+type adminCreateRequest struct {
+	FullName    string  `json:"fullName"`
+	Email       string  `json:"email"`
+	Phone       string  `json:"phone"`
+	Date        string  `json:"date"`
+	Time        string  `json:"time"`
+	GuestCount  int     `json:"guestCount"`
+	Notes       string  `json:"notes"`
+	TableID     *string `json:"tableId"`
+	Status      string  `json:"status"`
+	NotifyGuest *bool   `json:"notifyGuest"`
+}
+
 func NewHandler(service *Service) *Handler {
 	return &Handler{service: service}
 }
@@ -190,6 +203,48 @@ func (h *Handler) ListAdmin(c fiber.Ctx) error {
 	}))
 }
 
+func (h *Handler) CreateAdmin(c fiber.Ctx) error {
+	principal, ok := authctx.PrincipalFromCtx(c)
+	if !ok {
+		return apperr.Unauthorized("Authentication required.")
+	}
+
+	var req adminCreateRequest
+	if err := c.Bind().Body(&req); err != nil {
+		return apperr.BadRequest("Invalid JSON body.")
+	}
+
+	var tableID *uuid.UUID
+	if req.TableID != nil {
+		raw := strings.TrimSpace(*req.TableID)
+		if raw != "" {
+			parsed, err := uuid.Parse(raw)
+			if err != nil {
+				return apperr.Validation("Invalid table id.", response.FieldError{Field: "tableId", Message: "must be a UUID"})
+			}
+			tableID = &parsed
+		}
+	}
+
+	item, err := h.service.CreateAdmin(c.Context(), AdminCreateInput{
+		FullName:    req.FullName,
+		Email:       req.Email,
+		Phone:       req.Phone,
+		Date:        req.Date,
+		Time:        req.Time,
+		GuestCount:  req.GuestCount,
+		Notes:       req.Notes,
+		TableID:     tableID,
+		Status:      req.Status,
+		NotifyGuest: req.NotifyGuest,
+		ActorUserID: principal.UserID,
+	})
+	if err != nil {
+		return err
+	}
+	return response.JSON(c, fiber.StatusCreated, response.OK("Reservation created.", item))
+}
+
 func (h *Handler) GetSettings(c fiber.Ctx) error {
 	item, err := h.service.GetSettings(c.Context())
 	if err != nil {
@@ -257,6 +312,179 @@ func (h *Handler) ListTables(c fiber.Ctx) error {
 		return err
 	}
 	return response.JSON(c, fiber.StatusOK, response.OK("OK", items))
+}
+
+func (h *Handler) CreateTable(c fiber.Ctx) error {
+	principal, ok := authctx.PrincipalFromCtx(c)
+	if !ok {
+		return apperr.Unauthorized("Authentication required.")
+	}
+
+	input, err := bindCafeTable(c, true)
+	if err != nil {
+		return err
+	}
+
+	item, err := h.service.CreateTable(c.Context(), principal.UserID, input)
+	if err != nil {
+		return err
+	}
+	return response.JSON(c, fiber.StatusCreated, response.OK("Cafe table created.", item))
+}
+
+func (h *Handler) UpdateTable(c fiber.Ctx) error {
+	principal, ok := authctx.PrincipalFromCtx(c)
+	if !ok {
+		return apperr.Unauthorized("Authentication required.")
+	}
+
+	tableID, err := uuid.Parse(c.Params("id"))
+	if err != nil {
+		return apperr.BadRequest("Invalid table id.")
+	}
+
+	input, err := bindCafeTable(c, false)
+	if err != nil {
+		return err
+	}
+
+	item, err := h.service.UpdateTable(c.Context(), tableID, principal.UserID, input)
+	if err != nil {
+		return err
+	}
+	return response.JSON(c, fiber.StatusOK, response.OK("Cafe table updated.", item))
+}
+
+func (h *Handler) DeleteTable(c fiber.Ctx) error {
+	principal, ok := authctx.PrincipalFromCtx(c)
+	if !ok {
+		return apperr.Unauthorized("Authentication required.")
+	}
+
+	tableID, err := uuid.Parse(c.Params("id"))
+	if err != nil {
+		return apperr.BadRequest("Invalid table id.")
+	}
+
+	if err := h.service.DeleteTable(c.Context(), tableID, principal.UserID); err != nil {
+		return err
+	}
+	return response.JSON(c, fiber.StatusOK, response.OK("Cafe table deleted.", map[string]any{}))
+}
+
+func bindCafeTable(c fiber.Ctx, requireCode bool) (CafeTableInput, error) {
+	var req struct {
+		Code      string `json:"code"`
+		Name      string `json:"name"`
+		Capacity  int32  `json:"capacity"`
+		IsActive  *bool  `json:"isActive"`
+		SortOrder int32  `json:"sortOrder"`
+	}
+	if err := c.Bind().Body(&req); err != nil {
+		return CafeTableInput{}, apperr.BadRequest("Invalid JSON body.")
+	}
+
+	isActive := true
+	if req.IsActive != nil {
+		isActive = *req.IsActive
+	}
+
+	input := CafeTableInput{
+		Code:      req.Code,
+		Name:      req.Name,
+		Capacity:  req.Capacity,
+		IsActive:  isActive,
+		SortOrder: req.SortOrder,
+	}
+	if requireCode && strings.TrimSpace(input.Code) == "" {
+		return CafeTableInput{}, apperr.Validation("Invalid cafe table payload.", response.FieldError{
+			Field:   "code",
+			Message: "is required",
+		})
+	}
+	return input, nil
+}
+
+func (h *Handler) ListClosedDays(c fiber.Ctx) error {
+	items, err := h.service.ListClosedDays(c.Context())
+	if err != nil {
+		return err
+	}
+	return response.JSON(c, fiber.StatusOK, response.OK("OK", items))
+}
+
+func (h *Handler) CreateClosedDay(c fiber.Ctx) error {
+	principal, ok := authctx.PrincipalFromCtx(c)
+	if !ok {
+		return apperr.Unauthorized("Authentication required.")
+	}
+
+	input, err := bindClosedDay(c)
+	if err != nil {
+		return err
+	}
+
+	item, err := h.service.CreateClosedDay(c.Context(), principal.UserID, input)
+	if err != nil {
+		return err
+	}
+	return response.JSON(c, fiber.StatusCreated, response.OK("Closed day created.", item))
+}
+
+func (h *Handler) UpdateClosedDay(c fiber.Ctx) error {
+	principal, ok := authctx.PrincipalFromCtx(c)
+	if !ok {
+		return apperr.Unauthorized("Authentication required.")
+	}
+
+	closedDayID, err := uuid.Parse(c.Params("id"))
+	if err != nil {
+		return apperr.BadRequest("Invalid closed day id.")
+	}
+
+	input, err := bindClosedDay(c)
+	if err != nil {
+		return err
+	}
+
+	item, err := h.service.UpdateClosedDay(c.Context(), closedDayID, principal.UserID, input)
+	if err != nil {
+		return err
+	}
+	return response.JSON(c, fiber.StatusOK, response.OK("Closed day updated.", item))
+}
+
+func (h *Handler) DeleteClosedDay(c fiber.Ctx) error {
+	principal, ok := authctx.PrincipalFromCtx(c)
+	if !ok {
+		return apperr.Unauthorized("Authentication required.")
+	}
+
+	closedDayID, err := uuid.Parse(c.Params("id"))
+	if err != nil {
+		return apperr.BadRequest("Invalid closed day id.")
+	}
+
+	if err := h.service.DeleteClosedDay(c.Context(), closedDayID, principal.UserID); err != nil {
+		return err
+	}
+	return response.JSON(c, fiber.StatusOK, response.OK("Closed day deleted.", map[string]any{}))
+}
+
+func bindClosedDay(c fiber.Ctx) (ClosedDayInput, error) {
+	var req struct {
+		ClosedDate string `json:"closedDate"`
+		Label      string `json:"label"`
+		Note       string `json:"note"`
+	}
+	if err := c.Bind().Body(&req); err != nil {
+		return ClosedDayInput{}, apperr.BadRequest("Invalid JSON body.")
+	}
+	return ClosedDayInput{
+		ClosedDate: req.ClosedDate,
+		Label:      req.Label,
+		Note:       req.Note,
+	}, nil
 }
 
 func (h *Handler) Confirm(c fiber.Ctx) error {

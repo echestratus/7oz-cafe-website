@@ -28,9 +28,9 @@ Copy from [`.env.production.example`](../../.env.production.example) and fill re
 | `APP_URL` | Yes | Public API origin (HTTPS) |
 | `WEBSITE_URL` | Yes | Used in email links |
 | `NEXT_PUBLIC_APP_URL` | Yes | Website origin (HTTPS) |
-| `NEXT_PUBLIC_ADMIN_URL` | Yes | Usually `https://<host>/admin` |
-| `NEXT_PUBLIC_API_URL` | Yes | Usually `https://<host>/api/v1` |
-| `CORS_ALLOWED_ORIGINS` | Yes | Exact website (+ admin if separate origin) |
+| `NEXT_PUBLIC_ADMIN_URL` | Yes | `https://admin.7oz-espresso.com` |
+| `NEXT_PUBLIC_API_URL` | Yes | `https://7oz-espresso.com/api/v1` |
+| `CORS_ALLOWED_ORIGINS` | Yes | Website + www + admin origins (exact match) |
 | `DB_USER` / `DB_PASSWORD` / `DB_NAME` | Yes | Strong password; no defaults |
 | `DB_SSLMODE` | Yes | `disable` for compose-internal Postgres; `require` when Postgres is remote/TLS |
 | `REDIS_PASSWORD` | Recommended | Set when Redis is exposed beyond compose network |
@@ -48,7 +48,8 @@ Verify:
 
 - [ ] No leftover `localhost` or `*.local` URLs in production env
 - [ ] JWT secrets are not the development placeholders
-- [ ] `CORS_ALLOWED_ORIGINS` matches the public site origin exactly
+- [ ] `CORS_ALLOWED_ORIGINS` includes `https://7oz-espresso.com`, `https://www.7oz-espresso.com`, and `https://admin.7oz-espresso.com`
+- [ ] Host Nginx + Certbot cover `admin.7oz-espresso.com` → compose `HTTP_PORT` (see `docs/deployment/host-nginx/`)
 
 ---
 
@@ -85,7 +86,8 @@ Verify:
 - [ ] HSTS enabled on the public edge
 - [ ] Public routes resolve:
   - `/` → website
-  - `/admin/` → admin
+  - website `/` , API `/api/` , media `/media/`
+  - admin on `https://admin.7oz-espresso.com/` (legacy `/admin/` redirects)
   - `/api/` → backend
   - `/health` and `/health/ready` → API probes
 - [ ] Cookies for refresh work over HTTPS (`Secure`)

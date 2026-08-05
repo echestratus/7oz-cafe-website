@@ -2,7 +2,7 @@
 
 Version: Phase 11 foundation
 
-**Promotion policy:** local work → commit + PR into `develop` (automatic) → product owner merges → confirm merge → deploy **staging** (`https://stage.7oz-espresso.com`) → product owner confirms staging OK → product owner opens PR `develop` → `main` → deploy **production** (`https://7oz-espresso.com`) when instructed. Never skip staging for app/API/migration/Compose changes. Never deploy staging or production without the matching confirmation.
+**Promotion policy:** local work → commit + PR into `develop` (automatic) → product owner merges → confirm merge → deploy **staging** (`https://stage.7oz-espresso.com`, admin `https://admin-stage.7oz-espresso.com`) → product owner confirms staging OK → product owner opens PR `develop` → `main` → deploy **production** (`https://7oz-espresso.com`, admin `https://admin.7oz-espresso.com`) when instructed. Never skip staging for app/API/migration/Compose changes. Never deploy staging or production without the matching confirmation.
 
 **Production go-live:** follow [PRODUCTION_CUTOVER.md](./PRODUCTION_CUTOVER.md) end-to-end before announcing launch.
 
@@ -42,7 +42,14 @@ chmod +x scripts/*.sh
 ./scripts/deploy.sh staging staging
 ```
 
-On a VPS with host Nginx/Certbot in front, keep `HTTP_PORT=127.0.0.1:8088` and proxy the public hostname to that port.
+On a VPS with host Nginx/Certbot in front, keep `HTTP_PORT=127.0.0.1:8088` and proxy the public hostnames to that port.
+
+Host Nginx samples (TLS at the edge):
+
+- [`host-nginx/admin-stage.7oz-espresso.com.conf`](./host-nginx/admin-stage.7oz-espresso.com.conf) → `127.0.0.1:8088`
+- [`host-nginx/admin.7oz-espresso.com.conf`](./host-nginx/admin.7oz-espresso.com.conf) → `127.0.0.1:8089`
+
+After enabling a host site, issue certs with Certbot (`certbot --nginx -d <hostname>`).
 
 Compose notes:
 
@@ -51,12 +58,15 @@ Compose notes:
 
 Gateway defaults to `http://localhost:8088` (or the host proxy URL).
 
-Routes:
+Public hosts:
 
-- `/` → website
-- `/admin/` → admin
-- `/api/` → backend
-- `/health` and `/health/ready` → API probes
+| Host | App |
+| --- | --- |
+| `stage.7oz-espresso.com` / `7oz-espresso.com` | Website + `/api/` + `/media/` |
+| `admin-stage.7oz-espresso.com` / `admin.7oz-espresso.com` | Admin at `/` |
+| Local / unknown (`server_name _`) | Path-based: `/` website, `/admin/` admin, `/api/` backend |
+
+`/admin` on the website host redirects to the matching admin subdomain. Include both website and admin origins in `CORS_ALLOWED_ORIGINS`.
 
 Update an existing staging checkout after merges to `develop`:
 

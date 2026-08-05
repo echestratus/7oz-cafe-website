@@ -11,7 +11,7 @@ export interface CafeLocation {
   status: LocationStatus;
   imageSrc: string;
   imageAlt: string;
-  /** Public gallery folder for open locations; coming soon branches have none yet. */
+  /** When false, open locations show an awaiting-gallery page instead of an empty grid. */
   hasGallery: boolean;
   /** Canonical Google Maps short link when available. */
   mapsUrl?: string;
@@ -53,10 +53,10 @@ export const CAFE_LOCATIONS: readonly CafeLocation[] = [
     city: "Xoʻja Ismoil",
     country: 'Uzbekistan',
     address: "RW6X+G73 Payariq Region, Xoʻja Ismoil, Samarqand viloyati, Uzbekistan",
-    status: 'coming_soon',
+    status: 'open',
     imageSrc: '/assets/locations/7Oz-kampoeng-indonesia.webp',
-    imageAlt: 'Upcoming 7Oz location at Hotel Kampoeng Indonesia',
-    hasGallery: false,
+    imageAlt: '7Oz Espresso Cafe at Hotel Kampoeng Indonesia',
+    hasGallery: true,
   },
   {
     id: 'hadith-hotel',
@@ -94,9 +94,9 @@ export const CAFE_LOCATIONS: readonly CafeLocation[] = [
     country: 'Indonesia',
     address:
       'Jl. Darmawangsa Raya No.16, RT.6/RW.1, Pulo, Kec. Kby. Baru, Kota Jakarta Selatan, Daerah Khusus Ibukota Jakarta 12160',
-    status: 'coming_soon',
+    status: 'open',
     imageSrc: '/assets/locations/7Oz-dharmawangsa-temp.webp',
-    imageAlt: 'Upcoming 7Oz location at Dharmawangsa, Jakarta',
+    imageAlt: '7Oz Espresso Cafe at Dharmawangsa, Jakarta',
     hasGallery: false,
     mapsUrl: 'https://maps.app.goo.gl/T8Pciwd3C56qyqxX9',
   },

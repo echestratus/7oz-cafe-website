@@ -43,7 +43,7 @@ export default async function ContactPage() {
               <SectionIntro
                 eyebrow="Contact"
                 title="Visit 7Oz"
-                description="One shared line for every 7Oz room — find each address below, check City Park hours, or write to us."
+                description="One shared line for every 7Oz room — find each address below, check hours for open cafes, or write to us."
                 titleAs="h1"
               />
             </Reveal>

@@ -176,6 +176,40 @@ FROM memberships
 WHERE id = $1
   AND deleted_at IS NULL;
 
+-- name: GetMembershipByMembershipNumber :one
+SELECT
+    id,
+    user_id,
+    membership_number,
+    level_id,
+    status,
+    qr_token,
+    joined_at,
+    expires_at,
+    created_at,
+    updated_at,
+    deleted_at
+FROM memberships
+WHERE lower(membership_number) = lower(sqlc.arg(membership_number))
+  AND deleted_at IS NULL;
+
+-- name: GetMembershipByQrToken :one
+SELECT
+    id,
+    user_id,
+    membership_number,
+    level_id,
+    status,
+    qr_token,
+    joined_at,
+    expires_at,
+    created_at,
+    updated_at,
+    deleted_at
+FROM memberships
+WHERE qr_token = $1
+  AND deleted_at IS NULL;
+
 -- name: CreateMembership :one
 INSERT INTO memberships (
     id,

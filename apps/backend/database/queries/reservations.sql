@@ -78,6 +78,174 @@ WHERE id = $1
   AND deleted_at IS NULL
   AND is_active = TRUE;
 
+-- name: ListCafeTablesAdmin :many
+SELECT
+    id,
+    code,
+    name,
+    capacity,
+    is_active,
+    sort_order,
+    created_at,
+    updated_at,
+    deleted_at
+FROM cafe_tables
+WHERE deleted_at IS NULL
+ORDER BY sort_order, code;
+
+-- name: GetCafeTableByID :one
+SELECT
+    id,
+    code,
+    name,
+    capacity,
+    is_active,
+    sort_order,
+    created_at,
+    updated_at,
+    deleted_at
+FROM cafe_tables
+WHERE id = $1
+  AND deleted_at IS NULL;
+
+-- name: CreateCafeTable :one
+INSERT INTO cafe_tables (
+    id,
+    code,
+    name,
+    capacity,
+    is_active,
+    sort_order,
+    created_at,
+    updated_at
+) VALUES (
+    $1, $2, $3, $4, $5, $6, NOW(), NOW()
+) RETURNING
+    id,
+    code,
+    name,
+    capacity,
+    is_active,
+    sort_order,
+    created_at,
+    updated_at,
+    deleted_at;
+
+-- name: UpdateCafeTable :one
+UPDATE cafe_tables
+SET name = $2,
+    capacity = $3,
+    is_active = $4,
+    sort_order = $5,
+    updated_at = NOW()
+WHERE id = $1
+  AND deleted_at IS NULL
+RETURNING
+    id,
+    code,
+    name,
+    capacity,
+    is_active,
+    sort_order,
+    created_at,
+    updated_at,
+    deleted_at;
+
+-- name: SoftDeleteCafeTable :one
+UPDATE cafe_tables
+SET deleted_at = NOW(),
+    is_active = FALSE,
+    updated_at = NOW()
+WHERE id = $1
+  AND deleted_at IS NULL
+RETURNING
+    id,
+    code,
+    name,
+    capacity,
+    is_active,
+    sort_order,
+    created_at,
+    updated_at,
+    deleted_at;
+
+-- name: GetReservationClosedDayByDate :one
+SELECT
+    id,
+    closed_date,
+    label,
+    note,
+    created_at,
+    updated_at
+FROM reservation_closed_days
+WHERE closed_date = $1;
+
+-- name: GetReservationClosedDayByID :one
+SELECT
+    id,
+    closed_date,
+    label,
+    note,
+    created_at,
+    updated_at
+FROM reservation_closed_days
+WHERE id = $1;
+
+-- name: ListReservationClosedDays :many
+SELECT
+    id,
+    closed_date,
+    label,
+    note,
+    created_at,
+    updated_at
+FROM reservation_closed_days
+ORDER BY closed_date ASC;
+
+-- name: CreateReservationClosedDay :one
+INSERT INTO reservation_closed_days (
+    id,
+    closed_date,
+    label,
+    note,
+    created_at,
+    updated_at
+) VALUES (
+    $1, $2, $3, $4, NOW(), NOW()
+) RETURNING
+    id,
+    closed_date,
+    label,
+    note,
+    created_at,
+    updated_at;
+
+-- name: UpdateReservationClosedDay :one
+UPDATE reservation_closed_days
+SET closed_date = $2,
+    label = $3,
+    note = $4,
+    updated_at = NOW()
+WHERE id = $1
+RETURNING
+    id,
+    closed_date,
+    label,
+    note,
+    created_at,
+    updated_at;
+
+-- name: DeleteReservationClosedDay :one
+DELETE FROM reservation_closed_days
+WHERE id = $1
+RETURNING
+    id,
+    closed_date,
+    label,
+    note,
+    created_at,
+    updated_at;
+
 -- name: SumActiveTableCapacity :one
 SELECT COALESCE(SUM(capacity), 0)::bigint AS total_capacity
 FROM cafe_tables

@@ -26,6 +26,8 @@ export function LocationsSection({ locations = getAllLocations() }: LocationsSec
   const scrollerRef = useRef<HTMLDivElement>(null);
   const primary = locations.find((location) => location.status === 'open') ?? locations[0];
   const others = locations.filter((location) => location.id !== primary?.id);
+  const otherOpenCount = others.filter((location) => location.status === 'open').length;
+  const comingSoonCount = others.filter((location) => location.status === 'coming_soon').length;
 
   function scrollByCard(direction: -1 | 1) {
     const scroller = scrollerRef.current;
@@ -40,6 +42,15 @@ export function LocationsSection({ locations = getAllLocations() }: LocationsSec
     return null;
   }
 
+  let othersSummary: string;
+  if (otherOpenCount > 0 && comingSoonCount > 0) {
+    othersSummary = `${otherOpenCount} more open ${otherOpenCount === 1 ? 'room' : 'rooms'}, and ${comingSoonCount} on the way.`;
+  } else if (comingSoonCount > 0) {
+    othersSummary = `${comingSoonCount} more ${comingSoonCount === 1 ? 'location' : 'locations'} on the way — explore each gallery for updates.`;
+  } else {
+    othersSummary = 'Explore each open room in the gallery.';
+  }
+
   return (
     <section className="section-pad bg-surface-secondary/50">
       <Container>
@@ -48,7 +59,7 @@ export function LocationsSection({ locations = getAllLocations() }: LocationsSec
             <SectionIntro
               eyebrow="Locations"
               title="Find 7Oz"
-              description="From Tashkent to Jakarta — visit our open cafe, or follow the next rooms as they open."
+              description="From Tashkent to Jakarta — visit our open cafes, or follow the next rooms as they open."
             />
             <div className="flex items-center gap-3">
               <button
@@ -122,10 +133,7 @@ export function LocationsSection({ locations = getAllLocations() }: LocationsSec
                 </div>
               ))}
             </div>
-            <p className="mt-6 text-sm text-text-secondary">
-              {others.length} more {others.length === 1 ? 'location' : 'locations'} on the way —
-              explore each gallery for updates.
-            </p>
+            <p className="mt-6 text-sm text-text-secondary">{othersSummary}</p>
           </Reveal>
         </div>
 

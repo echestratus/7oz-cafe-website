@@ -24,7 +24,7 @@ export function AboutPreviewSection({ data }: AboutPreviewSectionProps) {
         <Reveal>
           <div className="relative aspect-[4/5] overflow-hidden rounded-media">
             <Image
-              src="/assets/gallery/7oz-4.webp"
+              src="/assets/gallery/city-park/7oz-4.webp"
               alt="Barista preparing espresso at 7Oz"
               fill
               className="object-cover"

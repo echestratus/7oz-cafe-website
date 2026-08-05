@@ -56,6 +56,13 @@ const fallbackTestimonials = {
       avatarSrc: '/assets/reviews/dr-zulkifli-hasan.webp',
       videoSrc: '/assets/reviews/dr-zulkifli-hasan.mp4',
     },
+    {
+      name: 'Shady Al-Suleiman',
+      review:
+        "Alhamdulillah, I've tried this coffee, and it's a really good coffee. Very enjoyable—Alhamdulillah.",
+      avatarSrc: '/assets/reviews/shady-al-suleiman.webp',
+      videoSrc: '/assets/reviews/shady-al-suleiman.mp4',
+    },
   ],
 };
 

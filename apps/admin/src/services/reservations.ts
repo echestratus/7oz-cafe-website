@@ -27,6 +27,33 @@ export type CafeTable = {
   code: string;
   name: string;
   capacity: number;
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CafeTableInput = {
+  code?: string;
+  name: string;
+  capacity: number;
+  isActive: boolean;
+  sortOrder: number;
+};
+
+export type ClosedDay = {
+  id: string;
+  closedDate: string;
+  label: string;
+  note: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ClosedDayInput = {
+  closedDate: string;
+  label?: string;
+  note?: string;
 };
 
 export type DayHours = {
@@ -62,6 +89,19 @@ export type ReservationSettingsInput = {
   weeklyHours: Record<string, DayHours>;
 };
 
+export type CreateReservationInput = {
+  fullName: string;
+  email: string;
+  phone: string;
+  date: string;
+  time: string;
+  guestCount: number;
+  notes?: string;
+  tableId?: string;
+  status?: 'pending' | 'confirmed';
+  notifyGuest?: boolean;
+};
+
 export async function listReservations(params: {
   date?: string;
   status?: string;
@@ -77,8 +117,59 @@ export async function listReservations(params: {
   return apiRequest<ReservationListResponse>(`/admin/reservations?${search.toString()}`);
 }
 
+export async function createReservation(input: CreateReservationInput): Promise<Reservation> {
+  return apiRequest<Reservation>('/admin/reservations', {
+    method: 'POST',
+    body: input,
+  });
+}
+
 export async function listCafeTables(): Promise<CafeTable[]> {
   return apiRequest<CafeTable[]>('/admin/reservations/tables');
+}
+
+export async function createCafeTable(input: CafeTableInput): Promise<CafeTable> {
+  return apiRequest<CafeTable>('/admin/reservations/tables', {
+    method: 'POST',
+    body: input,
+  });
+}
+
+export async function updateCafeTable(id: string, input: CafeTableInput): Promise<CafeTable> {
+  return apiRequest<CafeTable>(`/admin/reservations/tables/${id}`, {
+    method: 'PATCH',
+    body: input,
+  });
+}
+
+export async function deleteCafeTable(id: string): Promise<void> {
+  await apiRequest(`/admin/reservations/tables/${id}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function listClosedDays(): Promise<ClosedDay[]> {
+  return apiRequest<ClosedDay[]>('/admin/reservations/holidays');
+}
+
+export async function createClosedDay(input: ClosedDayInput): Promise<ClosedDay> {
+  return apiRequest<ClosedDay>('/admin/reservations/holidays', {
+    method: 'POST',
+    body: input,
+  });
+}
+
+export async function updateClosedDay(id: string, input: ClosedDayInput): Promise<ClosedDay> {
+  return apiRequest<ClosedDay>(`/admin/reservations/holidays/${id}`, {
+    method: 'PATCH',
+    body: input,
+  });
+}
+
+export async function deleteClosedDay(id: string): Promise<void> {
+  await apiRequest(`/admin/reservations/holidays/${id}`, {
+    method: 'DELETE',
+  });
 }
 
 export async function assignReservationTable(id: string, tableId: string): Promise<Reservation> {

@@ -319,6 +319,15 @@ type Reservation struct {
 	DeletedAt         *time.Time `json:"deleted_at"`
 }
 
+type ReservationClosedDay struct {
+	ID         uuid.UUID `json:"id"`
+	ClosedDate time.Time `json:"closed_date"`
+	Label      string    `json:"label"`
+	Note       string    `json:"note"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
+}
+
 type ReservationHistory struct {
 	ID            uuid.UUID  `json:"id"`
 	ReservationID uuid.UUID  `json:"reservation_id"`

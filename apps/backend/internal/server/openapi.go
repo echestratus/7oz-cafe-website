@@ -659,6 +659,25 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessEnvelope"
+    post:
+      summary: Create a walk-in or phone reservation
+      operationId: createAdminReservation
+      tags: [Reservations]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminCreateReservationRequest"
+      responses:
+        "201":
+          description: Reservation created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
   /admin/reservations/settings:
     get:
       summary: Get reservation booking settings
@@ -745,14 +764,160 @@ paths:
                 $ref: "#/components/schemas/SuccessEnvelope"
   /admin/reservations/tables:
     get:
-      summary: List active cafe tables
+      summary: List cafe tables for operations staff
       operationId: listAdminCafeTables
       tags: [Reservations]
       security:
         - bearerAuth: []
       responses:
         "200":
-          description: Active cafe tables
+          description: Cafe tables (active and inactive, excluding soft-deleted)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+    post:
+      summary: Create a cafe table
+      operationId: createAdminCafeTable
+      tags: [Reservations]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CafeTableRequest"
+      responses:
+        "201":
+          description: Cafe table created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/reservations/tables/{id}:
+    patch:
+      summary: Update a cafe table
+      operationId: updateAdminCafeTable
+      tags: [Reservations]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CafeTableRequest"
+      responses:
+        "200":
+          description: Cafe table updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+    delete:
+      summary: Soft-delete a cafe table
+      operationId: deleteAdminCafeTable
+      tags: [Reservations]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Cafe table deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/reservations/holidays:
+    get:
+      summary: List reservation closed days (holidays)
+      operationId: listAdminReservationHolidays
+      tags: [Reservations]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Closed days
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+    post:
+      summary: Create a closed day
+      operationId: createAdminReservationHoliday
+      tags: [Reservations]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClosedDayRequest"
+      responses:
+        "201":
+          description: Closed day created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/reservations/holidays/{id}:
+    patch:
+      summary: Update a closed day
+      operationId: updateAdminReservationHoliday
+      tags: [Reservations]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClosedDayRequest"
+      responses:
+        "200":
+          description: Closed day updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+    delete:
+      summary: Delete a closed day
+      operationId: deleteAdminReservationHoliday
+      tags: [Reservations]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Closed day deleted
           content:
             application/json:
               schema:
@@ -1084,6 +1249,174 @@ paths:
       responses:
         "200":
           description: Customer status updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/users:
+    get:
+      summary: List staff users
+      operationId: listAdminUsers
+      tags: [Users]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: role
+          in: query
+          schema:
+            type: string
+            enum: [admin, super_admin]
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Paginated staff users
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+    post:
+      summary: Create staff user
+      operationId: createAdminUser
+      tags: [Users]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, fullName, password, roleCode]
+              properties:
+                email:
+                  type: string
+                  format: email
+                fullName:
+                  type: string
+                password:
+                  type: string
+                roleCode:
+                  type: string
+                  enum: [admin, super_admin]
+      responses:
+        "201":
+          description: Staff user created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/users/{id}:
+    get:
+      summary: Get staff user details
+      operationId: getAdminUser
+      tags: [Users]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Staff user details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/users/{id}/status:
+    patch:
+      summary: Update staff account status
+      operationId: updateAdminUserStatus
+      tags: [Users]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [active, suspended, inactive]
+                reason:
+                  type: string
+      responses:
+        "200":
+          description: Staff status updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/users/{id}/role:
+    put:
+      summary: Update staff role
+      operationId: updateAdminUserRole
+      tags: [Users]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [roleCode]
+              properties:
+                roleCode:
+                  type: string
+                  enum: [admin, super_admin]
+      responses:
+        "200":
+          description: Staff role updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/roles:
+    get:
+      summary: List assignable staff roles
+      operationId: listAdminRoles
+      tags: [Users]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Admin and super_admin roles
           content:
             application/json:
               schema:
@@ -1427,6 +1760,62 @@ paths:
       responses:
         "200":
           description: Adjustment applied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/loyalty/desk/lookup:
+    get:
+      summary: Lookup a customer for the staff redemption desk
+      operationId: lookupLoyaltyDeskCustomer
+      tags: [Loyalty]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Email, membership number, or 7oz-member QR payload
+      responses:
+        "200":
+          description: Customer loyalty desk profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /admin/loyalty/redeem:
+    post:
+      summary: Redeem a reward for a customer at the staff desk
+      operationId: createAdminLoyaltyRedemption
+      tags: [Loyalty]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rewardId]
+              properties:
+                rewardId:
+                  type: string
+                  format: uuid
+                userId:
+                  type: string
+                  format: uuid
+                membershipNumber:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                qrPayload:
+                  type: string
+      responses:
+        "201":
+          description: Reward redeemed
           content:
             application/json:
               schema:
@@ -1935,6 +2324,70 @@ components:
           type: integer
           minimum: 1
         notes:
+          type: string
+    AdminCreateReservationRequest:
+      type: object
+      required: [fullName, email, phone, date, time, guestCount]
+      properties:
+        fullName:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        date:
+          type: string
+          format: date
+        time:
+          type: string
+          description: HH:MM in cafe timezone
+        guestCount:
+          type: integer
+          minimum: 1
+        notes:
+          type: string
+        tableId:
+          type: string
+          format: uuid
+          description: Optional cafe table assignment
+        status:
+          type: string
+          enum: [pending, confirmed]
+          description: Defaults to confirmed for staff bookings
+        notifyGuest:
+          type: boolean
+          description: Defaults to true; confirmed bookings send confirmed mail only
+    CafeTableRequest:
+      type: object
+      required: [name, capacity]
+      properties:
+        code:
+          type: string
+          description: Required on create; ignored on update
+          example: T6
+        name:
+          type: string
+          example: Patio Two
+        capacity:
+          type: integer
+          minimum: 1
+        isActive:
+          type: boolean
+          description: Defaults to true
+        sortOrder:
+          type: integer
+    ClosedDayRequest:
+      type: object
+      required: [closedDate]
+      properties:
+        closedDate:
+          type: string
+          format: date
+        label:
+          type: string
+          example: Independence Day
+        note:
           type: string
     CreateContactMessageRequest:
       type: object

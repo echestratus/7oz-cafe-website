@@ -11,10 +11,18 @@ import {
   checkInReservation,
   completeReservation,
   confirmReservation,
+  createCafeTable,
+  createClosedDay,
+  createReservation,
+  deleteCafeTable,
+  deleteClosedDay,
   getReservationSettings,
   listCafeTables,
+  listClosedDays,
   listReservations,
   markNoShow,
+  updateCafeTable,
+  updateClosedDay,
   updateReservationSettings,
   type CafeTable,
   type DayHours,
@@ -52,6 +60,66 @@ function todayISODate(): string {
   return local.toISOString().slice(0, 10);
 }
 
+type NewBookingFormState = {
+  fullName: string;
+  email: string;
+  phone: string;
+  date: string;
+  time: string;
+  guestCount: number;
+  notes: string;
+  tableId: string;
+  status: 'pending' | 'confirmed';
+  notifyGuest: boolean;
+};
+
+function emptyNewBookingForm(): NewBookingFormState {
+  return {
+    fullName: '',
+    email: '',
+    phone: '',
+    date: todayISODate(),
+    time: '',
+    guestCount: 2,
+    notes: '',
+    tableId: '',
+    status: 'confirmed',
+    notifyGuest: true,
+  };
+}
+
+type TableFormState = {
+  code: string;
+  name: string;
+  capacity: number;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+function emptyTableForm(): TableFormState {
+  return {
+    code: '',
+    name: '',
+    capacity: 2,
+    sortOrder: 0,
+    isActive: true,
+  };
+}
+
+type HolidayFormState = {
+  closedDate: string;
+  label: string;
+  note: string;
+};
+
+function emptyHolidayForm(): HolidayFormState {
+  return {
+    closedDate: todayISODate(),
+    label: '',
+    note: '',
+  };
+}
+
 function nextActions(status: string): Array<'confirm' | 'check_in' | 'complete' | 'cancel' | 'no_show'> {
   switch (status) {
     case 'pending':
@@ -75,12 +143,18 @@ function tableLabel(table: CafeTable): string {
 
 export function ReservationsManager() {
   const queryClient = useQueryClient();
-  const [tab, setTab] = useState<'bookings' | 'settings'>('bookings');
+  const [tab, setTab] = useState<'bookings' | 'tables' | 'holidays' | 'settings'>('bookings');
   const [date, setDate] = useState(todayISODate());
   const [status, setStatus] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [settingsHydrated, setSettingsHydrated] = useState(false);
+  const [showNewBooking, setShowNewBooking] = useState(false);
+  const [newBooking, setNewBooking] = useState<NewBookingFormState>(emptyNewBookingForm);
+  const [editingTableId, setEditingTableId] = useState<string | null>(null);
+  const [tableForm, setTableForm] = useState<TableFormState>(emptyTableForm);
+  const [editingHolidayId, setEditingHolidayId] = useState<string | null>(null);
+  const [holidayForm, setHolidayForm] = useState<HolidayFormState>(emptyHolidayForm);
 
   const [minGuests, setMinGuests] = useState(1);
   const [maxGuests, setMaxGuests] = useState(10);
@@ -108,7 +182,13 @@ export function ReservationsManager() {
   const tablesQuery = useQuery({
     queryKey: ['admin-cafe-tables'],
     queryFn: () => listCafeTables(),
-    enabled: tab === 'bookings',
+    enabled: tab === 'bookings' || tab === 'tables',
+  });
+
+  const holidaysQuery = useQuery({
+    queryKey: ['admin-reservation-holidays'],
+    queryFn: () => listClosedDays(),
+    enabled: tab === 'holidays',
   });
 
   useEffect(() => {
@@ -202,20 +282,150 @@ export function ReservationsManager() {
     },
   });
 
+  const createMutation = useMutation({
+    mutationFn: () =>
+      createReservation({
+        fullName: newBooking.fullName.trim(),
+        email: newBooking.email.trim(),
+        phone: newBooking.phone.trim(),
+        date: newBooking.date,
+        time: newBooking.time,
+        guestCount: newBooking.guestCount,
+        notes: newBooking.notes.trim() || undefined,
+        tableId: newBooking.tableId || undefined,
+        status: newBooking.status,
+        notifyGuest: newBooking.notifyGuest,
+      }),
+    onSuccess: async (created) => {
+      setError(null);
+      setMessage(`Booking ${created.reservationNumber} created.`);
+      setShowNewBooking(false);
+      setNewBooking(emptyNewBookingForm());
+      setDate(created.date);
+      await queryClient.invalidateQueries({ queryKey: ['admin-reservations'] });
+    },
+    onError: (err) => {
+      setMessage(null);
+      setError(err instanceof ApiClientError ? err.message : 'Unable to create booking.');
+    },
+  });
+
+  const tableMutation = useMutation({
+    mutationFn: async () => {
+      const payload = {
+        name: tableForm.name.trim(),
+        capacity: tableForm.capacity,
+        sortOrder: tableForm.sortOrder,
+        isActive: tableForm.isActive,
+      };
+      if (editingTableId) {
+        return updateCafeTable(editingTableId, payload);
+      }
+      return createCafeTable({
+        ...payload,
+        code: tableForm.code.trim(),
+      });
+    },
+    onSuccess: async () => {
+      setError(null);
+      setMessage(editingTableId ? 'Table updated.' : 'Table created.');
+      setEditingTableId(null);
+      setTableForm(emptyTableForm());
+      await queryClient.invalidateQueries({ queryKey: ['admin-cafe-tables'] });
+    },
+    onError: (err) => {
+      setMessage(null);
+      setError(err instanceof ApiClientError ? err.message : 'Unable to save table.');
+    },
+  });
+
+  const deleteTableMutation = useMutation({
+    mutationFn: (id: string) => deleteCafeTable(id),
+    onSuccess: async () => {
+      setError(null);
+      setMessage('Table deleted.');
+      if (editingTableId) {
+        setEditingTableId(null);
+        setTableForm(emptyTableForm());
+      }
+      await queryClient.invalidateQueries({ queryKey: ['admin-cafe-tables'] });
+    },
+    onError: (err) => {
+      setMessage(null);
+      setError(err instanceof ApiClientError ? err.message : 'Unable to delete table.');
+    },
+  });
+
+  const holidayMutation = useMutation({
+    mutationFn: async () => {
+      const payload = {
+        closedDate: holidayForm.closedDate,
+        label: holidayForm.label.trim() || undefined,
+        note: holidayForm.note.trim() || undefined,
+      };
+      if (editingHolidayId) {
+        return updateClosedDay(editingHolidayId, payload);
+      }
+      return createClosedDay(payload);
+    },
+    onSuccess: async () => {
+      setError(null);
+      setMessage(editingHolidayId ? 'Closed day updated.' : 'Closed day created.');
+      setEditingHolidayId(null);
+      setHolidayForm(emptyHolidayForm());
+      await queryClient.invalidateQueries({ queryKey: ['admin-reservation-holidays'] });
+    },
+    onError: (err) => {
+      setMessage(null);
+      setError(err instanceof ApiClientError ? err.message : 'Unable to save closed day.');
+    },
+  });
+
+  const deleteHolidayMutation = useMutation({
+    mutationFn: (id: string) => deleteClosedDay(id),
+    onSuccess: async () => {
+      setError(null);
+      setMessage('Closed day deleted.');
+      if (editingHolidayId) {
+        setEditingHolidayId(null);
+        setHolidayForm(emptyHolidayForm());
+      }
+      await queryClient.invalidateQueries({ queryKey: ['admin-reservation-holidays'] });
+    },
+    onError: (err) => {
+      setMessage(null);
+      setError(err instanceof ApiClientError ? err.message : 'Unable to delete closed day.');
+    },
+  });
+
   const tables = tablesQuery.data ?? [];
-  const pending = actionMutation.isPending || assignMutation.isPending;
+  const holidays = holidaysQuery.data ?? [];
+  const activeTables = tables.filter((table) => table.isActive);
+  const pending =
+    actionMutation.isPending ||
+    assignMutation.isPending ||
+    createMutation.isPending ||
+    tableMutation.isPending ||
+    deleteTableMutation.isPending ||
+    holidayMutation.isPending ||
+    deleteHolidayMutation.isPending;
+  const suitableNewBookingTables = activeTables.filter(
+    (table) => table.capacity >= newBooking.guestCount,
+  );
 
   return (
     <div>
       <PageHeader
         title="Reservations"
-        description="Review booking requests, assign tables, and configure booking rules."
+        description="Review bookings, manage tables and holidays, and configure booking rules."
       />
 
       <div className="mb-6 flex flex-wrap gap-2">
         {(
           [
             ['bookings', 'Bookings'],
+            ['tables', 'Tables'],
+            ['holidays', 'Holidays'],
             ['settings', 'Settings'],
           ] as const
         ).map(([value, label]) => (
@@ -254,7 +464,7 @@ export function ReservationsManager() {
 
       {tab === 'bookings' ? (
         <>
-          <div className="mb-6 flex flex-col gap-3 sm:flex-row">
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
             <label className="flex flex-col gap-1 text-sm">
               <span className="text-text-secondary">Date</span>
               <input
@@ -278,7 +488,188 @@ export function ReservationsManager() {
                 ))}
               </select>
             </label>
+            <button
+              type="button"
+              onClick={() => {
+                setShowNewBooking((open) => !open);
+                setError(null);
+                if (!showNewBooking) {
+                  setNewBooking(emptyNewBookingForm());
+                }
+              }}
+              className="rounded-[12px] bg-primary px-4 py-2 text-sm text-white hover:bg-primary-hover"
+            >
+              {showNewBooking ? 'Close form' : 'New booking'}
+            </button>
           </div>
+
+          {showNewBooking ? (
+            <form
+              className="mb-6 grid max-w-3xl gap-4 rounded-[16px] border border-border bg-surface p-4"
+              onSubmit={(event) => {
+                event.preventDefault();
+                createMutation.mutate();
+              }}
+            >
+              <p className="text-sm font-medium text-text">New booking</p>
+              <p className="text-xs text-text-muted">
+                Walk-in or phone reservation. Min-advance is skipped so “now” is allowed.
+              </p>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="space-y-1 text-sm sm:col-span-2">
+                  <span className="text-text-secondary">Full name</span>
+                  <input
+                    required
+                    value={newBooking.fullName}
+                    onChange={(event) =>
+                      setNewBooking((prev) => ({ ...prev, fullName: event.target.value }))
+                    }
+                    className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+                  />
+                </label>
+                <label className="space-y-1 text-sm">
+                  <span className="text-text-secondary">Email</span>
+                  <input
+                    type="email"
+                    required
+                    value={newBooking.email}
+                    onChange={(event) =>
+                      setNewBooking((prev) => ({ ...prev, email: event.target.value }))
+                    }
+                    className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+                  />
+                </label>
+                <label className="space-y-1 text-sm">
+                  <span className="text-text-secondary">Phone</span>
+                  <input
+                    required
+                    value={newBooking.phone}
+                    onChange={(event) =>
+                      setNewBooking((prev) => ({ ...prev, phone: event.target.value }))
+                    }
+                    className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+                  />
+                </label>
+                <label className="space-y-1 text-sm">
+                  <span className="text-text-secondary">Date</span>
+                  <input
+                    type="date"
+                    required
+                    value={newBooking.date}
+                    onChange={(event) =>
+                      setNewBooking((prev) => ({ ...prev, date: event.target.value }))
+                    }
+                    className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+                  />
+                </label>
+                <label className="space-y-1 text-sm">
+                  <span className="text-text-secondary">Time (HH:MM)</span>
+                  <input
+                    type="time"
+                    required
+                    value={newBooking.time}
+                    onChange={(event) =>
+                      setNewBooking((prev) => ({ ...prev, time: event.target.value }))
+                    }
+                    className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+                  />
+                </label>
+                <label className="space-y-1 text-sm">
+                  <span className="text-text-secondary">Guests</span>
+                  <input
+                    type="number"
+                    min={1}
+                    required
+                    value={newBooking.guestCount}
+                    onChange={(event) =>
+                      setNewBooking((prev) => ({
+                        ...prev,
+                        guestCount: Number(event.target.value) || 1,
+                        tableId: '',
+                      }))
+                    }
+                    className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+                  />
+                </label>
+                <label className="space-y-1 text-sm">
+                  <span className="text-text-secondary">Status</span>
+                  <select
+                    value={newBooking.status}
+                    onChange={(event) =>
+                      setNewBooking((prev) => ({
+                        ...prev,
+                        status: event.target.value as 'pending' | 'confirmed',
+                      }))
+                    }
+                    className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+                  >
+                    <option value="confirmed">Confirmed</option>
+                    <option value="pending">Pending</option>
+                  </select>
+                </label>
+                <label className="space-y-1 text-sm sm:col-span-2">
+                  <span className="text-text-secondary">Table (optional)</span>
+                  <select
+                    value={newBooking.tableId}
+                    onChange={(event) =>
+                      setNewBooking((prev) => ({ ...prev, tableId: event.target.value }))
+                    }
+                    className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+                  >
+                    <option value="">No table assigned</option>
+                    {suitableNewBookingTables.map((table) => (
+                      <option key={table.id} value={table.id}>
+                        {tableLabel(table)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="space-y-1 text-sm sm:col-span-2">
+                  <span className="text-text-secondary">Notes</span>
+                  <textarea
+                    rows={2}
+                    value={newBooking.notes}
+                    onChange={(event) =>
+                      setNewBooking((prev) => ({ ...prev, notes: event.target.value }))
+                    }
+                    className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+                  />
+                </label>
+                <label className="flex items-center gap-2 text-sm sm:col-span-2">
+                  <input
+                    type="checkbox"
+                    checked={newBooking.notifyGuest}
+                    onChange={(event) =>
+                      setNewBooking((prev) => ({ ...prev, notifyGuest: event.target.checked }))
+                    }
+                    className="size-4 rounded border-border"
+                  />
+                  <span className="text-text-secondary">Email guest</span>
+                </label>
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="submit"
+                  disabled={createMutation.isPending}
+                  className="rounded-[12px] bg-primary px-4 py-2 text-sm text-white hover:bg-primary-hover disabled:opacity-60"
+                >
+                  {createMutation.isPending ? 'Creating…' : 'Create booking'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowNewBooking(false);
+                    setNewBooking(emptyNewBookingForm());
+                  }}
+                  className="rounded-[12px] border border-border bg-surface px-4 py-2 text-sm text-text hover:bg-surface-secondary"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          ) : null}
 
           {listQuery.isLoading ? <p className="text-sm text-text-secondary">Loading reservations…</p> : null}
           {listQuery.isError ? (
@@ -306,6 +697,309 @@ export function ReservationsManager() {
             ))}
           </div>
         </>
+      ) : null}
+
+      {tab === 'tables' ? (
+        <div className="space-y-6">
+          <form
+            className="grid max-w-3xl gap-4 rounded-[16px] border border-border bg-surface p-4 md:grid-cols-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              tableMutation.mutate();
+            }}
+          >
+            <p className="text-sm font-medium text-text md:col-span-2">
+              {editingTableId ? 'Edit table' : 'Create table'}
+            </p>
+            <p className="text-xs text-text-muted md:col-span-2">
+              Active tables add to bookable capacity. Deactivate to hide from assignment without deleting.
+            </p>
+            <label className="space-y-1 text-sm">
+              <span className="text-text-secondary">Code</span>
+              <input
+                required={!editingTableId}
+                disabled={Boolean(editingTableId)}
+                value={tableForm.code}
+                onChange={(event) => setTableForm((prev) => ({ ...prev, code: event.target.value }))}
+                placeholder="T6"
+                className="w-full rounded-[12px] border border-border bg-background px-3 py-2 disabled:opacity-60"
+              />
+            </label>
+            <label className="space-y-1 text-sm">
+              <span className="text-text-secondary">Name</span>
+              <input
+                required
+                value={tableForm.name}
+                onChange={(event) => setTableForm((prev) => ({ ...prev, name: event.target.value }))}
+                className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+              />
+            </label>
+            <label className="space-y-1 text-sm">
+              <span className="text-text-secondary">Capacity</span>
+              <input
+                type="number"
+                min={1}
+                required
+                value={tableForm.capacity}
+                onChange={(event) =>
+                  setTableForm((prev) => ({ ...prev, capacity: Number(event.target.value) || 1 }))
+                }
+                className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+              />
+            </label>
+            <label className="space-y-1 text-sm">
+              <span className="text-text-secondary">Sort order</span>
+              <input
+                type="number"
+                value={tableForm.sortOrder}
+                onChange={(event) =>
+                  setTableForm((prev) => ({ ...prev, sortOrder: Number(event.target.value) || 0 }))
+                }
+                className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+              />
+            </label>
+            <label className="flex items-center gap-2 text-sm md:col-span-2">
+              <input
+                type="checkbox"
+                checked={tableForm.isActive}
+                onChange={(event) =>
+                  setTableForm((prev) => ({ ...prev, isActive: event.target.checked }))
+                }
+                className="size-4 rounded border-border"
+              />
+              <span className="text-text-secondary">Active (counts toward capacity & assignment)</span>
+            </label>
+            <div className="flex flex-wrap gap-3 md:col-span-2">
+              <button
+                type="submit"
+                disabled={tableMutation.isPending}
+                className="rounded-[12px] bg-primary px-4 py-2 text-sm text-white hover:bg-primary-hover disabled:opacity-60"
+              >
+                {editingTableId
+                  ? tableMutation.isPending
+                    ? 'Saving…'
+                    : 'Save table'
+                  : tableMutation.isPending
+                    ? 'Creating…'
+                    : 'Create table'}
+              </button>
+              {editingTableId ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingTableId(null);
+                    setTableForm(emptyTableForm());
+                  }}
+                  className="rounded-[12px] border border-border bg-surface px-4 py-2 text-sm text-text hover:bg-surface-secondary"
+                >
+                  Cancel edit
+                </button>
+              ) : null}
+            </div>
+          </form>
+
+          {tablesQuery.isLoading ? <p className="text-sm text-text-secondary">Loading tables…</p> : null}
+          {tablesQuery.isError ? (
+            <p className="text-sm text-red-700" role="alert">
+              {tablesQuery.error instanceof ApiClientError
+                ? tablesQuery.error.message
+                : 'Unable to load tables.'}
+            </p>
+          ) : null}
+          {!tablesQuery.isLoading && tables.length === 0 ? (
+            <p className="text-sm text-text-secondary">No cafe tables yet.</p>
+          ) : null}
+
+          <div className="space-y-3">
+            {tables.map((table) => (
+              <article
+                key={table.id}
+                className="flex flex-col gap-3 rounded-[16px] border border-border bg-surface p-4 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div>
+                  <p className="font-medium text-text">
+                    {table.code} · {table.name}
+                  </p>
+                  <p className="text-sm text-text-secondary">
+                    Capacity {table.capacity} · sort {table.sortOrder} ·{' '}
+                    {table.isActive ? 'Active' : 'Inactive'}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    disabled={pending}
+                    onClick={() => {
+                      setEditingTableId(table.id);
+                      setTableForm({
+                        code: table.code,
+                        name: table.name,
+                        capacity: table.capacity,
+                        sortOrder: table.sortOrder,
+                        isActive: table.isActive,
+                      });
+                    }}
+                    className="rounded-[12px] border border-border px-3 py-2 text-sm text-text hover:bg-surface-secondary disabled:opacity-60"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    disabled={pending}
+                    onClick={() => {
+                      if (window.confirm(`Delete table ${table.code}? This cannot be undone in the UI.`)) {
+                        deleteTableMutation.mutate(table.id);
+                      }
+                    }}
+                    className="rounded-[12px] border border-red-200 px-3 py-2 text-sm text-red-700 hover:bg-red-50 disabled:opacity-60"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {tab === 'holidays' ? (
+        <div className="space-y-6">
+          <form
+            className="grid max-w-3xl gap-4 rounded-[16px] border border-border bg-surface p-4 md:grid-cols-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              holidayMutation.mutate();
+            }}
+          >
+            <p className="text-sm font-medium text-text md:col-span-2">
+              {editingHolidayId ? 'Edit closed day' : 'Add closed day'}
+            </p>
+            <p className="text-xs text-text-muted md:col-span-2">
+              Full-day closures block public availability and all booking creates (including staff).
+            </p>
+            <label className="space-y-1 text-sm">
+              <span className="text-text-secondary">Date</span>
+              <input
+                type="date"
+                required
+                value={holidayForm.closedDate}
+                onChange={(event) =>
+                  setHolidayForm((prev) => ({ ...prev, closedDate: event.target.value }))
+                }
+                className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+              />
+            </label>
+            <label className="space-y-1 text-sm">
+              <span className="text-text-secondary">Label</span>
+              <input
+                value={holidayForm.label}
+                onChange={(event) =>
+                  setHolidayForm((prev) => ({ ...prev, label: event.target.value }))
+                }
+                placeholder="Independence Day"
+                className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+              />
+            </label>
+            <label className="space-y-1 text-sm md:col-span-2">
+              <span className="text-text-secondary">Note</span>
+              <textarea
+                rows={2}
+                value={holidayForm.note}
+                onChange={(event) =>
+                  setHolidayForm((prev) => ({ ...prev, note: event.target.value }))
+                }
+                className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
+              />
+            </label>
+            <div className="flex flex-wrap gap-3 md:col-span-2">
+              <button
+                type="submit"
+                disabled={holidayMutation.isPending}
+                className="rounded-[12px] bg-primary px-4 py-2 text-sm text-white hover:bg-primary-hover disabled:opacity-60"
+              >
+                {editingHolidayId
+                  ? holidayMutation.isPending
+                    ? 'Saving…'
+                    : 'Save closed day'
+                  : holidayMutation.isPending
+                    ? 'Creating…'
+                    : 'Add closed day'}
+              </button>
+              {editingHolidayId ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingHolidayId(null);
+                    setHolidayForm(emptyHolidayForm());
+                  }}
+                  className="rounded-[12px] border border-border bg-surface px-4 py-2 text-sm text-text hover:bg-surface-secondary"
+                >
+                  Cancel edit
+                </button>
+              ) : null}
+            </div>
+          </form>
+
+          {holidaysQuery.isLoading ? (
+            <p className="text-sm text-text-secondary">Loading closed days…</p>
+          ) : null}
+          {holidaysQuery.isError ? (
+            <p className="text-sm text-red-700" role="alert">
+              {holidaysQuery.error instanceof ApiClientError
+                ? holidaysQuery.error.message
+                : 'Unable to load closed days.'}
+            </p>
+          ) : null}
+          {!holidaysQuery.isLoading && holidays.length === 0 ? (
+            <p className="text-sm text-text-secondary">No closed days configured.</p>
+          ) : null}
+
+          <div className="space-y-3">
+            {holidays.map((day) => (
+              <article
+                key={day.id}
+                className="flex flex-col gap-3 rounded-[16px] border border-border bg-surface p-4 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div>
+                  <p className="font-medium text-text">
+                    {day.closedDate}
+                    {day.label ? ` · ${day.label}` : ''}
+                  </p>
+                  {day.note ? <p className="text-sm text-text-secondary">{day.note}</p> : null}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    disabled={pending}
+                    onClick={() => {
+                      setEditingHolidayId(day.id);
+                      setHolidayForm({
+                        closedDate: day.closedDate,
+                        label: day.label,
+                        note: day.note,
+                      });
+                    }}
+                    className="rounded-[12px] border border-border px-3 py-2 text-sm text-text hover:bg-surface-secondary disabled:opacity-60"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    disabled={pending}
+                    onClick={() => {
+                      if (window.confirm(`Remove closed day ${day.closedDate}?`)) {
+                        deleteHolidayMutation.mutate(day.id);
+                      }
+                    }}
+                    className="rounded-[12px] border border-red-200 px-3 py-2 text-sm text-red-700 hover:bg-red-50 disabled:opacity-60"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
       ) : null}
 
       {tab === 'settings' ? (
@@ -508,7 +1202,9 @@ function ReservationRow({
   const assignable = canAssignTable(reservation.status);
   const currentTable = tables.find((table) => table.id === reservation.tableId);
   const [selectedTableId, setSelectedTableId] = useState(reservation.tableId ?? '');
-  const suitableTables = tables.filter((table) => table.capacity >= reservation.guestCount);
+  const suitableTables = tables.filter(
+    (table) => table.isActive && table.capacity >= reservation.guestCount,
+  );
 
   useEffect(() => {
     setSelectedTableId(reservation.tableId ?? '');

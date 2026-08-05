@@ -37,7 +37,8 @@ export function HeroVideo() {
           return;
         }
         observer.disconnect();
-        if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        // Prefer idle scheduling; typeof avoids `in` narrowing window to never.
+        if (typeof window.requestIdleCallback === 'function') {
           idleId = window.requestIdleCallback(armLoad, { timeout: 1200 });
         } else {
           timeoutId = window.setTimeout(armLoad, 200);
@@ -51,7 +52,7 @@ export function HeroVideo() {
     return () => {
       cancelled = true;
       observer.disconnect();
-      if (idleId !== undefined && 'cancelIdleCallback' in window) {
+      if (idleId !== undefined && typeof window.cancelIdleCallback === 'function') {
         window.cancelIdleCallback(idleId);
       }
       if (timeoutId !== undefined) {

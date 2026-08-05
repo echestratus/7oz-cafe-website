@@ -7,7 +7,7 @@
  */
 
 import { cpSync, existsSync, mkdirSync, readdirSync, rmSync, statSync } from 'node:fs';
-import { dirname, join, relative } from 'node:path';
+import { dirname, extname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -32,6 +32,9 @@ const includeCategories = [
   'reviews',
 ];
 
+/** Gallery pages only render images — skip shipping unused MP4 weight. */
+const galleryImageExtensions = new Set(['.webp', '.avif', '.jpg', '.jpeg', '.png', '.gif']);
+
 function ensureDir(path) {
   if (!existsSync(path)) {
     mkdirSync(path, { recursive: true });
@@ -51,6 +54,23 @@ function countFiles(dir) {
   return total;
 }
 
+function copyGalleryFiltered(sourceDir, destinationDir) {
+  ensureDir(destinationDir);
+  for (const entry of readdirSync(sourceDir)) {
+    const sourcePath = join(sourceDir, entry);
+    const destinationPath = join(destinationDir, entry);
+    const stats = statSync(sourcePath);
+    if (stats.isDirectory()) {
+      copyGalleryFiltered(sourcePath, destinationPath);
+      continue;
+    }
+    if (!galleryImageExtensions.has(extname(entry).toLowerCase())) {
+      continue;
+    }
+    cpSync(sourcePath, destinationPath);
+  }
+}
+
 function syncCategory(category, destinationRoot) {
   const sourceDir = join(sourceRoot, category);
   if (!existsSync(sourceDir) || !statSync(sourceDir).isDirectory()) {
@@ -64,8 +84,13 @@ function syncCategory(category, destinationRoot) {
     rmSync(destinationDir, { recursive: true, force: true });
   }
 
-  cpSync(sourceDir, destinationDir, { recursive: true });
-  const count = countFiles(sourceDir);
+  if (category === 'gallery') {
+    copyGalleryFiltered(sourceDir, destinationDir);
+  } else {
+    cpSync(sourceDir, destinationDir, { recursive: true });
+  }
+
+  const count = countFiles(destinationDir);
   console.log(
     `synced ${relative(root, sourceDir)}\\ -> ${relative(root, destinationDir)}\\ (${count} files)`,
   );

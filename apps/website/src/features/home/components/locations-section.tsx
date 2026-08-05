@@ -94,7 +94,6 @@ export function LocationsSection({ locations = getAllLocations() }: LocationsSec
                 fill
                 className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                 sizes="(max-width: 1024px) 100vw, 48vw"
-                priority
               />
               <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
               <span className="absolute inset-x-0 bottom-0 space-y-4 p-7 md:p-10">

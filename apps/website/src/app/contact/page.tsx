@@ -37,7 +37,7 @@ export default async function ContactPage() {
   return (
     <SiteShell footer={footer}>
       <main>
-        <section className="pt-28 pb-16 md:pt-36 md:pb-24">
+        <section className="pt-10 pb-16 md:pt-12 md:pb-24">
           <Container>
             <Reveal className="max-w-3xl">
               <SectionIntro

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 
+import { PageMain } from '@/components/layout/page-main';
 import { SiteShell } from '@/components/layout/site-shell';
 import { Button } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
@@ -28,7 +29,7 @@ export default async function MembershipPage() {
 
   return (
     <SiteShell footer={footer}>
-      <main className="pt-28 pb-24 md:pt-36 md:pb-32">
+      <PageMain>
         <Container className="space-y-20">
           <Reveal>
             <SectionIntro
@@ -99,7 +100,7 @@ export default async function MembershipPage() {
             </Reveal>
           </section>
         </Container>
-      </main>
+      </PageMain>
     </SiteShell>
   );
 }

@@ -96,7 +96,7 @@ export function OpenLocationAwaitingGalleryView({
               </Link>
             </Reveal>
 
-            <div className="grid gap-5 sm:grid-cols-3">
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {galleriesReady.map((item, index) => (
                 <Reveal key={item.id} delay={index * 0.05}>
                   <Link

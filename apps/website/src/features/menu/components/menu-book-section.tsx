@@ -79,8 +79,8 @@ export function MenuBookSection() {
                 sizes="(max-width: 640px) 78vw, (max-width: 1024px) 46vw, 31vw"
                 priority={index === 0}
               />
-              <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-              <span className="pointer-events-none absolute inset-x-0 bottom-0 p-4 text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+              <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent opacity-100 transition-opacity duration-300 md:opacity-0 md:group-hover:opacity-100" />
+              <span className="pointer-events-none absolute inset-x-0 bottom-0 p-4 text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-white opacity-100 transition-opacity duration-300 md:opacity-0 md:group-hover:opacity-100">
                 View page
               </span>
             </button>
@@ -88,9 +88,11 @@ export function MenuBookSection() {
         ))}
       </div>
 
-      <div className="mt-6 flex items-center justify-between">
-        <p className="text-sm text-text-muted">Tap a page to preview · swipe or use arrows to browse.</p>
-        <div className="flex gap-2">
+      <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <p className="min-w-0 text-sm text-text-muted">
+          Tap a page to preview · swipe or use arrows to browse.
+        </p>
+        <div className="flex shrink-0 gap-2">
           <button
             type="button"
             onClick={() => scrollByPage(-1)}

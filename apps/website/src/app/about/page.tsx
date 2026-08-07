@@ -36,7 +36,7 @@ export default async function AboutPage() {
   return (
     <SiteShell footer={footer}>
       <main>
-        <section className="relative isolate overflow-hidden pt-28 pb-16 md:pt-36 md:pb-24">
+        <section className="relative isolate overflow-hidden pt-10 pb-16 md:pt-12 md:pb-24">
           <div className="absolute inset-0 -z-10 bg-surface-secondary/80" aria-hidden="true" />
           <Container className="grid items-center gap-12 md:grid-cols-2 md:gap-20">
             <Reveal>

@@ -30,8 +30,8 @@ export function HeroSection({ data }: HeroSectionProps) {
         aria-hidden="true"
       />
 
-      <Container className="relative z-10 flex min-h-[100svh] flex-col justify-end pb-24 pt-32 md:pb-32">
-        <div className="max-w-2xl space-y-9">
+      <Container className="pointer-events-none relative z-10 flex min-h-[100svh] flex-col justify-end pb-24 pt-32 md:pb-32">
+        <div className="pointer-events-auto max-w-2xl space-y-9">
           {/* Soft local light behind the dark logo — invisible plate, just atmosphere. */}
           <div className="relative inline-block max-w-full">
             <span

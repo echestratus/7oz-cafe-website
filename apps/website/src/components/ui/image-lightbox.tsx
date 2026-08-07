@@ -74,7 +74,7 @@ export function ImageLightbox({ images, index, onClose, onChange }: ImageLightbo
           role="dialog"
           aria-modal="true"
           aria-labelledby={titleId}
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8"
+          className="fixed inset-0 z-[100] flex max-h-[100dvh] items-center justify-center overflow-y-auto p-4 md:p-8"
           initial={reduceMotion ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={reduceMotion ? undefined : { opacity: 0 }}
@@ -88,14 +88,17 @@ export function ImageLightbox({ images, index, onClose, onChange }: ImageLightbo
           />
 
           <motion.div
-            className="relative z-10 flex max-h-full w-full max-w-5xl flex-col items-center"
+            className="relative z-10 flex max-h-[min(100dvh-2rem,960px)] w-full max-w-5xl flex-col items-center overflow-y-auto"
             initial={reduceMotion ? false : { opacity: 0, scale: 0.96, y: 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={reduceMotion ? undefined : { opacity: 0, scale: 0.98, y: 8 }}
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
           >
             <div className="mb-4 flex w-full items-center justify-between gap-4 text-white">
-              <p id={titleId} className="truncate text-sm font-medium tracking-wide text-white/80">
+              <p
+                id={titleId}
+                className="min-w-0 truncate text-sm font-medium tracking-wide text-white/80"
+              >
                 {active.caption ?? active.alt}
                 {hasMultiple ? (
                   <span className="ml-3 text-white/45">
@@ -113,7 +116,7 @@ export function ImageLightbox({ images, index, onClose, onChange }: ImageLightbo
               </button>
             </div>
 
-            <div className="relative flex w-full items-center justify-center">
+            <div className="relative flex min-h-0 w-full items-center justify-center">
               {hasMultiple ? (
                 <button
                   type="button"
@@ -128,7 +131,7 @@ export function ImageLightbox({ images, index, onClose, onChange }: ImageLightbo
               <AnimatePresence mode="wait">
                 <motion.figure
                   key={active.src}
-                  className="relative max-h-[min(78vh,900px)] w-full overflow-hidden rounded-media bg-black/20 shadow-[0_24px_80px_rgba(0,0,0,0.45)]"
+                  className="relative max-h-[min(58dvh,720px)] w-full overflow-hidden rounded-media bg-black/20 shadow-[0_24px_80px_rgba(0,0,0,0.45)] md:max-h-[min(72dvh,900px)]"
                   initial={reduceMotion ? false : { opacity: 0, scale: 0.98 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={reduceMotion ? undefined : { opacity: 0, scale: 1.01 }}
@@ -139,7 +142,7 @@ export function ImageLightbox({ images, index, onClose, onChange }: ImageLightbo
                     alt={active.alt}
                     width={1200}
                     height={1600}
-                    className="mx-auto max-h-[min(78vh,900px)] w-auto object-contain"
+                    className="mx-auto max-h-[min(58dvh,720px)] w-auto object-contain md:max-h-[min(72dvh,900px)]"
                     sizes="(max-width: 1024px) 92vw, 960px"
                     priority
                   />
@@ -159,7 +162,7 @@ export function ImageLightbox({ images, index, onClose, onChange }: ImageLightbo
             </div>
 
             {hasMultiple ? (
-              <div className="mt-5 flex gap-3 md:hidden">
+              <div className="mt-4 flex shrink-0 gap-3 md:hidden">
                 <button
                   type="button"
                   onClick={() => go(-1)}

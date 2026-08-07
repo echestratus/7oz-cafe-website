@@ -40,7 +40,7 @@ export function GalleryPreviewSection({ data, images }: GalleryPreviewSectionPro
           </div>
         </Reveal>
 
-        <div className="columns-2 gap-4 md:columns-3 md:gap-6">
+        <div className="columns-1 gap-4 sm:columns-2 sm:gap-5 lg:columns-3 md:gap-6">
           {preview.map((image, index) => (
             <Reveal
               key={`${image.src}-${index}`}

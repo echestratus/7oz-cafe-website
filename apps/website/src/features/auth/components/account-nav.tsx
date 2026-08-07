@@ -10,9 +10,15 @@ import { useAuthStore } from '@/stores/auth-store';
 
 interface AccountNavProps {
   tone?: 'overlay' | 'solid';
+  layout?: 'inline' | 'stack';
+  onNavigate?: () => void;
 }
 
-export function AccountNav({ tone = 'solid' }: AccountNavProps) {
+export function AccountNav({
+  tone = 'solid',
+  layout = 'inline',
+  onNavigate,
+}: AccountNavProps) {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
   const hydrated = useAuthStore((state) => state.hydrated);
@@ -21,17 +27,32 @@ export function AccountNav({ tone = 'solid' }: AccountNavProps) {
   const [error, setError] = useState<string | null>(null);
 
   const isOverlay = tone === 'overlay';
+  const isStack = layout === 'stack';
   const linkClass = isOverlay
     ? 'text-white/78 hover:text-white'
     : 'text-text-secondary hover:text-text';
+  const stackLinkClass =
+    'block rounded-[12px] px-3 py-3 text-lg font-medium text-text transition-colors duration-200 hover:bg-surface-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
 
   if (!hydrated) {
-    return <span className={`text-nav ${linkClass}`}>…</span>;
+    return (
+      <span className={isStack ? 'px-3 py-3 text-lg text-text-muted' : `text-nav ${linkClass}`}>
+        …
+      </span>
+    );
   }
 
   if (!user) {
     return (
-      <Link href="/login" className={`text-nav transition-colors duration-200 ${linkClass}`}>
+      <Link
+        href="/login"
+        className={
+          isStack
+            ? stackLinkClass
+            : `text-nav transition-colors duration-200 ${linkClass}`
+        }
+        onClick={onNavigate}
+      >
         Sign in
       </Link>
     );
@@ -47,21 +68,34 @@ export function AccountNav({ tone = 'solid' }: AccountNavProps) {
         return;
       }
       clearSession();
+      onNavigate?.();
       router.push('/');
       router.refresh();
     });
   }
 
   return (
-    <div className="flex items-center gap-4">
-      <Link href="/account" className={`text-nav transition-colors duration-200 ${linkClass}`}>
+    <div className={isStack ? 'flex flex-col gap-1' : 'flex items-center gap-4'}>
+      <Link
+        href="/account"
+        className={
+          isStack
+            ? stackLinkClass
+            : `text-nav transition-colors duration-200 ${linkClass}`
+        }
+        onClick={onNavigate}
+      >
         Account
       </Link>
       <button
         type="button"
         onClick={onLogout}
         disabled={isPending}
-        className={`text-nav transition-colors duration-200 disabled:opacity-50 ${linkClass}`}
+        className={
+          isStack
+            ? `${stackLinkClass} w-full text-left disabled:opacity-50`
+            : `text-nav transition-colors duration-200 disabled:opacity-50 ${linkClass}`
+        }
         aria-label="Sign out"
       >
         {isPending ? 'Signing out…' : 'Sign out'}

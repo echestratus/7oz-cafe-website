@@ -36,8 +36,8 @@ export function GalleryGrid({ images }: GalleryGridProps) {
                 className="h-auto w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               />
-              <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-              <span className="pointer-events-none absolute inset-x-0 bottom-0 p-4 text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+              <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-100 transition-opacity duration-300 md:opacity-0 md:group-hover:opacity-100" />
+              <span className="pointer-events-none absolute inset-x-0 bottom-0 p-4 text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-white opacity-100 transition-opacity duration-300 md:opacity-0 md:group-hover:opacity-100">
                 View photo
               </span>
             </button>

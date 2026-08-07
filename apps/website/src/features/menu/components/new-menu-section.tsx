@@ -144,7 +144,7 @@ function FeaturedNewMenuCard({
     <article
       className={cx(
         'group relative overflow-hidden rounded-media',
-        size === 'large' ? 'min-h-[31rem] md:min-h-[38rem]' : 'min-h-[27rem] md:min-h-[38rem]',
+        size === 'large' ? 'min-h-[24rem] md:min-h-[38rem]' : 'min-h-[22rem] md:min-h-[38rem]',
       )}
     >
       <Image

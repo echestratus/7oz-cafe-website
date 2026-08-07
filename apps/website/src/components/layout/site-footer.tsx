@@ -56,7 +56,10 @@ export function SiteFooter({ footer }: SiteFooterProps) {
             <p className="text-quote text-white/85">{tagline}</p>
           </div>
 
-          <nav aria-label="Footer" className="grid grid-cols-2 gap-x-16 gap-y-4 sm:grid-cols-3">
+          <nav
+            aria-label="Footer"
+            className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3 sm:gap-x-12"
+          >
             {links.map((item) => (
               <Link
                 key={`${item.href}-${item.label}`}

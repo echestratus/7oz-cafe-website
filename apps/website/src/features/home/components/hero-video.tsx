@@ -148,7 +148,7 @@ export function HeroVideo() {
         <button
           type="button"
           onClick={toggleSound}
-          className="absolute bottom-8 right-4 z-20 inline-flex h-11 min-h-11 w-11 items-center justify-center rounded-full border border-white/30 bg-black/35 text-white backdrop-blur-sm transition-colors duration-200 hover:bg-black/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white md:bottom-10 md:right-8"
+          className="absolute bottom-[max(2rem,env(safe-area-inset-bottom))] right-4 z-20 inline-flex h-11 min-h-11 w-11 items-center justify-center rounded-full border border-white/30 bg-black/35 text-white backdrop-blur-sm transition-colors duration-200 hover:bg-black/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white md:bottom-10 md:right-8"
           aria-label={isMuted ? 'Unmute hero video' : 'Mute hero video'}
           aria-pressed={!isMuted}
         >

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 
+import { PageMain } from '@/components/layout/page-main';
 import { SiteShell } from '@/components/layout/site-shell';
 import { Container } from '@/components/ui/container';
 import { AccountDashboard } from '@/features/account/components/account-dashboard';
@@ -18,13 +19,13 @@ export default async function AccountPage() {
 
   return (
     <SiteShell footer={footer}>
-      <main className="pt-28 pb-24 md:pt-36 md:pb-32">
+      <PageMain>
         <Container>
           <AuthGuard>
             <AccountDashboard />
           </AuthGuard>
         </Container>
-      </main>
+      </PageMain>
     </SiteShell>
   );
 }

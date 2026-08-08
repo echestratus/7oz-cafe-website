@@ -36,6 +36,7 @@ const COFFEE_SLUGS = new Set([
   'hazelnut-latte',
   'hot-americano',
   'hot-latte',
+  'ice-cube-coffee',
   'mango-latte',
   'mont-blanc',
   'raf-coffee',

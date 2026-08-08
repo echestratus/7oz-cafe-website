@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 
+import { PageMain } from '@/components/layout/page-main';
 import { SiteShell } from '@/components/layout/site-shell';
 import { Container } from '@/components/ui/container';
 import { Reveal } from '@/components/ui/reveal';
@@ -27,7 +28,7 @@ export default async function LoyaltyPage() {
 
   return (
     <SiteShell footer={footer}>
-      <main className="pt-28 pb-24 md:pt-36 md:pb-32">
+      <PageMain>
         <Container className="space-y-16">
           <Reveal>
             <SectionIntro
@@ -62,7 +63,7 @@ export default async function LoyaltyPage() {
             </div>
           </section>
         </Container>
-      </main>
+      </PageMain>
     </SiteShell>
   );
 }

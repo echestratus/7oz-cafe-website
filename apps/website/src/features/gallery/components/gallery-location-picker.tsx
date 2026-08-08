@@ -1,3 +1,4 @@
+import { PageMain } from '@/components/layout/page-main';
 import { Container } from '@/components/ui/container';
 import { Reveal } from '@/components/ui/reveal';
 import { SectionIntro } from '@/components/ui/section-intro';
@@ -14,7 +15,7 @@ export function GalleryLocationPicker() {
       : `Moments from each 7Oz room. ${openCount} open now.`;
 
   return (
-    <main className="pt-28 pb-24 md:pt-36 md:pb-32">
+    <PageMain>
       <Container>
         <Reveal className="mb-14 md:mb-16">
           <SectionIntro
@@ -37,6 +38,6 @@ export function GalleryLocationPicker() {
           ))}
         </div>
       </Container>
-    </main>
+    </PageMain>
   );
 }

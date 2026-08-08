@@ -10,7 +10,7 @@ const sizeMap = {
     variant: 'mark',
     width: 88,
     height: 88,
-    className: 'h-16 w-16 md:h-20 md:w-20',
+    className: 'h-12 w-12 md:h-20 md:w-20',
   },
   footer: {
     variant: 'mark',

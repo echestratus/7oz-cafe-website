@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { PageMain } from '@/components/layout/page-main';
 import { SiteShell } from '@/components/layout/site-shell';
 import { Container } from '@/components/ui/container';
 import { Reveal } from '@/components/ui/reveal';
@@ -69,7 +70,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
 
   return (
     <SiteShell footer={footer}>
-      <main className="pt-28 pb-24 md:pt-36 md:pb-32">
+      <PageMain>
         <Container>
           <article className="mx-auto max-w-3xl">
             <Reveal>
@@ -113,7 +114,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
             </Reveal>
           </article>
         </Container>
-      </main>
+      </PageMain>
     </SiteShell>
   );
 }

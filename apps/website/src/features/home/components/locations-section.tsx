@@ -86,7 +86,7 @@ export function LocationsSection({ locations = getAllLocations() }: LocationsSec
           <Reveal>
             <Link
               href={galleryHref(primary)}
-              className="group relative block min-h-[28rem] overflow-hidden rounded-media focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary md:min-h-[32rem]"
+              className="group relative block min-h-[22rem] overflow-hidden rounded-media focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary md:min-h-[32rem]"
             >
               <Image
                 src={primary.imageSrc}

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 
+import { PageMain } from '@/components/layout/page-main';
 import { SiteShell } from '@/components/layout/site-shell';
 import { Container } from '@/components/ui/container';
 import { Reveal } from '@/components/ui/reveal';
@@ -23,7 +24,7 @@ export default async function ReservationsPage() {
 
   return (
     <SiteShell footer={footer}>
-      <main className="pt-28 pb-24 md:pt-36 md:pb-32">
+      <PageMain>
         <Container className="grid gap-16 lg:grid-cols-[0.95fr_1.05fr] lg:gap-20">
           <Reveal className="space-y-8">
             <SectionIntro
@@ -43,7 +44,7 @@ export default async function ReservationsPage() {
             <ReservationBookingForm />
           </Reveal>
         </Container>
-      </main>
+      </PageMain>
     </SiteShell>
   );
 }

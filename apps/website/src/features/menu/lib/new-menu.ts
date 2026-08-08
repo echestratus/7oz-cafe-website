@@ -20,6 +20,7 @@ export const NEW_MENU_CAMPAIGN = {
     'mango-latte',
     'strawberry-manuka',
     'dirty-latte',
+    'ice-cube-coffee',
   ],
 } as const;
 

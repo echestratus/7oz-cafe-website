@@ -103,6 +103,14 @@ const fallbackTestimonials = {
       avatarSrc: '/assets/reviews/omar-phelps.webp',
       videoSrc: '/assets/reviews/omar-phelps.mp4',
     },
+    {
+      name: 'Vahap Sanal',
+      role: 'Grandmaster, Turkey',
+      review:
+        "Hi everyone — we're at 7Oz Espresso. We had a double espresso, and the quality of the coffee, the atmosphere, the energy — everything was perfect. Thank you to everyone here. I invite you all to come and experience this.",
+      avatarSrc: '/assets/reviews/vahap-sanal.webp',
+      videoSrc: '/assets/reviews/vahap-sanal.mp4',
+    },
   ],
 };
 

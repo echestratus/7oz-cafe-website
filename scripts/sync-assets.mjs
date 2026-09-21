@@ -4,20 +4,34 @@
  * Sync selected media from ./assets into application public directories.
  * Mirrors each category (destination is replaced to drop orphaned files).
  * Idempotent. Safe to re-run. Does not invent missing files.
+ *
+ * When invoked from an app package (website/admin), only that app's public
+ * directory is written so parallel CI builds do not race on rmSync.
+ * Root `pnpm sync:assets` still mirrors both apps.
  */
 
-import { cpSync, existsSync, mkdirSync, readdirSync, rmSync, statSync } from 'node:fs';
-import { dirname, extname, join, relative } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import {
+  closeSync,
+  cpSync,
+  existsSync,
+  mkdirSync,
+  openSync,
+  readdirSync,
+  rmSync,
+  statSync,
+} from 'node:fs';
+import { dirname, extname, isAbsolute, join, relative, resolve, sep } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
 const sourceRoot = join(root, 'assets');
+const lockPath = join(root, 'scripts', '.sync-assets.lock');
 
-const targets = [
-  join(root, 'apps', 'website', 'public', 'assets'),
-  join(root, 'apps', 'admin', 'public', 'assets'),
-];
+const websiteAssets = join(root, 'apps', 'website', 'public', 'assets');
+const adminAssets = join(root, 'apps', 'admin', 'public', 'assets');
+const websiteApp = join(root, 'apps', 'website');
+const adminApp = join(root, 'apps', 'admin');
 
 const includeCategories = [
   'logo',
@@ -34,6 +48,34 @@ const includeCategories = [
 
 /** Gallery pages only render images — skip shipping unused MP4 weight. */
 const galleryImageExtensions = new Set(['.webp', '.avif', '.jpg', '.jpeg', '.png', '.gif']);
+
+export function isPathInside(parent, child) {
+  const relativePath = relative(resolve(parent), resolve(child));
+  return relativePath === '' || (!relativePath.startsWith('..') && !isAbsolute(relativePath));
+}
+
+export function resolveTargets(cwd = process.cwd(), env = process.env) {
+  const override = env.SYNC_ASSETS_TARGET?.trim().toLowerCase();
+  if (override === 'website') {
+    return [websiteAssets];
+  }
+  if (override === 'admin') {
+    return [adminAssets];
+  }
+  if (override === 'all') {
+    return [websiteAssets, adminAssets];
+  }
+
+  const resolvedCwd = resolve(cwd);
+  if (isPathInside(websiteApp, resolvedCwd)) {
+    return [websiteAssets];
+  }
+  if (isPathInside(adminApp, resolvedCwd)) {
+    return [adminAssets];
+  }
+
+  return [websiteAssets, adminAssets];
+}
 
 function ensureDir(path) {
   if (!existsSync(path)) {
@@ -71,7 +113,72 @@ function copyGalleryFiltered(sourceDir, destinationDir) {
   }
 }
 
-function syncCategory(category, destinationRoot) {
+function errorCode(error) {
+  if (error && typeof error === 'object' && 'code' in error && typeof error.code === 'string') {
+    return error.code;
+  }
+  return undefined;
+}
+
+async function sleep(ms) {
+  await new Promise((resolveSleep) => {
+    setTimeout(resolveSleep, ms);
+  });
+}
+
+async function removeDir(path) {
+  let lastError = /** @type {unknown} */ (undefined);
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    try {
+      rmSync(path, { recursive: true, force: true });
+      return;
+    } catch (error) {
+      const code = errorCode(error);
+      lastError = error;
+      if (code !== 'ENOTEMPTY' && code !== 'EBUSY' && code !== 'EPERM') {
+        throw error;
+      }
+      await sleep(25 * (attempt + 1));
+    }
+  }
+  throw lastError;
+}
+
+async function acquireLock(timeoutMs = 60_000) {
+  const deadline = Date.now() + timeoutMs;
+  while (true) {
+    try {
+      return openSync(lockPath, 'wx');
+    } catch (error) {
+      if (errorCode(error) !== 'EEXIST') {
+        throw error;
+      }
+      try {
+        const ageMs = Date.now() - statSync(lockPath).mtimeMs;
+        if (ageMs > 120_000) {
+          rmSync(lockPath, { force: true });
+          continue;
+        }
+      } catch {
+        continue;
+      }
+      if (Date.now() >= deadline) {
+        throw new Error('timed out waiting for asset sync lock');
+      }
+      await sleep(50);
+    }
+  }
+}
+
+function releaseLock(fd) {
+  try {
+    closeSync(fd);
+  } finally {
+    rmSync(lockPath, { force: true });
+  }
+}
+
+async function syncCategory(category, destinationRoot) {
   const sourceDir = join(sourceRoot, category);
   if (!existsSync(sourceDir) || !statSync(sourceDir).isDirectory()) {
     return 0;
@@ -81,7 +188,7 @@ function syncCategory(category, destinationRoot) {
 
   // Replace the category folder so deleted source files do not linger in public/.
   if (existsSync(destinationDir)) {
-    rmSync(destinationDir, { recursive: true, force: true });
+    await removeDir(destinationDir);
   }
 
   if (category === 'gallery') {
@@ -92,26 +199,44 @@ function syncCategory(category, destinationRoot) {
 
   const count = countFiles(destinationDir);
   console.log(
-    `synced ${relative(root, sourceDir)}\\ -> ${relative(root, destinationDir)}\\ (${count} files)`,
+    `synced ${relative(root, sourceDir)}${sep} -> ${relative(root, destinationDir)}${sep} (${count} files)`,
   );
   return count;
 }
 
-function main() {
+export async function syncAssets(cwd = process.cwd(), env = process.env) {
   if (!existsSync(sourceRoot)) {
-    console.error('assets directory not found at repository root');
-    process.exit(1);
+    throw new Error('assets directory not found at repository root');
   }
 
-  let total = 0;
-  for (const target of targets) {
-    ensureDir(target);
-    for (const category of includeCategories) {
-      total += syncCategory(category, target);
+  const targets = resolveTargets(cwd, env);
+  const fd = await acquireLock();
+  try {
+    let total = 0;
+    for (const target of targets) {
+      ensureDir(target);
+      for (const category of includeCategories) {
+        total += await syncCategory(category, target);
+      }
     }
+    console.log(`asset sync complete (${total} files)`);
+    return total;
+  } finally {
+    releaseLock(fd);
   }
-
-  console.log(`asset sync complete (${total} files)`);
 }
 
-main();
+function isDirectRun() {
+  const entry = process.argv[1];
+  if (!entry) {
+    return false;
+  }
+  return pathToFileURL(resolve(entry)).href === import.meta.url;
+}
+
+if (isDirectRun()) {
+  syncAssets().catch((error) => {
+    console.error(error instanceof Error ? error.message : error);
+    process.exit(1);
+  });
+}

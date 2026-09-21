@@ -1,6 +1,6 @@
 # Production stack — build on the VPS or pull versioned images (never :latest).
 # Usage on VPS (/opt/7oz/compose):
-#   ./scripts/deploy.sh production <git-sha-or-semver>
+#   bash scripts/deploy.sh production <git-sha-or-semver>
 #
 # Notes:
 # - website/admin builds use `network: host` so next/font can fetch Google Fonts during image build.

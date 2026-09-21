@@ -52,6 +52,9 @@ set +a
 
 echo "==> Deploying $ENVIRONMENT with IMAGE_TAG=$IMAGE_TAG"
 
+# Serialize image builds so website/admin Next.js compiles do not OOM a shared VPS.
+export COMPOSE_PARALLEL_LIMIT="${COMPOSE_PARALLEL_LIMIT:-1}"
+
 echo "==> Running database migrations"
 docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" --profile migrate run --rm migrate
 

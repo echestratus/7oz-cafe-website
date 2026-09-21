@@ -59,14 +59,14 @@ On the VPS (from the compose checkout):
 
 ```bash
 # Prefer the deploy script path (runs migrate before app start).
-./scripts/deploy.sh production <image-tag>
+bash scripts/deploy.sh production <image-tag>
 ```
 
 If migrating manually:
 
 ```bash
 pnpm db:migrate
-# or ./scripts/migrate.sh production
+# or bash scripts/migrate.sh production
 ```
 
 Verify:
@@ -160,7 +160,7 @@ Customer (optional but recommended):
 If cutover fails:
 
 ```bash
-./scripts/rollback.sh production <previous-image-tag>
+bash scripts/rollback.sh production <previous-image-tag>
 ```
 
 - [ ] Previous image tag recorded before deploy

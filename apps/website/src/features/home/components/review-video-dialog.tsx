@@ -11,9 +11,19 @@ interface ReviewVideoDialogProps {
   src: string;
   title: string;
   poster?: string;
+  quote?: string;
+  attribution?: string;
 }
 
-export function ReviewVideoDialog({ open, onClose, src, title, poster }: ReviewVideoDialogProps) {
+export function ReviewVideoDialog({
+  open,
+  onClose,
+  src,
+  title,
+  poster,
+  quote,
+  attribution,
+}: ReviewVideoDialogProps) {
   const titleId = useId();
   const reduceMotion = useReducedMotion();
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -69,7 +79,7 @@ export function ReviewVideoDialog({ open, onClose, src, title, poster }: ReviewV
           />
 
           <motion.div
-            className="relative z-10 flex max-h-[min(100dvh-2rem,900px)] w-full max-w-4xl flex-col overflow-hidden rounded-media bg-surface shadow-[var(--shadow-soft)]"
+            className="relative z-10 flex max-h-[min(100dvh-2rem,900px)] w-full max-w-lg flex-col overflow-hidden rounded-media bg-surface shadow-[var(--shadow-soft)]"
             initial={reduceMotion ? false : { opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={reduceMotion ? undefined : { opacity: 0, y: 8 }}
@@ -90,18 +100,30 @@ export function ReviewVideoDialog({ open, onClose, src, title, poster }: ReviewV
               </button>
             </div>
 
-            <div className="min-h-0 overflow-y-auto bg-text">
-              <video
-                ref={videoRef}
-                className="aspect-video max-h-[min(70dvh,720px)] w-full object-contain"
-                src={src}
-                poster={poster}
-                controls
-                playsInline
-                preload="metadata"
-              >
-                Your browser does not support embedded video.
-              </video>
+            <div className="min-h-0 overflow-y-auto">
+              <div className="flex justify-center bg-text">
+                <div className="aspect-[9/16] h-[min(64dvh,640px)] w-auto max-w-full">
+                  <video
+                    ref={videoRef}
+                    className="h-full w-full object-contain"
+                    src={src}
+                    poster={poster}
+                    controls
+                    playsInline
+                    preload="metadata"
+                  >
+                    Your browser does not support embedded video.
+                  </video>
+                </div>
+              </div>
+              {quote ? (
+                <div className="space-y-3 px-6 py-5">
+                  <p className="text-quote-card text-text">&ldquo;{quote}&rdquo;</p>
+                  {attribution ? (
+                    <p className="text-sm text-text-secondary">{attribution}</p>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
           </motion.div>
         </motion.div>

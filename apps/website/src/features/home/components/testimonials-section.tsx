@@ -38,6 +38,10 @@ function parseTestimonialItem(value: unknown): TestimonialItem | null {
 
 export function TestimonialsSection({ data }: TestimonialsSectionProps) {
   const heading = asString(data.heading, 'Guest Voices');
+  const description = asString(
+    data.description,
+    'Players, ministers, and visiting friends — in their own words.',
+  );
   const rawItems = Array.isArray(data.items) ? data.items : [];
   const items = rawItems
     .map(parseTestimonialItem)
@@ -52,24 +56,32 @@ export function TestimonialsSection({ data }: TestimonialsSectionProps) {
     return null;
   }
 
-  const isFeaturedLayout = otherItems.length === 0;
-
   return (
     <section className="section-pad border-y border-border bg-surface-secondary/60">
       <Container>
         <Reveal className="mb-16">
-          <SectionIntro eyebrow="Guests" title={heading} align="center" />
+          <SectionIntro
+            eyebrow="Guests"
+            title={heading}
+            description={description}
+            align="center"
+          />
         </Reveal>
 
-        {isFeaturedLayout ? (
+        {otherItems.length === 0 ? (
           <div className="mx-auto max-w-4xl">
             <TestimonialCard item={featuredItem} featured />
           </div>
         ) : (
-          <div className="mx-auto grid max-w-4xl gap-14 md:grid-cols-2 md:gap-16">
-            {[featuredItem, ...otherItems].map((item, index) => (
-              <TestimonialCard key={`${item.name}-${index}`} item={item} delay={index * 0.08} />
-            ))}
+          <div className="space-y-16">
+            <div className="mx-auto max-w-4xl">
+              <TestimonialCard item={featuredItem} featured />
+            </div>
+            <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+              {otherItems.map((item, index) => (
+                <TestimonialCard key={`${item.name}-${index}`} item={item} delay={index * 0.06} />
+              ))}
+            </div>
           </div>
         )}
       </Container>

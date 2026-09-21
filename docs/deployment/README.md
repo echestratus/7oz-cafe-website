@@ -39,7 +39,7 @@ cp .env.staging.example .env.staging
 # fill secrets (SMTP defaults to compose Mailpit)
 
 chmod +x scripts/*.sh
-./scripts/deploy.sh staging staging
+bash scripts/deploy.sh staging staging
 ```
 
 On a VPS with host Nginx/Certbot in front, keep `HTTP_PORT=127.0.0.1:8088` and proxy the public hostnames to that port.
@@ -74,7 +74,7 @@ Update an existing staging checkout after merges to `develop`:
 cd /opt/7oz/compose   # or your checkout path
 git checkout develop
 git pull origin develop
-./scripts/deploy.sh staging staging
+bash scripts/deploy.sh staging staging
 ```
 
 ## Production (VPS)
@@ -106,8 +106,9 @@ cp .env.production.example .env.production
 # fill secrets, real SMTP (not Mailpit), IMAGE_TAG=<git-sha>
 # complete docs/deployment/PRODUCTION_CUTOVER.md
 
-IMAGE_TAG="$(git rev-parse --short HEAD)"
-./scripts/deploy.sh production "$IMAGE_TAG"
+chmod +x scripts/*.sh
+IMAGE_TAG="$(git rev-parse HEAD)"
+bash scripts/deploy.sh production "$IMAGE_TAG"
 ```
 
 Point host Nginx at `127.0.0.1:8089`, then issue TLS with Certbot for `7oz-espresso.com` and `www.7oz-espresso.com`.
@@ -115,13 +116,13 @@ Point host Nginx at `127.0.0.1:8089`, then issue TLS with Certbot for `7oz-espre
 Rollback:
 
 ```bash
-./scripts/rollback.sh production <previous-image-tag>
+bash scripts/rollback.sh production <previous-image-tag>
 ```
 
 Database backup (retain 30 days by default):
 
 ```bash
-./scripts/backup-db.sh production
+bash scripts/backup-db.sh production
 ```
 
 ## HTTPS
@@ -150,9 +151,21 @@ Containers define `HEALTHCHECK` for backend/website/admin.
 
 GitHub Actions (`.github/workflows/ci.yml`) runs:
 
-1. Frontend lint / typecheck / build
-2. Backend vet / test / build
-3. Docker image builds (no push) for website, admin, and backend
+1. Frontend lint / typecheck / website then admin build
+2. Concurrent asset-sync regression test (`scripts/sync-assets.test.mjs`)
+3. Backend vet / test / build
+4. Docker image builds (no push) for website, admin, and backend
+
+Website and admin builds used to fail on merge commits when both packages ran `sync-assets.mjs` in parallel against the same public directories (`ENOTEMPTY` on `rmdir`). The sync script now writes only the current app’s public folder, and CI builds them sequentially.
+
+CI does **not** deploy. After a merge to `develop` is confirmed, deploy staging on the VPS:
+
+```bash
+cd /opt/7oz/compose
+git checkout develop
+git pull origin develop
+bash scripts/deploy.sh staging staging
+```
 
 ## Notes
 

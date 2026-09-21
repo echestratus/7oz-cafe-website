@@ -38,8 +38,14 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
-      - name: Build
-        run: pnpm --filter @7oz/website --filter @7oz/admin build
+      - name: Asset sync concurrency
+        run: node --test scripts/sync-assets.test.mjs
+
+      - name: Build website
+        run: pnpm --filter @7oz/website build
+
+      - name: Build admin
+        run: pnpm --filter @7oz/admin build
 
   backend:
     name: Backend

@@ -96,7 +96,7 @@ Staging stack (API + website + admin + Nginx gateway on port 8088):
 
 ```bash
 cp .env.staging.example .env.staging
-./scripts/deploy.sh staging staging
+bash scripts/deploy.sh staging staging
 ```
 
 Production uses versioned images and `docker-compose.prod.yml`. See `docs/deployment/README.md`.

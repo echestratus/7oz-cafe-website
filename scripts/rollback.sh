@@ -13,4 +13,4 @@ if [[ -z "$PREVIOUS_TAG" ]]; then
 fi
 
 echo "==> Rolling back $ENVIRONMENT to IMAGE_TAG=$PREVIOUS_TAG"
-IMAGE_TAG="$PREVIOUS_TAG" ./scripts/deploy.sh "$ENVIRONMENT" "$PREVIOUS_TAG"
+IMAGE_TAG="$PREVIOUS_TAG" bash scripts/deploy.sh "$ENVIRONMENT" "$PREVIOUS_TAG"

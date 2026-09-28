@@ -111,6 +111,13 @@ const fallbackTestimonials = {
       avatarSrc: '/assets/reviews/vahap-sanal.webp',
       videoSrc: '/assets/reviews/vahap-sanal.mp4',
     },
+    {
+      name: 'Guests from Nauru',
+      review:
+        "We're at the Hadith Hotel, having cappuccino. My two friends are here, and the view is wonderful. We love the cappuccino. If you want one, come to the Hadith Hotel.",
+      avatarSrc: '/assets/reviews/nauru-guests.webp',
+      videoSrc: '/assets/reviews/nauru-guests.mp4',
+    },
   ],
 };
 

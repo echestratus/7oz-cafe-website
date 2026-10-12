@@ -1,4 +1,4 @@
-export type LocationStatus = 'open' | 'coming_soon';
+export type LocationStatus = 'open' | 'coming_soon' | 'closed';
 
 export interface CafeLocation {
   id: string;
@@ -19,16 +19,29 @@ export interface CafeLocation {
 
 export const CAFE_LOCATIONS: readonly CafeLocation[] = [
   {
+    id: 'hadith-hotel',
+    slug: 'hadith-hotel',
+    name: '7Oz Hadith Hotel',
+    shortName: 'Hadith Hotel',
+    city: 'Samarkand',
+    country: 'Uzbekistan',
+    address: "Hadith Hotel, Imam Bukhari Complex, Xoʻja Ismoil, Samarkand, Uzbekistan",
+    status: 'open',
+    imageSrc: '/assets/locations/7Oz-hadith.webp',
+    imageAlt: '7Oz Espresso Cafe at Hadith Hotel, Samarkand',
+    hasGallery: true,
+  },
+  {
     id: 'city-park',
     slug: 'city-park',
-    name: '7Oz City Park',
-    shortName: 'City Park',
+    name: '7Oz Tashkent City',
+    shortName: 'Tashkent City',
     city: 'Tashkent',
     country: 'Uzbekistan',
     address: "City Park, Ukchi ko'chasi 3A, 100011, Tashkent, Uzbekistan",
-    status: 'open',
+    status: 'closed',
     imageSrc: '/assets/locations/7Oz-current.webp',
-    imageAlt: '7Oz Espresso Cafe at City Park, Tashkent',
+    imageAlt: 'Former 7Oz Espresso Cafe at Tashkent City',
     hasGallery: true,
     mapsUrl: 'https://maps.app.goo.gl/QJqbNtSMLS2YTwtB6',
   },
@@ -57,19 +70,6 @@ export const CAFE_LOCATIONS: readonly CafeLocation[] = [
     imageSrc: '/assets/locations/7Oz-kampoeng-indonesia.webp',
     imageAlt: '7Oz Espresso Cafe at Hotel Kampoeng Indonesia',
     hasGallery: true,
-  },
-  {
-    id: 'hadith-hotel',
-    slug: 'hadith-hotel',
-    name: '7Oz Hadith Hotel',
-    shortName: 'Hadith Hotel',
-    city: "Xoʻja Ismoil",
-    country: 'Uzbekistan',
-    address: "RW5X+9P, Xoʻja Ismoil, Samarqand viloyati, Uzbekistan",
-    status: 'coming_soon',
-    imageSrc: '/assets/locations/7Oz-hadith.webp',
-    imageAlt: 'Upcoming 7Oz location at Hadith Hotel',
-    hasGallery: false,
   },
   {
     id: 'humble-8',
@@ -135,5 +135,11 @@ export function locationMapsUrl(location: CafeLocation): string {
 }
 
 export function locationStatusLabel(status: LocationStatus): string {
-  return status === 'open' ? 'Open now' : 'Coming soon';
+  if (status === 'open') {
+    return 'Open now';
+  }
+  if (status === 'closed') {
+    return 'Closed';
+  }
+  return 'Coming soon';
 }

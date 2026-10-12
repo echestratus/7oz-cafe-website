@@ -45,8 +45,8 @@ export default async function AboutPage() {
             <Reveal delay={0.08}>
               <div className="relative aspect-[4/5] overflow-hidden rounded-media">
                 <Image
-                  src="/assets/gallery/city-park/7oz-8.webp"
-                  alt="Interior of 7Oz Espresso Cafe"
+                  src="/assets/gallery/hadith-hotel/1-exterior.webp"
+                  alt="Exterior of 7Oz Espresso Cafe at Hadith Hotel, Samarkand"
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, 50vw"

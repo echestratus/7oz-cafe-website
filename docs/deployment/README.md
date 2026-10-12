@@ -2,7 +2,7 @@
 
 Version: Phase 11 foundation
 
-**Promotion policy:** local work → commit + PR into `develop` (automatic) → product owner merges → confirm merge → deploy **staging** (`https://stage.7oz-espresso.com`, admin `https://admin-stage.7oz-espresso.com`) → product owner confirms staging OK → product owner opens PR `develop` → `main` → deploy **production** (`https://7oz-espresso.com`, admin `https://admin.7oz-espresso.com`) when instructed. Never skip staging for app/API/migration/Compose changes. Never deploy staging or production without the matching confirmation.
+**Promotion policy:** local work → commit + PR into `develop` → merge into `develop` → release PR `develop` → `main` → merge → deploy **staging** (`https://stage.7oz-espresso.com`, admin `https://admin-stage.7oz-espresso.com`) → deploy **production** (`https://7oz-espresso.com`, admin `https://admin.7oz-espresso.com`). This path runs automatically when a change is complete. Never skip staging for app, API, migration, or Compose changes. Production `IMAGE_TAG` is the full git SHA on `main`, never `:latest`.
 
 **Production go-live:** follow [PRODUCTION_CUTOVER.md](./PRODUCTION_CUTOVER.md) end-to-end before announcing launch.
 

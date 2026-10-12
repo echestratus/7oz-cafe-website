@@ -27,15 +27,15 @@ const fallbackFeaturedMenu = {
 };
 
 const fallbackAbout = {
-  heading: 'From Jakarta to Tashkent',
+  heading: 'From Jakarta to Samarkand',
   description:
-    "Jakarta's finest has arrived in the heart of Tashkent — bringing Indonesian coffee heritage to an international stage.",
+    'The Tashkent City room has closed. 7Oz is now open at Hadith Hotel in Samarkand — the same Indonesian coffee, in a new room.',
   cta: { label: 'Our Story', href: '/about' },
 };
 
 const fallbackGallery = {
   heading: 'Gallery',
-  description: 'Moments from City Park — and a door into every 7Oz room.',
+  description: 'The Hadith Hotel room in Samarkand — and a door into every 7Oz cafe.',
   limit: 6,
 };
 

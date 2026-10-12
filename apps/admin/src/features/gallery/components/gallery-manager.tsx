@@ -15,7 +15,8 @@ import {
 
 const locations = [
   { value: '', label: 'All locations' },
-  { value: 'city-park', label: 'City Park' },
+  { value: 'hadith-hotel', label: 'Hadith Hotel' },
+  { value: 'city-park', label: 'Tashkent City' },
   { value: 'kampoeng-indonesia', label: 'Kampoeng Indonesia' },
   { value: 'dharmawangsa', label: 'Dharmawangsa' },
 ] as const;
@@ -24,7 +25,7 @@ const categories = ['atmosphere', 'interior', 'exterior', 'coffee', 'food', 'eve
 
 const emptyForm = {
   imageUrl: '',
-  locationSlug: 'city-park',
+  locationSlug: 'hadith-hotel',
   category: 'atmosphere',
   altText: '',
   caption: '',
@@ -34,7 +35,7 @@ const emptyForm = {
 
 export function GalleryManager() {
   const queryClient = useQueryClient();
-  const [locationFilter, setLocationFilter] = useState('city-park');
+  const [locationFilter, setLocationFilter] = useState('hadith-hotel');
   const [editing, setEditing] = useState<GalleryItem | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [error, setError] = useState<string | null>(null);
@@ -235,9 +236,13 @@ export function GalleryManager() {
                 onChange={(event) => setForm((prev) => ({ ...prev, locationSlug: event.target.value }))}
                 className="w-full rounded-[12px] border border-border bg-background px-3 py-2"
               >
-                <option value="city-park">City Park</option>
-                <option value="kampoeng-indonesia">Kampoeng Indonesia</option>
-                <option value="dharmawangsa">Dharmawangsa</option>
+                {locations
+                  .filter((location) => location.value !== '')
+                  .map((location) => (
+                    <option key={location.value} value={location.value}>
+                      {location.label}
+                    </option>
+                  ))}
               </select>
             </label>
             <label className="block space-y-1 text-sm">

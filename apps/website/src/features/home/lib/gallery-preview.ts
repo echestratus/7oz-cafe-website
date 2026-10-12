@@ -9,12 +9,9 @@ export interface GalleryPreviewImage {
 
 /** Curated fallback when API and filesystem gallery are both unavailable. */
 const CURATED_PREVIEW_IMAGES = [
-  '/assets/gallery/city-park/7oz-5.webp',
-  '/assets/gallery/city-park/7oz-9.webp',
-  '/assets/gallery/city-park/7oz-2.webp',
-  '/assets/gallery/city-park/7oz-7.webp',
-  '/assets/gallery/city-park/7oz-6.webp',
-  '/assets/gallery/city-park/7oz-13.webp',
+  '/assets/gallery/hadith-hotel/1-exterior.webp',
+  '/assets/gallery/hadith-hotel/2-dining-room.webp',
+  '/assets/gallery/hadith-hotel/3-counter.webp',
 ] as const;
 
 const PREVIEW_FETCH_LIMIT = 12;

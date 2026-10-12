@@ -59,7 +59,7 @@ export function LocationsSection({ locations = getAllLocations() }: LocationsSec
             <SectionIntro
               eyebrow="Locations"
               title="Find 7Oz"
-              description="From Tashkent to Jakarta — visit our open cafes, or follow the next rooms as they open."
+              description="Hadith Hotel in Samarkand is open. Tashkent City has closed, and other rooms are still pouring or on the way."
             />
             <div className="flex items-center gap-3">
               <button

@@ -8,11 +8,16 @@ import { getAllLocations } from '@/features/locations/lib/locations';
 export function GalleryLocationPicker() {
   const locations = getAllLocations();
   const openCount = locations.filter((location) => location.status === 'open').length;
-  const comingSoonCount = locations.length - openCount;
-  const description =
-    comingSoonCount > 0
-      ? `Moments from each 7Oz room. ${openCount} open now — ${comingSoonCount} more on the way.`
-      : `Moments from each 7Oz room. ${openCount} open now.`;
+  const comingSoonCount = locations.filter((location) => location.status === 'coming_soon').length;
+  const closedCount = locations.filter((location) => location.status === 'closed').length;
+  const description = [
+    `Moments from each 7Oz room. ${openCount} open now`,
+    comingSoonCount > 0 ? `${comingSoonCount} on the way` : null,
+    closedCount > 0 ? 'Tashkent City has closed' : null,
+  ]
+    .filter((part): part is string => part !== null)
+    .join(' — ')
+    .concat('.');
 
   return (
     <PageMain>

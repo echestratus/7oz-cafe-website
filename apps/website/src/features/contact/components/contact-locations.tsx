@@ -10,18 +10,21 @@ import {
   type CafeLocation,
 } from '@/features/locations/lib/locations';
 
-function ContactLinks({
-  location,
-  isOpen,
-}: {
-  location: CafeLocation;
-  isOpen: boolean;
-}) {
-  const galleryLabel = !isOpen
-    ? 'Coming soon'
-    : location.hasGallery
-      ? 'View gallery'
-      : 'Visit page';
+function galleryLinkLabel(location: CafeLocation): string {
+  if (location.status === 'closed') {
+    return 'This room has closed';
+  }
+  if (location.status === 'coming_soon') {
+    return 'Coming soon';
+  }
+  if (location.hasGallery) {
+    return 'View gallery';
+  }
+  return 'Visit page';
+}
+
+function ContactLinks({ location }: { location: CafeLocation }) {
+  const galleryLabel = galleryLinkLabel(location);
 
   return (
     <div className="flex flex-wrap gap-x-6 gap-y-3">
@@ -80,7 +83,7 @@ function FeaturedLocation({ location }: { location: CafeLocation }) {
             </p>
           </div>
 
-          <ContactLinks location={location} isOpen />
+          <ContactLinks location={location} />
         </div>
       </div>
     </article>
@@ -121,11 +124,13 @@ function ComingSoonCard({ location }: { location: CafeLocation }) {
         </div>
 
         <p className="text-sm leading-relaxed text-text-secondary">
-          A new 7Oz room is on the way. We&apos;ll share the opening when the cups are ready.
+          {location.status === 'closed'
+            ? 'This room has closed. 7Oz is now open at Hadith Hotel in Samarkand.'
+            : "A new 7Oz room is on the way. We'll share the opening when the cups are ready."}
         </p>
 
         <div className="mt-auto pt-2">
-          <ContactLinks location={location} isOpen={false} />
+          <ContactLinks location={location} />
         </div>
       </div>
     </article>
@@ -135,6 +140,7 @@ function ComingSoonCard({ location }: { location: CafeLocation }) {
 export function ContactLocations() {
   const locations = getAllLocations();
   const open = locations.filter((location) => location.status === 'open');
+  const closed = locations.filter((location) => location.status === 'closed');
   const comingSoon = locations.filter((location) => location.status === 'coming_soon');
 
   return (
@@ -144,6 +150,27 @@ export function ContactLocations() {
           <FeaturedLocation location={location} />
         </Reveal>
       ))}
+
+      {closed.length > 0 ? (
+        <div className="space-y-10 md:space-y-12">
+          <Reveal>
+            <div className="max-w-xl space-y-4">
+              <p className="text-eyebrow">Former room</p>
+              <h3 className="font-heading text-2xl text-text md:text-3xl">Closed</h3>
+              <p className="text-lede">
+                Tashkent City has closed. Guests are welcome at Hadith Hotel in Samarkand.
+              </p>
+            </div>
+          </Reveal>
+          <div className="grid gap-8 sm:grid-cols-2 xl:grid-cols-3 xl:gap-10">
+            {closed.map((location) => (
+              <Reveal key={location.id}>
+                <ComingSoonCard location={location} />
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       {comingSoon.length > 0 ? (
         <div className="space-y-10 md:space-y-12">

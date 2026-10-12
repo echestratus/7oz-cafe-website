@@ -68,7 +68,7 @@ export default async function ContactPage() {
                   Locations
                 </h2>
                 <p className="text-lede">
-                  One room open today — several more taking shape across Uzbekistan and Indonesia.
+                  Hadith Hotel in Samarkand is open. Tashkent City has closed, and the other rooms are listed below.
                 </p>
               </div>
             </Reveal>

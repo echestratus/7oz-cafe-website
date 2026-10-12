@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { SiteShell } from '@/components/layout/site-shell';
 import { LocationGalleryView } from '@/features/gallery/components/location-gallery-view';
 import { listGalleryImages } from '@/features/gallery/lib/list-gallery-images';
+import { ClosedLocationView } from '@/features/locations/components/closed-location-view';
 import { ComingSoonLocationView } from '@/features/locations/components/coming-soon-location-view';
 import { OpenLocationAwaitingGalleryView } from '@/features/locations/components/open-location-awaiting-gallery-view';
 import {
@@ -28,6 +29,14 @@ export async function generateMetadata({
   const location = getLocationBySlug(slug);
   if (!location) {
     return { title: 'Gallery' };
+  }
+
+  if (location.status === 'closed') {
+    return {
+      title: `${location.shortName} — Closed`,
+      description: `${location.name} has closed. 7Oz is now open at Hadith Hotel in Samarkand.`,
+      alternates: { canonical: `/gallery/${location.slug}` },
+    };
   }
 
   if (location.status === 'coming_soon') {
@@ -66,6 +75,14 @@ export default async function GalleryLocationPage({ params }: GalleryLocationPag
     return (
       <SiteShell footer={footer} headerTone="overlay">
         <ComingSoonLocationView location={location} />
+      </SiteShell>
+    );
+  }
+
+  if (location.status === 'closed') {
+    return (
+      <SiteShell footer={footer} headerTone="overlay">
+        <ClosedLocationView location={location} />
       </SiteShell>
     );
   }

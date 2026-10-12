@@ -1,7 +1,8 @@
+import Image from 'next/image';
+
 import { BrandLogo } from '@/components/brand/brand-logo';
 import { Button } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
-import { HeroVideo } from '@/features/home/components/hero-video';
 import { asCta, asString } from '@/services/cms';
 
 interface HeroSectionProps {
@@ -18,9 +19,16 @@ export function HeroSection({ data }: HeroSectionProps) {
 
   return (
     <section className="relative isolate min-h-[100svh] overflow-hidden text-white">
-      <HeroVideo />
+      <Image
+        src="/assets/gallery/hadith-hotel/2-dining-room.webp"
+        alt="Dining room at 7Oz Espresso Cafe, Hadith Hotel, Samarkand"
+        fill
+        priority
+        className="object-cover"
+        sizes="100vw"
+      />
 
-      {/* Bottom-weighted veil: keeps video open at the top, readable CTA zone at the bottom. */}
+      {/* Bottom-weighted veil: keeps the room visible, readable CTA zone at the bottom. */}
       <div
         className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"
         aria-hidden="true"

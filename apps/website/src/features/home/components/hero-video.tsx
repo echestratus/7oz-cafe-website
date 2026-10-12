@@ -128,19 +128,19 @@ export function HeroVideo() {
           loop
           playsInline
           preload="none"
-          poster="/assets/home/hero-poster.webp"
+          poster="/assets/home/hadith-hotel-hero-poster.webp"
           aria-hidden="true"
         >
           <source
-            src="/assets/home/hero-page-video-mobile.mp4"
+            src="/assets/home/hadith-hotel-hero-mobile.mp4"
             type="video/mp4"
             media="(max-width: 768px)"
           />
-          <source src="/assets/home/hero-page-video.mp4" type="video/mp4" />
+          <source src="/assets/home/hadith-hotel-hero.mp4" type="video/mp4" />
         </video>
       ) : (
         <Image
-          src="/assets/home/hero-poster.webp"
+          src="/assets/home/hadith-hotel-hero-poster.webp"
           alt=""
           fill
           priority

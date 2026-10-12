@@ -27,7 +27,7 @@ Production
 
 # Promotion path
 
-Every change developed in the local environment must follow Continuous Delivery with human gates for staging and production.
+Every completed change follows Continuous Delivery through `develop` and `main`, then staging and production, without waiting for a separate approval.
 
 Flow:
 
@@ -39,36 +39,31 @@ Feature branch
 
 ↓
 
-Commit + open PR into `develop` (automatic — do not ask)
+Commit + open PR into `develop`
 
 ↓
 
-Product owner reviews / merges the PR on GitHub
+Merge that PR into `develop`
 
 ↓
 
-Product owner confirms merge → agent deploys staging (`https://stage.7oz-espresso.com`)
+Open and merge the release PR `develop` → `main`
 
 ↓
 
-Product owner reviews staging and confirms OK
+Deploy staging (`https://stage.7oz-espresso.com`) from `develop`
 
 ↓
 
-Product owner opens PR `develop` → `main`
-
-↓
-
-After that PR is merged → agent deploys production (`https://7oz-espresso.com` / `www`) when instructed
+Deploy production (`https://7oz-espresso.com` / `www`) from the `main` SHA
 
 Rules:
 
-- Never skip staging for app, API, migration, or Compose changes.
-- Do not deploy staging until the product owner confirms the PR is merged into `develop`.
-- Do not deploy production until staging is confirmed OK and `main` has the release (product owner owns the `develop` → `main` PR).
-- Never deploy production without an explicit instruction after the production release is on `main`.
+- Run this whole path automatically when a change is complete. Do not ask whether to merge or deploy.
+- Never skip staging for app, API, migration, or Compose changes. Deploy staging first, then production, in the same pass.
 - Staging and production must use separate secrets, databases, and Compose projects.
-- Prefer hotfixes through `develop` → staging → `main`. Deploy a production-only hotfix only when the product owner explicitly instructs it for a critical outage.
+- Production `IMAGE_TAG` is the full git SHA on `main`. Never use `:latest`.
+- Prefer hotfixes through `develop` → `main` → staging → production. Deploy a production-only hotfix only for a critical outage when that is the only way to restore service.
 
 ---
 

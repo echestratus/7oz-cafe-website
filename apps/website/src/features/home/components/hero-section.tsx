@@ -1,8 +1,7 @@
-import Image from 'next/image';
-
 import { BrandLogo } from '@/components/brand/brand-logo';
 import { Button } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
+import { HeroVideo } from '@/features/home/components/hero-video';
 import { asCta, asString } from '@/services/cms';
 
 interface HeroSectionProps {
@@ -19,14 +18,7 @@ export function HeroSection({ data }: HeroSectionProps) {
 
   return (
     <section className="relative isolate min-h-[100svh] overflow-hidden text-white">
-      <Image
-        src="/assets/gallery/hadith-hotel/2-dining-room.webp"
-        alt="Dining room at 7Oz Espresso Cafe, Hadith Hotel, Samarkand"
-        fill
-        priority
-        className="object-cover"
-        sizes="100vw"
-      />
+      <HeroVideo />
 
       {/* Bottom-weighted veil: keeps the room visible, readable CTA zone at the bottom. */}
       <div

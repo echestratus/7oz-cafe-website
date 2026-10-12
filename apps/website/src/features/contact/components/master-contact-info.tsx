@@ -68,8 +68,7 @@ export function MasterContactInfo({ phone, email, whatsapp }: MasterContactInfoP
               Reach 7Oz
             </h2>
             <p className="text-lede max-w-md">
-              One shared contact for every 7Oz room — City Park today, and the cafes still on the
-              way.
+              One shared contact for every open 7Oz room, including Hadith Hotel in Samarkand.
             </p>
           </div>
 

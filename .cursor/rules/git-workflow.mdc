@@ -53,15 +53,17 @@ Never work directly on:
 Release / environment promotion:
 
 - `develop` = integration branch and staging source of truth
-- `main` = production-only releases
-- When local work on a feature branch is complete, **automatically commit and open a PR into `develop`**. Do not ask whether to commit or open the PR.
-- Mistakes are caught in PR review or can be rolled back after merge — that is intentional.
-- Do **not** merge the PR into `develop` yourself unless the product owner explicitly asks.
-- Do **not** deploy staging until the product owner confirms the PR is merged into `develop`.
-- After staging deploy, wait for the product owner to confirm staging is OK.
-- The product owner opens the PR from `develop` → `main`. Do not open that release PR unless asked.
-- Deploy production only when instructed after the release is on `main`.
-- For large cutovers, follow `docs/deployment/PRODUCTION_CUTOVER.md`
+- `main` = production releases
+- When local work on a feature branch is complete, do this immediately and do not ask for confirmation between steps:
+  1. Commit and open a PR into `develop`.
+  2. Merge that PR into `develop`.
+  3. Open a release PR from `develop` into `main` and merge it.
+  4. Deploy staging from `develop`, then deploy production from the `main` merge SHA.
+- Mistakes are caught after release or rolled back — that is intentional.
+- Do not wait for a product-owner review, a staging sign-off, or a separate chat prompt.
+- If checks fail or the PR conflicts, fix that and continue the same pipeline. Do not stop to ask whether to merge or deploy.
+- Production `IMAGE_TAG` is the full git SHA on `main`. Never use `:latest`.
+- For large cutovers, follow `docs/deployment/PRODUCTION_CUTOVER.md` without adding a human wait before staging or production.
 
 4. Make small and meaningful commits.
 
@@ -114,7 +116,7 @@ Example:
 git push -u origin feature/reservation-system
 ```
 
-8. Open a PR into `develop` automatically when the change is ready. The product owner reviews and merges on GitHub. Do not wait for a chat prompt to create the commit or the PR.
+8. When the change is ready, commit, open the PR into `develop`, merge it, promote `develop` to `main`, then deploy staging and production. Do not wait for a chat prompt.
 
 9. Never rewrite public Git history unless explicitly instructed.
 

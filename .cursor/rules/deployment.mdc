@@ -1,5 +1,5 @@
 ---
-description: Deployment standards for local, staging, and production.
+description: Deployment standards for local and production.
 alwaysApply: true
 ---
 
@@ -27,7 +27,7 @@ Production
 
 # Promotion path
 
-Every completed change follows Continuous Delivery through `develop` and `main`, then staging and production, without waiting for a separate approval.
+Every completed change is released on `main` and deployed to production. There is no staging environment.
 
 Flow:
 
@@ -39,19 +39,11 @@ Feature branch
 
 ↓
 
-Commit + open PR into `develop`
+Commit and push
 
 ↓
 
-Merge that PR into `develop`
-
-↓
-
-Open and merge the release PR `develop` → `main`
-
-↓
-
-Deploy staging (`https://stage.7oz-espresso.com`) from `develop`
+Open a pull request into `main` and merge it
 
 ↓
 
@@ -59,11 +51,10 @@ Deploy production (`https://7oz-espresso.com` / `www`) from the `main` SHA
 
 Rules:
 
-- Run this whole path automatically when a change is complete. Do not ask whether to merge or deploy.
-- Never skip staging for app, API, migration, or Compose changes. Deploy staging first, then production, in the same pass.
-- Staging and production must use separate secrets, databases, and Compose projects.
+- Run this path automatically when a change is complete. Do not ask whether to merge or deploy.
+- Do not deploy a staging stack.
 - Production `IMAGE_TAG` is the full git SHA on `main`. Never use `:latest`.
-- Prefer hotfixes through `develop` → `main` → staging → production. Deploy a production-only hotfix only for a critical outage when that is the only way to restore service.
+- Production uses its own secrets, database, and Compose project.
 
 ---
 

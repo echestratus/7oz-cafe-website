@@ -41,8 +41,8 @@ docs/api-specification
 
 3. Branch model:
 
-- `main` — production-ready releases only
-- `develop` — integration branch (feeds staging)
+- `main` — production releases
+- `develop` — kept for history; new work does not deploy from it
 - Never use `master` for new work
 
 Never work directly on:
@@ -52,18 +52,17 @@ Never work directly on:
 
 Release / environment promotion:
 
-- `develop` = integration branch and staging source of truth
-- `main` = production releases
+- `main` is the only release branch. Production is the only deployed environment.
+- There is no staging environment and no staging deploy.
 - When local work on a feature branch is complete, do this immediately and do not ask for confirmation between steps:
-  1. Commit and open a PR into `develop`.
-  2. Merge that PR into `develop`.
-  3. Open a release PR from `develop` into `main` and merge it.
-  4. Deploy staging from `develop`, then deploy production from the `main` merge SHA.
+  1. Commit and push the feature branch.
+  2. Open a pull request into `main` and merge it.
+  3. Deploy production from that `main` SHA.
 - Mistakes are caught after release or rolled back — that is intentional.
-- Do not wait for a product-owner review, a staging sign-off, or a separate chat prompt.
+- Do not wait for a product-owner review or a separate chat prompt.
 - If checks fail or the PR conflicts, fix that and continue the same pipeline. Do not stop to ask whether to merge or deploy.
 - Production `IMAGE_TAG` is the full git SHA on `main`. Never use `:latest`.
-- For large cutovers, follow `docs/deployment/PRODUCTION_CUTOVER.md` without adding a human wait before staging or production.
+- For large cutovers, follow `docs/deployment/PRODUCTION_CUTOVER.md` without adding a human wait before production.
 
 4. Make small and meaningful commits.
 
@@ -116,7 +115,7 @@ Example:
 git push -u origin feature/reservation-system
 ```
 
-8. When the change is ready, commit, open the PR into `develop`, merge it, promote `develop` to `main`, then deploy staging and production. Do not wait for a chat prompt.
+8. When the change is ready, commit, push, open the PR into `main`, merge it, and deploy production. Do not deploy staging. Do not wait for a chat prompt.
 
 9. Never rewrite public Git history unless explicitly instructed.
 

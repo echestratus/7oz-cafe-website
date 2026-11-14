@@ -3,10 +3,11 @@ import { Container } from '@/components/ui/container';
 import { Reveal } from '@/components/ui/reveal';
 import { SectionIntro } from '@/components/ui/section-intro';
 import { LocationCard } from '@/features/locations/components/location-card';
-import { getAllLocations } from '@/features/locations/lib/locations';
+import { getAllLocations, sortLocationsByStatus } from '@/features/locations/lib/locations';
 
 export function GalleryLocationPicker() {
-  const locations = getAllLocations();
+  // Rooms with photos to browse come first; upcoming and closed rooms follow.
+  const locations = sortLocationsByStatus(getAllLocations());
   const openCount = locations.filter((location) => location.status === 'open').length;
   const comingSoonCount = locations.filter((location) => location.status === 'coming_soon').length;
   const closedCount = locations.filter((location) => location.status === 'closed').length;

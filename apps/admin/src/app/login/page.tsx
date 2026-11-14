@@ -13,11 +13,11 @@ export default function LoginPage() {
       <div className="w-full max-w-md rounded-[24px] border border-border bg-surface p-8 shadow-sm">
         <div className="mb-8 flex items-center gap-3">
           <Image
-            src="/assets/logo/logo-7-oz-espresso-scaled.webp"
+            src="/assets/logo/7oz-espresso-logo.webp"
             alt=""
             width={40}
-            height={40}
-            className="h-10 w-10 object-contain"
+            height={48}
+            className="h-12 w-auto"
           />
           <div>
             <p className="font-heading text-2xl text-text">7Oz Admin</p>

@@ -10,6 +10,7 @@ import { OpenLocationAwaitingGalleryView } from '@/features/locations/components
 import {
   CAFE_LOCATIONS,
   getLocationBySlug,
+  locationPlace,
 } from '@/features/locations/lib/locations';
 import { getPublishedCmsPage } from '@/services/cms';
 import { listPublicGallery, toLightboxImages } from '@/services/gallery';
@@ -39,10 +40,13 @@ export async function generateMetadata({
     };
   }
 
+  // Fall back to the city while an upcoming cafe has no confirmed address.
+  const whereabouts = location.address ?? locationPlace(location);
+
   if (location.status === 'coming_soon') {
     return {
       title: `${location.shortName} — Coming Soon`,
-      description: `${location.name} is coming soon. ${location.address}`,
+      description: `${location.name} is coming soon. ${whereabouts}`,
       alternates: { canonical: `/gallery/${location.slug}` },
     };
   }
@@ -50,7 +54,7 @@ export async function generateMetadata({
   if (!location.hasGallery) {
     return {
       title: `${location.shortName} — Open now`,
-      description: `${location.name} is open. Gallery photos are being prepared. ${location.address}`,
+      description: `${location.name} is open. Gallery photos are being prepared. ${whereabouts}`,
       alternates: { canonical: `/gallery/${location.slug}` },
     };
   }

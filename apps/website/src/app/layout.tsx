@@ -30,10 +30,8 @@ export const metadata: Metadata = {
   },
   description:
     'Premium specialty coffee experience from 7Oz Espresso Cafe. Discover our menu, gallery, and reservations.',
-  icons: {
-    icon: [{ url: '/icon.png', type: 'image/png' }],
-    apple: [{ url: '/apple-icon.png', type: 'image/png' }],
-  },
+  // Icons come from app/icon.png and app/apple-icon.png. Next.js adds a content
+  // hash to those URLs, so browsers fetch a new icon whenever the artwork changes.
 };
 
 interface RootLayoutProps {

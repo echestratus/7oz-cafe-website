@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import type { ReactNode } from 'react';
 
 interface RevealProps {
@@ -9,15 +9,18 @@ interface RevealProps {
   delay?: number;
 }
 
+/**
+ * Fades content up as it scrolls into view.
+ *
+ * Reduced motion is handled in CSS (`[data-reveal]` in globals.css) rather than
+ * by rendering a different element: the server cannot know the preference, so
+ * branching here left the server-rendered `opacity: 0` in place and the content
+ * stayed invisible for visitors who turn animations off.
+ */
 export function Reveal({ children, className, delay = 0 }: RevealProps) {
-  const reduceMotion = useReducedMotion();
-
-  if (reduceMotion) {
-    return <div className={className}>{children}</div>;
-  }
-
   return (
     <motion.div
+      data-reveal
       className={className}
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}

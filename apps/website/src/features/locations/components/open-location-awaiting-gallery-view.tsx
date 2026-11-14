@@ -1,14 +1,16 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft, MapPin } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
 import { Reveal } from '@/components/ui/reveal';
+import { LocationMedia } from '@/features/locations/components/location-media';
 import type { CafeLocation } from '@/features/locations/lib/locations';
 import {
   getAllLocations,
+  locationAddressLabel,
   locationMapsUrl,
+  locationPlace,
 } from '@/features/locations/lib/locations';
 
 interface OpenLocationAwaitingGalleryViewProps {
@@ -28,24 +30,18 @@ export function OpenLocationAwaitingGalleryView({
         item.id !== location.id && item.status === 'open' && item.hasGallery,
     )
     .slice(0, 3);
+  const mapsUrl = locationMapsUrl(location);
 
   return (
     <main>
       <section className="relative min-h-[88vh] overflow-hidden">
-        <Image
-          src={location.imageSrc}
-          alt={location.imageAlt}
-          fill
-          priority
-          className="object-cover"
-          sizes="100vw"
-        />
+        <LocationMedia location={location} priority sizes="100vw" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(11,14,52,0.35)_45%,rgba(11,14,52,0.78)_100%)]" />
         <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/55 to-ink/20" />
 
         <Container className="relative flex min-h-[88vh] flex-col justify-end pb-16 pt-32 md:pb-24 md:pt-40">
           <Reveal className="max-w-2xl space-y-8">
-            <p className="text-eyebrow-dark">Open now</p>
+            <p className="text-eyebrow text-eyebrow-dark">Open now</p>
             <h1 className="font-heading text-4xl leading-[1.05] text-white md:text-5xl lg:text-6xl">
               {location.name}
             </h1>
@@ -56,21 +52,16 @@ export function OpenLocationAwaitingGalleryView({
             <div className="flex items-start gap-3 text-sm leading-relaxed text-white/65">
               <MapPin className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
               <div className="space-y-1">
-                <p>
-                  {location.city}, {location.country}
-                </p>
-                <p>{location.address}</p>
+                <p>{locationPlace(location)}</p>
+                <p>{locationAddressLabel(location)}</p>
               </div>
             </div>
             <div className="flex flex-wrap gap-3 pt-2">
-              <Button
-                href={locationMapsUrl(location)}
-                variant="inverse"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Get directions
-              </Button>
+              {mapsUrl ? (
+                <Button href={mapsUrl} variant="inverse" target="_blank" rel="noopener noreferrer">
+                  Get directions
+                </Button>
+              ) : null}
               <Button href="/gallery" variant="onDark">
                 All locations
               </Button>
@@ -104,20 +95,16 @@ export function OpenLocationAwaitingGalleryView({
                     className="group block space-y-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                   >
                     <div className="relative aspect-[4/5] overflow-hidden rounded-media">
-                      <Image
-                        src={item.imageSrc}
-                        alt={item.imageAlt}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                      <LocationMedia
+                        location={item}
+                        mediaClassName="transition-transform duration-500 group-hover:scale-[1.03]"
                         sizes="(max-width: 640px) 100vw, 33vw"
                       />
                     </div>
                     <div className="space-y-1 border-t border-border pt-3">
                       <p className="text-eyebrow">Open now</p>
                       <h3 className="font-heading text-xl text-text">{item.shortName}</h3>
-                      <p className="text-sm text-text-secondary">
-                        {item.city}, {item.country}
-                      </p>
+                      <p className="text-sm text-text-secondary">{locationPlace(item)}</p>
                     </div>
                   </Link>
                 </Reveal>

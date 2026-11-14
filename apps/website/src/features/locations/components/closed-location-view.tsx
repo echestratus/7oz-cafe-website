@@ -1,13 +1,15 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft, MapPin } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
 import { Reveal } from '@/components/ui/reveal';
+import { LocationMedia } from '@/features/locations/components/location-media';
 import {
   getLocationBySlug,
+  locationAddressLabel,
   locationMapsUrl,
+  locationPlace,
   type CafeLocation,
 } from '@/features/locations/lib/locations';
 
@@ -17,23 +19,17 @@ interface ClosedLocationViewProps {
 
 export function ClosedLocationView({ location }: ClosedLocationViewProps) {
   const successor = getLocationBySlug('hadith-hotel');
+  const mapsUrl = locationMapsUrl(location);
 
   return (
     <main>
       <section className="relative min-h-[88vh] overflow-hidden">
-        <Image
-          src={location.imageSrc}
-          alt={location.imageAlt}
-          fill
-          priority
-          className="object-cover"
-          sizes="100vw"
-        />
+        <LocationMedia location={location} priority sizes="100vw" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/45 to-black/25" />
 
         <Container className="relative flex min-h-[88vh] flex-col justify-end pb-16 pt-32 md:pb-24 md:pt-40">
           <Reveal className="max-w-2xl space-y-8">
-            <p className="text-eyebrow-dark">Closed</p>
+            <p className="text-eyebrow text-eyebrow-dark">Closed</p>
             <h1 className="font-heading text-4xl leading-[1.05] text-white md:text-5xl lg:text-6xl">
               {location.name}
             </h1>
@@ -43,10 +39,8 @@ export function ClosedLocationView({ location }: ClosedLocationViewProps) {
             <div className="flex items-start gap-3 text-sm leading-relaxed text-white/65">
               <MapPin className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
               <div className="space-y-1">
-                <p>
-                  {location.city}, {location.country}
-                </p>
-                <p>{location.address}</p>
+                <p>{locationPlace(location)}</p>
+                <p>{locationAddressLabel(location)}</p>
               </div>
             </div>
             <div className="flex flex-wrap gap-3 pt-2">
@@ -58,14 +52,11 @@ export function ClosedLocationView({ location }: ClosedLocationViewProps) {
               <Button href="/gallery" variant="onDark">
                 All locations
               </Button>
-              <Button
-                href={locationMapsUrl(location)}
-                variant="onDark"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                View on maps
-              </Button>
+              {mapsUrl ? (
+                <Button href={mapsUrl} variant="onDark" target="_blank" rel="noopener noreferrer">
+                  View on maps
+                </Button>
+              ) : null}
             </div>
           </Reveal>
         </Container>

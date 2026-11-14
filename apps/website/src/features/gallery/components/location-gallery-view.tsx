@@ -7,7 +7,7 @@ import { Reveal } from '@/components/ui/reveal';
 import { SectionIntro } from '@/components/ui/section-intro';
 import { GalleryGrid } from '@/features/gallery/components/gallery-grid';
 import type { LightboxImage } from '@/components/ui/image-lightbox';
-import type { CafeLocation } from '@/features/locations/lib/locations';
+import { locationPlace, type CafeLocation } from '@/features/locations/lib/locations';
 
 interface LocationGalleryViewProps {
   location: CafeLocation;
@@ -15,6 +15,8 @@ interface LocationGalleryViewProps {
 }
 
 export function LocationGalleryView({ location, images }: LocationGalleryViewProps) {
+  const whereabouts = location.address ?? locationPlace(location);
+
   return (
     <PageMain>
       <Container>
@@ -29,7 +31,7 @@ export function LocationGalleryView({ location, images }: LocationGalleryViewPro
           <SectionIntro
             eyebrow="Gallery"
             title={location.shortName}
-            description={`${location.address} — quiet rooms, focused pours, and the daily rhythm of the cafe.`}
+            description={`${whereabouts} — quiet rooms, focused pours, and the daily rhythm of the cafe.`}
             titleAs="h1"
           />
         </Reveal>

@@ -1,10 +1,11 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowUpRight, ExternalLink, MapPin } from 'lucide-react';
 
 import { Reveal } from '@/components/ui/reveal';
+import { LocationMedia } from '@/features/locations/components/location-media';
 import {
   getAllLocations,
+  locationAddressLabel,
   locationMapsUrl,
   locationStatusLabel,
   type CafeLocation,
@@ -25,18 +26,21 @@ function galleryLinkLabel(location: CafeLocation): string {
 
 function ContactLinks({ location }: { location: CafeLocation }) {
   const galleryLabel = galleryLinkLabel(location);
+  const mapsUrl = locationMapsUrl(location);
 
   return (
     <div className="flex flex-wrap gap-x-6 gap-y-3">
-      <a
-        href={locationMapsUrl(location)}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-link-quiet inline-flex items-center gap-2"
-      >
-        Open in Maps
-        <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
-      </a>
+      {mapsUrl ? (
+        <a
+          href={mapsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-link-quiet inline-flex items-center gap-2"
+        >
+          Open in Maps
+          <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+        </a>
+      ) : null}
       <Link
         href={`/gallery/${location.slug}`}
         className="text-link-quiet inline-flex items-center gap-2"
@@ -56,12 +60,10 @@ function FeaturedLocation({ location }: { location: CafeLocation }) {
           href={`/gallery/${location.slug}`}
           className="group relative min-h-[18rem] overflow-hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:min-h-[22rem] lg:min-h-[28rem]"
         >
-          <Image
-            src={location.imageSrc}
-            alt={location.imageAlt}
-            fill
+          <LocationMedia
+            location={location}
             priority
-            className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+            mediaClassName="transition-transform duration-500 group-hover:scale-[1.03]"
             sizes="(max-width: 1024px) 100vw, 55vw"
           />
           <span className="absolute left-5 top-5 rounded-full bg-white/95 px-3 py-1 text-[0.625rem] font-semibold uppercase tracking-[0.16em] text-primary md:left-6 md:top-6">
@@ -79,7 +81,7 @@ function FeaturedLocation({ location }: { location: CafeLocation }) {
             </h3>
             <p className="flex items-start gap-3 text-sm leading-relaxed text-text-secondary md:text-base">
               <MapPin className="mt-1 h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
-              <span>{location.address}</span>
+              <span>{locationAddressLabel(location)}</span>
             </p>
           </div>
 
@@ -97,11 +99,9 @@ function ComingSoonCard({ location }: { location: CafeLocation }) {
         href={`/gallery/${location.slug}`}
         className="relative aspect-[5/4] overflow-hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
       >
-        <Image
-          src={location.imageSrc}
-          alt={location.imageAlt}
-          fill
-          className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+        <LocationMedia
+          location={location}
+          mediaClassName="transition-transform duration-500 group-hover:scale-[1.03]"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
         <span className="absolute left-4 top-4 rounded-full bg-white/15 px-3 py-1 text-[0.625rem] font-semibold uppercase tracking-[0.16em] text-white backdrop-blur-sm">
@@ -119,7 +119,7 @@ function ComingSoonCard({ location }: { location: CafeLocation }) {
           </h3>
           <p className="flex items-start gap-2 text-sm leading-relaxed text-text-secondary">
             <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" aria-hidden="true" />
-            <span>{location.address}</span>
+            <span>{locationAddressLabel(location)}</span>
           </p>
         </div>
 
@@ -151,6 +151,28 @@ export function ContactLocations() {
         </Reveal>
       ))}
 
+      {comingSoon.length > 0 ? (
+        <div className="space-y-10 md:space-y-12">
+          <Reveal>
+            <div className="max-w-xl space-y-4">
+              <p className="text-eyebrow">Next rooms</p>
+              <h3 className="font-heading text-2xl text-text md:text-3xl">Coming soon</h3>
+              <p className="text-lede">
+                From Almaty to Jakarta — each room below is preparing its own quiet corner of 7Oz.
+              </p>
+            </div>
+          </Reveal>
+
+          <div className="grid gap-8 sm:grid-cols-2 xl:grid-cols-3 xl:gap-10">
+            {comingSoon.map((location, index) => (
+              <Reveal key={location.id} delay={(index % 3) * 0.05}>
+                <ComingSoonCard location={location} />
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
       {closed.length > 0 ? (
         <div className="space-y-10 md:space-y-12">
           <Reveal>
@@ -165,29 +187,6 @@ export function ContactLocations() {
           <div className="grid gap-8 sm:grid-cols-2 xl:grid-cols-3 xl:gap-10">
             {closed.map((location) => (
               <Reveal key={location.id}>
-                <ComingSoonCard location={location} />
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      ) : null}
-
-      {comingSoon.length > 0 ? (
-        <div className="space-y-10 md:space-y-12">
-          <Reveal>
-            <div className="max-w-xl space-y-4">
-              <p className="text-eyebrow">Next rooms</p>
-              <h3 className="font-heading text-2xl text-text md:text-3xl">Coming soon</h3>
-              <p className="text-lede">
-                From Tashkent to Jakarta — each address below is preparing its own quiet corner of
-                7Oz.
-              </p>
-            </div>
-          </Reveal>
-
-          <div className="grid gap-8 sm:grid-cols-2 xl:grid-cols-3 xl:gap-10">
-            {comingSoon.map((location, index) => (
-              <Reveal key={location.id} delay={(index % 3) * 0.05}>
                 <ComingSoonCard location={location} />
               </Reveal>
             ))}

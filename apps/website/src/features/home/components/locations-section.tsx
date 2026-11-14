@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRef } from 'react';
 import { ArrowLeft, ArrowRight, ArrowUpRight } from 'lucide-react';
@@ -9,8 +8,10 @@ import { Container } from '@/components/ui/container';
 import { Reveal } from '@/components/ui/reveal';
 import { SectionIntro } from '@/components/ui/section-intro';
 import { LocationCard } from '@/features/locations/components/location-card';
+import { LocationMedia } from '@/features/locations/components/location-media';
 import {
   getAllLocations,
+  locationAddressLabel,
   type CafeLocation,
 } from '@/features/locations/lib/locations';
 
@@ -59,7 +60,7 @@ export function LocationsSection({ locations = getAllLocations() }: LocationsSec
             <SectionIntro
               eyebrow="Locations"
               title="Find 7Oz"
-              description="Hadith Hotel in Samarkand is open. Tashkent City has closed, and other rooms are still pouring or on the way."
+              description="Hadith Hotel in Samarkand is open, and a new room is coming to Almaty, Kazakhstan. Tashkent City has closed."
             />
             <div className="flex items-center gap-3">
               <button
@@ -88,11 +89,9 @@ export function LocationsSection({ locations = getAllLocations() }: LocationsSec
               href={galleryHref(primary)}
               className="group relative block min-h-[22rem] overflow-hidden rounded-media focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary md:min-h-[32rem]"
             >
-              <Image
-                src={primary.imageSrc}
-                alt={primary.imageAlt}
-                fill
-                className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+              <LocationMedia
+                location={primary}
+                mediaClassName="transition-transform duration-500 group-hover:scale-[1.03]"
                 sizes="(max-width: 1024px) 100vw, 48vw"
               />
               <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
@@ -104,7 +103,7 @@ export function LocationsSection({ locations = getAllLocations() }: LocationsSec
                   {primary.name}
                 </span>
                 <span className="block max-w-md text-sm leading-relaxed text-white/75">
-                  {primary.address}
+                  {locationAddressLabel(primary)}
                 </span>
                 <span className="inline-flex items-center gap-2 text-[0.8125rem] font-semibold uppercase tracking-[0.12em] text-white">
                   View gallery

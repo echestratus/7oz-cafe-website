@@ -41,6 +41,9 @@ jobs:
       - name: Asset sync concurrency
         run: node --test scripts/sync-assets.test.mjs
 
+      - name: Location catalog
+        run: node --experimental-strip-types --test apps/website/src/features/locations/lib/locations.test.mjs
+
       - name: Build website
         run: pnpm --filter @7oz/website build
 

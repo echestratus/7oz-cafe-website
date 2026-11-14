@@ -56,11 +56,11 @@ export function AdminSidebar() {
     <aside className="flex h-full w-64 flex-col border-r border-border bg-surface">
       <div className="flex items-center gap-3 border-b border-border px-5 py-5">
         <Image
-          src="/assets/logo/logo-7-oz-espresso-scaled.webp"
+          src="/assets/logo/7oz-espresso-logo.webp"
           alt=""
-          width={32}
-          height={32}
-          className="h-8 w-8 object-contain"
+          width={34}
+          height={40}
+          className="h-10 w-auto"
         />
         <div>
           <p className="font-heading text-xl text-text">7Oz Admin</p>

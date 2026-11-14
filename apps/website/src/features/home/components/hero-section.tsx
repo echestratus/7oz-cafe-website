@@ -20,6 +20,11 @@ export function HeroSection({ data }: HeroSectionProps) {
     <section className="relative isolate min-h-[100svh] overflow-hidden text-white">
       <HeroVideo />
 
+      {/* Top veil: keeps the white logo and navigation readable over bright frames. */}
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-black/45 to-transparent"
+        aria-hidden="true"
+      />
       {/* Bottom-weighted veil: keeps the room visible, readable CTA zone at the bottom. */}
       <div
         className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"
@@ -32,14 +37,7 @@ export function HeroSection({ data }: HeroSectionProps) {
 
       <Container className="pointer-events-none relative z-10 flex min-h-[100svh] flex-col justify-end pb-24 pt-32 md:pb-32">
         <div className="pointer-events-auto max-w-2xl space-y-9">
-          {/* Soft local light behind the dark logo — invisible plate, just atmosphere. */}
-          <div className="relative inline-block max-w-full">
-            <span
-              className="pointer-events-none absolute -inset-x-10 -inset-y-8 -z-10 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.28),transparent_68%)] blur-2xl"
-              aria-hidden="true"
-            />
-            <BrandLogo size="hero" onDark priority />
-          </div>
+          <BrandLogo size="hero" onDark priority />
           <p className="max-w-xl text-quote text-white/90">{subtitle}</p>
           <div className="flex flex-wrap gap-4 pt-1">
             <Button href={primary.href} variant="inverse">

@@ -59,6 +59,12 @@
     html {
       scroll-behavior: auto;
     }
+
+    /* Reveal renders hidden for its entrance animation; show it outright instead. */
+    [data-reveal] {
+      opacity: 1 !important;
+      transform: none !important;
+    }
   }
 
   html {

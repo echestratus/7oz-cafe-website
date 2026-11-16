@@ -108,3 +108,11 @@ Production uses versioned images and `docker-compose.prod.yml`. See `docs/deploy
 - Feature work on `feature/*`, `fix/*`, `chore/*`, `docs/*`
 
 Never commit directly to `main` or `develop`.
+
+## Location concepts
+
+The location catalog in `apps/website/src/features/locations/lib/locations.ts` lists
+7Oz Espresso and 7Oz Underground as separate concepts at Humble 8 Social Space
+Kemang. They share an address and venue photograph, with separate logos and
+gallery URLs. The existing `/gallery/humble-8` URL remains the Espresso location.
+Concept logos live in `assets/logo/` and are synced with other local media.

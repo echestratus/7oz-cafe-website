@@ -35,6 +35,19 @@ test('the flagship is an open cafe', () => {
   assert.equal(getPrimaryLocation().status, 'open');
 });
 
+test('Humble 8 has two distinct concepts at the same venue with their own logos', () => {
+  const espresso = getLocationBySlug('humble-8');
+  const underground = getLocationBySlug('humble-8-underground');
+
+  assert.ok(espresso?.logo);
+  assert.ok(underground?.logo);
+  assert.notEqual(espresso.id, underground.id);
+  assert.notEqual(espresso.logo.src, underground.logo.src);
+  assert.equal(espresso.address, underground.address);
+  assert.match(espresso.name, /Humble 8 Social Space Kemang/);
+  assert.match(underground.name, /Underground/);
+});
+
 test('open cafes always have an address and a photo', () => {
   for (const location of CAFE_LOCATIONS) {
     if (location.status !== 'open') {

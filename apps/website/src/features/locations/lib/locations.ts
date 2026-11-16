@@ -17,11 +17,16 @@ export interface CafeLocation {
   status: LocationStatus;
   /** Omitted until a cafe has photography; views fall back to the brand backdrop. */
   image?: LocationImage;
+  /** A concept-specific logo displayed over its location photograph. */
+  logo?: LocationImage;
   /** When false, open locations show an awaiting-gallery page instead of an empty grid. */
   hasGallery: boolean;
   /** Canonical Google Maps short link when available. */
   mapsUrl?: string;
 }
+
+const HUMBLE_8_ADDRESS =
+  'Jl. Kemang I No.5, RT.10/RW.5, Bangka, Kec. Mampang Prpt., Kota Jakarta Selatan, Daerah Khusus Ibukota Jakarta 12730';
 
 /**
  * Catalog order is display order: the flagship, then the newest announcement,
@@ -103,16 +108,38 @@ export const CAFE_LOCATIONS: readonly CafeLocation[] = [
   {
     id: 'humble-8',
     slug: 'humble-8',
-    name: '7Oz Humble 8',
-    shortName: 'Humble 8',
+    name: '7Oz Espresso — Humble 8 Social Space Kemang',
+    shortName: '7Oz Espresso · Humble 8',
     city: 'Jakarta',
     country: 'Indonesia',
-    address:
-      'Jl. Kemang I No.5, RT.10/RW.5, Bangka, Kec. Mampang Prpt., Kota Jakarta Selatan, Daerah Khusus Ibukota Jakarta 12730',
+    address: HUMBLE_8_ADDRESS,
     status: 'coming_soon',
     image: {
       src: '/assets/locations/7Oz-humble-8.webp',
       alt: 'Upcoming 7Oz location at Humble 8, Jakarta',
+    },
+    logo: {
+      src: '/assets/logo/7oz-humble-8.webp',
+      alt: '7Oz Espresso',
+    },
+    hasGallery: false,
+  },
+  {
+    id: 'humble-8-underground',
+    slug: 'humble-8-underground',
+    name: '7Oz Underground — Humble 8 Social Space Kemang',
+    shortName: '7Oz Underground · Humble 8',
+    city: 'Jakarta',
+    country: 'Indonesia',
+    address: HUMBLE_8_ADDRESS,
+    status: 'coming_soon',
+    image: {
+      src: '/assets/locations/7Oz-humble-8.webp',
+      alt: 'Humble 8 Social Space Kemang, home of 7Oz Underground',
+    },
+    logo: {
+      src: '/assets/logo/7oz-underground.webp',
+      alt: '7Oz Underground Espresso',
     },
     hasGallery: false,
   },

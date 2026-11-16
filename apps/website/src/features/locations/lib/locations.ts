@@ -138,7 +138,7 @@ export const CAFE_LOCATIONS: readonly CafeLocation[] = [
       alt: 'Humble 8 Social Space Kemang, home of 7Oz Underground',
     },
     logo: {
-      src: '/assets/logo/7oz-underground.webp',
+      src: '/assets/logo/7oz-underground-split-roundel.webp',
       alt: '7Oz Underground Espresso',
     },
     hasGallery: false,

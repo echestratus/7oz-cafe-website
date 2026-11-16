@@ -104,7 +104,7 @@ Notion
 
 Typography:
 
-Fraunces + Inter
+Poppins + Inter
 
 (Open alternatives to Blue Bottle Coffee's ABC Marfa + ABC Diatype)
 

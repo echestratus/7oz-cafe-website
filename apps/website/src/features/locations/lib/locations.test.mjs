@@ -9,7 +9,19 @@ import {
   locationAddressLabel,
   locationMapsUrl,
   sortLocationsByStatus,
+  sortLocationsComingSoonLast,
 } from './locations.ts';
+
+test('homepage keeps coming-soon rooms last without changing the catalog', () => {
+  const original = [...CAFE_LOCATIONS];
+  const sorted = sortLocationsComingSoonLast(CAFE_LOCATIONS);
+  const existing = original.filter((location) => location.status !== 'coming_soon');
+  const upcoming = original.filter((location) => location.status === 'coming_soon');
+
+  assert.deepEqual(sorted, [...existing, ...upcoming]);
+  assert.deepEqual(CAFE_LOCATIONS, original);
+  assert.deepEqual(sortLocationsComingSoonLast([]), []);
+});
 
 test('every location has a unique id and slug', () => {
   const ids = CAFE_LOCATIONS.map((location) => location.id);

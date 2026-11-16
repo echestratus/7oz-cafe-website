@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Fraunces, Inter } from 'next/font/google';
+import { Inter, Poppins } from 'next/font/google';
 import type { ReactNode } from 'react';
 
 import { Providers } from '@/components/providers';
@@ -13,12 +13,12 @@ const inter = Inter({
   display: 'swap',
 });
 
-/** Warm editorial serif for display and headings. */
-const fraunces = Fraunces({
+/** Geometric letterforms echo the bold 7Oz mark. */
+const poppins = Poppins({
   subsets: ['latin'],
-  weight: ['400', '500', '600'],
+  weight: ['400', '500', '600', '700'],
   style: ['normal', 'italic'],
-  variable: '--font-fraunces',
+  variable: '--font-poppins',
   display: 'swap',
 });
 
@@ -40,7 +40,7 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="en" className={`${inter.variable} ${fraunces.variable}`}>
+    <html lang="en" className={`${inter.variable} ${poppins.variable}`}>
       <body className={`${inter.className} antialiased`}>
         <Providers>{children}</Providers>
       </body>

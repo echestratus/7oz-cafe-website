@@ -35,7 +35,7 @@ export const CAFE_LOCATIONS: readonly CafeLocation[] = [
     shortName: 'Hadith Hotel',
     city: 'Samarkand',
     country: 'Uzbekistan',
-    address: "Hadith Hotel, Imam Bukhari Complex, Xoʻja Ismoil, Samarkand, Uzbekistan",
+    address: 'Hadith Hotel, Imam Bukhari Complex, Xoʻja Ismoil, Samarkand, Uzbekistan',
     status: 'open',
     image: {
       src: '/assets/locations/7Oz-hadith.webp',
@@ -58,9 +58,9 @@ export const CAFE_LOCATIONS: readonly CafeLocation[] = [
     slug: 'kampoeng-indonesia',
     name: '7Oz Hotel Kampoeng Indonesia',
     shortName: 'Kampoeng Indonesia',
-    city: "Xoʻja Ismoil",
+    city: 'Xoʻja Ismoil',
     country: 'Uzbekistan',
-    address: "RW6X+G73 Payariq Region, Xoʻja Ismoil, Samarqand viloyati, Uzbekistan",
+    address: 'RW6X+G73 Payariq Region, Xoʻja Ismoil, Samarqand viloyati, Uzbekistan',
     status: 'open',
     image: {
       src: '/assets/locations/7Oz-kampoeng-indonesia.webp',
@@ -169,6 +169,13 @@ export function getPrimaryLocation(): CafeLocation {
 /** Open rooms first, then upcoming, then closed. Keeps catalog order within each group. */
 export function sortLocationsByStatus(locations: readonly CafeLocation[]): CafeLocation[] {
   return [...locations].sort((a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status]);
+}
+
+/** Homepage announcements follow all existing rooms, preserving order within each group. */
+export function sortLocationsComingSoonLast(locations: readonly CafeLocation[]): CafeLocation[] {
+  return [...locations].sort(
+    (a, b) => Number(a.status === 'coming_soon') - Number(b.status === 'coming_soon'),
+  );
 }
 
 /** City and country, e.g. "Almaty, Kazakhstan". */

@@ -8,7 +8,7 @@ Status          : FINAL
 File            : ./docs/ai/06_DESIGN_SYSTEM.md
 Owner           : Engineering Team
 Audience        : Designers, AI Agents & Developers
-Last Updated    : 2026-07-29
+Last Updated    : 2026-11-16
 
 Dependencies:
 - 00_MASTER_PROMPT.md
@@ -155,7 +155,7 @@ Info
 
 # 5. Typography
 
-Warm editorial serif paired with a clean grotesque.
+Geometric sans-serif headings echo the bold 7Oz logo, paired with Inter for body copy.
 
 Primary Font (body / UI)
 
@@ -163,17 +163,17 @@ Inter
 
 Secondary Font (headings / display)
 
-Fraunces
+Poppins
 
 Fallback
 
-system-ui / Georgia
+system-ui / sans-serif
 
 Usage
 
 Headings
 
-Fraunces, sentence case, weight 500, tight tracking
+Poppins, sentence case, weight 600, tight tracking
 
 Body
 
@@ -197,7 +197,7 @@ Inter, uppercase, wide tracking, coffee accent color
 
 Quotes / taglines
 
-Fraunces italic
+Poppins italic
 
 ---
 

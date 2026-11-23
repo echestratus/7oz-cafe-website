@@ -1,18 +1,16 @@
 ﻿'use client';
 
 import Image from 'next/image';
-import { Volume2, VolumeX } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 /**
- * Full-bleed hero loop: poster first, then muted video after idle/in-view.
+ * Full-bleed hero loop: poster first, then audio-free video after idle/in-view.
  * Keeps LCP on the poster instead of waiting for a multi-MB MP4.
  */
 export function HeroVideo() {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
 
   useEffect(() => {
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -76,46 +74,12 @@ export function HeroVideo() {
       return;
     }
 
-    let cancelled = false;
-
-    async function startMuted(player: HTMLVideoElement) {
-      player.muted = true;
-      try {
-        await player.play();
-        if (!cancelled) {
-          setIsMuted(true);
-        }
-      } catch {
-        // Ignore if muted playback is blocked until interaction.
-      }
-    }
-
-    void startMuted(video);
-
-    return () => {
-      cancelled = true;
-    };
+    // Keep the decorative video silent even when playback starts programmatically.
+    video.muted = true;
+    void video.play().catch(() => {
+      // The poster remains visible if autoplay is blocked.
+    });
   }, [shouldLoadVideo]);
-
-  async function toggleSound() {
-    const video = videoRef.current;
-    if (!video) {
-      return;
-    }
-
-    const nextMuted = !isMuted;
-    video.muted = nextMuted;
-    setIsMuted(nextMuted);
-
-    if (!nextMuted) {
-      try {
-        await video.play();
-      } catch {
-        video.muted = true;
-        setIsMuted(true);
-      }
-    }
-  }
 
   return (
     <div ref={containerRef} className="absolute inset-0">
@@ -124,7 +88,7 @@ export function HeroVideo() {
           ref={videoRef}
           className="absolute inset-0 h-full w-full object-cover"
           autoPlay
-          muted={isMuted}
+          muted
           loop
           playsInline
           preload="none"
@@ -132,11 +96,11 @@ export function HeroVideo() {
           aria-hidden="true"
         >
           <source
-            src="/assets/home/hadith-hotel-hero-mobile.mp4"
+            src="/assets/home/hadith-hotel-hero-mobile-silent.mp4"
             type="video/mp4"
             media="(max-width: 768px)"
           />
-          <source src="/assets/home/hadith-hotel-hero.mp4" type="video/mp4" />
+          <source src="/assets/home/hadith-hotel-hero-silent.mp4" type="video/mp4" />
         </video>
       ) : (
         <Image
@@ -148,22 +112,6 @@ export function HeroVideo() {
           sizes="100vw"
         />
       )}
-
-      {shouldLoadVideo ? (
-        <button
-          type="button"
-          onClick={toggleSound}
-          className="absolute bottom-[max(2rem,env(safe-area-inset-bottom))] right-4 z-20 inline-flex h-11 min-h-11 w-11 items-center justify-center rounded-full border border-white/30 bg-black/35 text-white backdrop-blur-sm transition-colors duration-200 hover:bg-black/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white md:bottom-10 md:right-8"
-          aria-label={isMuted ? 'Unmute hero video' : 'Mute hero video'}
-          aria-pressed={!isMuted}
-        >
-          {isMuted ? (
-            <VolumeX className="h-4 w-4" aria-hidden="true" />
-          ) : (
-            <Volume2 className="h-4 w-4" aria-hidden="true" />
-          )}
-        </button>
-      ) : null}
     </div>
   );
 }

@@ -120,3 +120,9 @@ Concept logos live in `assets/logo/` and are synced with other local media.
 Location displays use this order: open, coming soon, then closed. Closed locations
 must always appear at the very end, including the homepage carousel. Preserve
 catalog order within each status group.
+
+## Hero media
+
+Desktop and mobile hero videos contain video only, with the audio tracks removed.
+The hero has no sound controls. Use new asset URLs when replacing hero media to
+avoid serving cached copies. Do not reintroduce unlicensed music.

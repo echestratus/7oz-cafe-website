@@ -22,6 +22,10 @@ On the homepage only, place coming-soon locations at the end of the horizontal
 location list, preserving catalog order within each group. Keep the open flagship
 featured and retain the existing order on gallery and contact pages.
 
+Update (2026-11-23): the owner superseded the homepage ordering rule above.
+All location displays now list open rooms, then coming-soon rooms, with every
+closed room at the very end. Ordering within each status group remains stable.
+
 ## Consequences
 
 The public website uses two sans-serif families that complement the logo.

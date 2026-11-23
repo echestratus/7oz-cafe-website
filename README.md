@@ -116,3 +116,7 @@ The location catalog in `apps/website/src/features/locations/lib/locations.ts` l
 Kemang. They share an address and venue photograph, with separate logos and
 gallery URLs. The existing `/gallery/humble-8` URL remains the Espresso location.
 Concept logos live in `assets/logo/` and are synced with other local media.
+
+Location displays use this order: open, coming soon, then closed. Closed locations
+must always appear at the very end, including the homepage carousel. Preserve
+catalog order within each status group.

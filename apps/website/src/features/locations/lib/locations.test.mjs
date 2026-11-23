@@ -9,18 +9,31 @@ import {
   locationAddressLabel,
   locationMapsUrl,
   sortLocationsByStatus,
-  sortLocationsComingSoonLast,
 } from './locations.ts';
 
-test('homepage keeps coming-soon rooms last without changing the catalog', () => {
+test('location displays put every closed room after open and upcoming rooms without mutating input', () => {
   const original = [...CAFE_LOCATIONS];
-  const sorted = sortLocationsComingSoonLast(CAFE_LOCATIONS);
-  const existing = original.filter((location) => location.status !== 'coming_soon');
+  const sorted = sortLocationsByStatus(CAFE_LOCATIONS);
+  const open = original.filter((location) => location.status === 'open');
   const upcoming = original.filter((location) => location.status === 'coming_soon');
+  const closed = original.filter((location) => location.status === 'closed');
 
-  assert.deepEqual(sorted, [...existing, ...upcoming]);
+  assert.deepEqual(sorted, [...open, ...upcoming, ...closed]);
   assert.deepEqual(CAFE_LOCATIONS, original);
-  assert.deepEqual(sortLocationsComingSoonLast([]), []);
+  assert.deepEqual(sortLocationsByStatus([]), []);
+});
+
+test('closed rooms stay last even if supplied before other locations', () => {
+  const closed = getLocationBySlug('city-park');
+  const upcoming = getLocationBySlug('almaty');
+  const open = getPrimaryLocation();
+  assert.ok(closed);
+  assert.ok(upcoming);
+
+  const anotherClosed = { ...closed, id: 'another-closed', slug: 'another-closed' };
+  const input = [closed, upcoming, anotherClosed, open];
+  assert.deepEqual(sortLocationsByStatus(input), [open, upcoming, closed, anotherClosed]);
+  assert.deepEqual(input, [closed, upcoming, anotherClosed, open]);
 });
 
 test('every location has a unique id and slug', () => {

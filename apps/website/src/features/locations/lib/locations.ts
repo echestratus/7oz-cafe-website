@@ -198,13 +198,6 @@ export function sortLocationsByStatus(locations: readonly CafeLocation[]): CafeL
   return [...locations].sort((a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status]);
 }
 
-/** Homepage announcements follow all existing rooms, preserving order within each group. */
-export function sortLocationsComingSoonLast(locations: readonly CafeLocation[]): CafeLocation[] {
-  return [...locations].sort(
-    (a, b) => Number(a.status === 'coming_soon') - Number(b.status === 'coming_soon'),
-  );
-}
-
 /** City and country, e.g. "Almaty, Kazakhstan". */
 export function locationPlace(location: CafeLocation): string {
   return `${location.city}, ${location.country}`;

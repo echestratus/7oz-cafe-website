@@ -12,7 +12,7 @@ import { LocationMedia } from '@/features/locations/components/location-media';
 import {
   getAllLocations,
   locationAddressLabel,
-  sortLocationsComingSoonLast,
+  sortLocationsByStatus,
   type CafeLocation,
 } from '@/features/locations/lib/locations';
 
@@ -26,10 +26,7 @@ function galleryHref(location: CafeLocation): string {
 
 export function LocationsSection({ locations = getAllLocations() }: LocationsSectionProps) {
   const scrollerRef = useRef<HTMLDivElement>(null);
-  const primary = locations.find((location) => location.status === 'open') ?? locations[0];
-  const others = sortLocationsComingSoonLast(
-    locations.filter((location) => location.id !== primary?.id),
-  );
+  const [primary, ...others] = sortLocationsByStatus(locations);
   const otherOpenCount = others.filter((location) => location.status === 'open').length;
   const comingSoonCount = others.filter((location) => location.status === 'coming_soon').length;
 
